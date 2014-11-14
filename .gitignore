@@ -1,6 +1,2 @@
 .idea
-example.config/pages.php
-example.config/settings.php
-example.config/template_formatters.php
-example.config/translations.php
 config/settings.local.php
