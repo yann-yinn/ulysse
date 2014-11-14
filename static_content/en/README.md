@@ -1,1 +1,0 @@
-English static content may go here.

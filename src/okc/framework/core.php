@@ -12,7 +12,7 @@
 
 define("CONFIG_EXAMPLE_DIRECTORY", 'example.config');
 define('CONFIG_DIRECTORY', '../config');
-define('CONTENT_DIRECTORY', 'static_content');
+define('USER_CONTENT_DIRECTORY', 'user_content');
 define('ROUTES_FILE', '../config/routes.php');
 define('TRANSLATIONS_FILEPATH', '../config/translations.php');
 define('SETTINGS_FILENAME', 'settings');
@@ -181,7 +181,7 @@ function executeControllerFromHttpRequest($routes)
   $route = getRouteByPath($path, $routes);
   if (!$route) {
     $controller = getSetting('route_not_found_controller');
-    $content = $controller['return']();
+    $content = $controller['content']();
   }
   else {
     writeLog(['level'    => 'notification', 'detail'   => "found route : <pre>" . var_export($route, TRUE) . '</pre>']);
@@ -246,7 +246,7 @@ function getRouteByPath($path, $routes)
  */
 function getRouteOutput($route)
 {
-  $output = is_string($route['return']) ? $route['return'] : $route['return']();
+  $output = is_string($route['content']) ? $route['content'] : $route['content']();
 
   // layout feature
   if (!empty($route['template'])) {
@@ -316,7 +316,7 @@ function getSetting($id)
   return $GLOBALS['_SETTINGS'][$id];
 }
 
-function merge_config_file($variables, $filepath) {
+function merge_config_from_file($variables, $filepath) {
   return $variables += include $filepath;
 }
 
@@ -378,7 +378,7 @@ function getStaticContent($path, $language = '') {
   if (!$language) {
     $language = getCurrentLanguage();
   }
-  $content_filepath = '../' . DIRECTORY_SEPARATOR . CONTENT_DIRECTORY . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . $path;
+  $content_filepath = '../' . DIRECTORY_SEPARATOR . USER_CONTENT_DIRECTORY . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . $path;
   return file_get_contents($content_filepath);
 }
 

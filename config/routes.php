@@ -1,18 +1,27 @@
 <?php
+/**
+ * Define pages url and content.
+ */
+
+$routes = [];
 
 $routes['homepage'] = [
-    'path'   => '',
+    'path'     => '',
     'template' => 'layout.php',
-    'return' =>  template('homepage.php')
+    'content'  =>  template('homepage.php'),
 ];
 $routes['contact'] = [
-  'path'   => 'contact',
+  'path'     => 'contact',
   'template' => 'layout.php',
-  'return' =>  template('contact.php')
+  'content'  =>  template('contact.php')
+];
+$routes['hello'] = [
+  'path'     => 'hello',
+  'template' => 'layout.php',
+  'content'  =>  "bonjour monde",
 ];
 
-
 // how to merge setting from another file :
-// $routes = merge_config_file($routes, 'myvendor/mymodule/config/routes.php');
+// $routes = merge_config_from_file($routes, 'myvendor/mymodule/config/routes.php');
 
 return $routes;
