@@ -3,8 +3,8 @@ PHP fucking deadly simple light procedural framework.
 REQUIREMENTS
 -------------
 
-php >= 5.4
-Apache
+* php >= 5.4
+* Apache
 
 INSTALLATION
 -------------
@@ -24,6 +24,12 @@ In config/routes.php :
 $routes['homepage'] = [
     'path' => '',
     'return' => 'hello i am the homepage',
+];
+// to render template page.php inside a layout.php template
+$routes['homepage'] = [
+    'path'   => '',
+    'template' => 'layout.php',
+    'return' =>  template('homepage.php')
 ];
 $routes['hello'] => [
     'path' => 'hello',

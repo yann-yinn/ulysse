@@ -16,6 +16,7 @@ define('CONTENT_DIRECTORY', 'static_content');
 define('ROUTES_FILE', '../config/routes.php');
 define('TRANSLATIONS_FILEPATH', '../config/translations.php');
 define('SETTINGS_FILENAME', 'settings');
+define('LOCAL_SETTINGS_FILEPATH', '../config/settings.local.php');
 define('TEMPLATE_FORMATTERS_FILE', '../config/template_formatters.php');
 
 /* =====================
@@ -58,7 +59,7 @@ function bootstrapFramework($env = '')
   setContextVariable('time_start', microtime(TRUE));
 
   loadTranslations();
-  $settings = loadSettings($env);
+  $settings = loadAppSettings($env);
 
   require TEMPLATE_FORMATTERS_FILE;
 
@@ -66,7 +67,6 @@ function bootstrapFramework($env = '')
   echo $controllerOutput;
 
   writeLog(['level'    => 'notification', 'detail'   => "page content is '" . sanitizeString($controllerOutput) . "'"]);
-  writeLog(['level' => 'notification', 'detail' => "Settings loaded : " . var_export($settings, TRUE)]);
 
   if (getSetting('display_developper_toolbar') === TRUE)
   {
@@ -246,7 +246,22 @@ function getRouteByPath($path, $routes)
  */
 function getRouteOutput($route)
 {
-  return is_string($route['return']) ? $route['return'] : $route['return']();
+  $output = is_string($route['return']) ? $route['return'] : $route['return']();
+
+  // layout feature
+  if (!empty($route['template'])) {
+    if (empty($route['template_content_variable'])) {
+      $route['template_content_variable'] = 'content';
+    }
+    $output = template(
+      $route['template'],
+      [
+        $route['template_content_variable'] => $output,
+      ]
+    );
+  }
+
+  return $output;
 }
 
 /**
@@ -272,22 +287,28 @@ function getAppScriptName()
    SETTINGS
    ===================== */
 
-function loadSettings($env) {
+function loadAppSettings($env) {
   // load settings and environment settings if any
   // for example, load settings.php file AND settings_dev.php file
   // if settings_dev.php is readable.
-  $settings = include CONFIG_DIRECTORY . DIRECTORY_SEPARATOR . SETTINGS_FILENAME . ".php";
+  $appSettings = include CONFIG_DIRECTORY . DIRECTORY_SEPARATOR . SETTINGS_FILENAME . ".php";
+
+  if (is_readable(LOCAL_SETTINGS_FILEPATH)) {
+    $appLocalSettings = include LOCAL_SETTINGS_FILEPATH;
+    $appSettings = array_merge($appSettings, $appLocalSettings);
+  }
+
   if ($env)
   {
-    $settings_env_file = CONFIG_DIRECTORY . DIRECTORY_SEPARATOR . SETTINGS_FILENAME . "_$env.php";
-    if (is_readable($settings_env_file))
+    $appSettingsEnvFile = CONFIG_DIRECTORY . DIRECTORY_SEPARATOR . SETTINGS_FILENAME . "_$env.php";
+    if (is_readable($appSettingsEnvFile))
     {
-      $settings_env = include $settings_env_file;
-      $settings = array_merge($settings, $settings_env);
+      $appSettingsbyEnv = include $appSettingsEnvFile;
+      $appSettings = array_merge($appSettings, $appSettingsbyEnv);
     }
   }
-  $GLOBALS['_SETTINGS'] = $settings;
-  return $settings;
+  $GLOBALS['_SETTINGS'] = $appSettings;
+  return $appSettings;
 }
 
 function getSetting($id)
@@ -336,6 +357,22 @@ function getTranslation($id, $language = NULL)
 /* =====================
    MISC
    ===================== */
+
+function url($path) {
+  $scriptName = sanitizeString(getAppScriptName());
+  $url = getAppBasePath($scriptName) . $scriptName . '/' . $path;
+  return $url;
+}
+
+function currentPathIs($path) {
+  $scriptName  = sanitizeString(getAppScriptName());
+  $basePath    = getAppBasePath($scriptName);
+  $url_path    = extractPathFromHttpRequest($scriptName, $basePath);
+  if ($path == $url_path) {
+    return TRUE;
+  }
+  return FALSE;
+}
 
 function getStaticContent($path, $language = '') {
   if (!$language) {
@@ -402,7 +439,7 @@ function phpFatalErrorHandler()
  * may be defined. A theme is a collection of templates.
  * @return string
  */
-function template($file, $variables, $theme_path = NULL)
+function template($file, $variables = [], $theme_path = NULL)
 {
   if (!$theme_path)
   {

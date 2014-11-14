@@ -1,8 +1,14 @@
 <?php
 
 $routes['homepage'] = [
-    'path' => '',
-    'return' => getTranslation('okc.framework.welcome.homepage'),
+    'path'   => '',
+    'template' => 'layout.php',
+    'return' =>  template('homepage.php')
+];
+$routes['contact'] = [
+  'path'   => 'contact',
+  'template' => 'layout.php',
+  'return' =>  template('contact.php')
 ];
 
 
