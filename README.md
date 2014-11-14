@@ -15,32 +15,33 @@ INSTALLATION
 
 Edit pages.php file to start create pages on your site.
 
-ROUTES.PHP
+CREATE PAGES
 --------------
 
-Routes.php file map a framework path to a php callable.
-A route may return a string or a closure :
-In config/routes.php :
+pages.php file map a framework path to a php callable.
+A page may return a string or a closure :
+In config/pages.php :
 
 ```php
-$routes['homepage'] = [
+$pages['homepage'] = [
     'path' => '',
     'content' => 'hello i am the homepage',
 ];
 // to render a template page.php inside a layout.php template
-$routes['homepage'] = [
+$pages['homepage'] = [
     'path'   => '',
     'template' => 'layout.php',
     'content' =>  template('homepage.php')
 ];
-$routes['hello'] => [
+// MVC style :
+$pages['hello'] => [
     'path' => 'hello',
     'content' => function() {
       $controller = new \myVendor\myModule\myController();
       $controller->hello();
     }
   ]
-return $routes;
+return $pages;
 ```
 
 TEMPLATE
