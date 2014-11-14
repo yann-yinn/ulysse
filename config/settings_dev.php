@@ -1,10 +1,5 @@
 <?php
 
-$settings['routes']['homepage'] = [
-  'path' => '',
-  'return' => 'Welcome to the the homepage',
-];
-
 /**
  * Only for dev, may contains sensitive datas
  */

@@ -2,6 +2,8 @@
 
 $settings = [];
 
+$settings['display_developper_toolbar'] = FALSE;
+
 $settings['language_default'] = 'en';
 
 $settings['languages'] = [
@@ -13,11 +15,10 @@ $settings['languages'] = [
   ],
 ];
 
-$settings['display_developper_toolbar'] = FALSE;
 
-$settings['theme_path'] = 'themes/default';
+$settings['theme_path'] = 'themes/example';
 
 // how to merge setting from another file :
-$settings = merge_config_file($settings, 'okc/simulateur/config/settings.php');
+// $settings = merge_config_file($settings, 'myvendor/mymodule/config/settings.php');
 
 return $settings;

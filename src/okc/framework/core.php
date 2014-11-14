@@ -10,10 +10,11 @@
  * - theming engine : themes, template and template formatters
  */
 
+define("CONFIG_EXAMPLE_DIRECTORY", 'example.config');
+define('CONFIG_DIRECTORY', '../config');
 define('CONTENT_DIRECTORY', 'static_content');
 define('ROUTES_FILE', '../config/routes.php');
-define('TRANSLATIONS_FILE', '../config/translations.php');
-define('CONFIG_DIRECTORY', '../config');
+define('TRANSLATIONS_FILEPATH', '../config/translations.php');
 define('SETTINGS_FILENAME', 'settings');
 define('TEMPLATE_FORMATTERS_FILE', '../config/template_formatters.php');
 
@@ -35,6 +36,12 @@ bootstrapFramework('dev');
  */
 function bootstrapFramework($env = '')
 {
+
+  if (!file_exists(CONFIG_DIRECTORY)) {
+    echo frameworkInstallationPage($env);
+    exit;
+  }
+
   writeLog(['level' => 'notification', 'detail' => 'framework environment is set to : ' . sanitizeString($env)]);
   // try to display framework log even if php a fatal error occured
   register_shutdown_function("phpFatalErrorHandler");
@@ -65,6 +72,13 @@ function bootstrapFramework($env = '')
   {
     require_once "../src/okc/framework/developper_toolbar.php";
   }
+}
+
+function frameworkInstallationPage($env) {
+  $out = '';
+  $out .= '<h1>Welcome to framework installation</h1>';
+  $out .= 'Please rename "example.config" directory to "config" to start using framework.';
+  return $out;
 }
 
 /* =====================
@@ -306,7 +320,7 @@ function getCurrentLanguage()
 
 function loadTranslations()
 {
-  return $GLOBALS['_TRANSLATIONS'] = include TRANSLATIONS_FILE;
+  return $GLOBALS['_TRANSLATIONS'] = include TRANSLATIONS_FILEPATH;
 }
 
 function getTranslation($id, $language = NULL)
