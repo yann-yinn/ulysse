@@ -2,7 +2,10 @@
 
 require_once "../src/okc/framework/core.php";
 bootstrapFramework(
-  ['env' => '']
+  [
+    'env' => '',
+    'language' => 'en',
+  ]
 );
 
 

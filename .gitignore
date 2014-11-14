@@ -1,5 +1,5 @@
 .idea
-example.config/routes.php
+example.config/pages.php
 example.config/settings.php
 example.config/template_formatters.php
 example.config/translations.php

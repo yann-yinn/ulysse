@@ -13,7 +13,7 @@
 define("CONFIG_EXAMPLE_DIRECTORY", 'example.config');
 define('CONFIG_DIRECTORY', '../config');
 define('USER_CONTENT_DIRECTORY', 'user_content');
-define('ROUTES_FILE', '../config/routes.php');
+define('ROUTES_FILE', '../config/pages.php');
 define('TRANSLATIONS_FILEPATH', '../config/translations.php');
 define('SETTINGS_FILENAME', 'settings');
 define('LOCAL_SETTINGS_FILEPATH', '../config/settings.local.php');
@@ -35,11 +35,13 @@ define('TEMPLATE_FORMATTERS_FILE', '../config/template_formatters.php');
 bootstrapFramework('dev');
  * @endocde
  */
-function bootstrapFramework($env = '')
+function bootstrapFramework($contextVariables = [])
 {
 
+  $env = !empty($contextVariables['env']) ? $contextVariables['env'] : '';
+
   if (!file_exists(CONFIG_DIRECTORY)) {
-    echo frameworkInstallationPage($env);
+    echo frameworkInstallationPage($contextVariables);
     exit;
   }
 
@@ -55,7 +57,9 @@ function bootstrapFramework($env = '')
 
   registerPsr0ClassAutoloader();
 
-  setContextVariable('env', $env);
+  foreach ($contextVariables as $key => $contextVariable) {
+    setContextVariable($key, $contextVariable);
+  }
   setContextVariable('time_start', microtime(TRUE));
 
   loadTranslations();

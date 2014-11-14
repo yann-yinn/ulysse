@@ -9,9 +9,11 @@ REQUIREMENTS
 INSTALLATION
 -------------
 
-Go to "your_installation_path/www/index_dev.php"
-Rename "example.config" directory to "config".
-Edit routes.php file to start
+* Copy "www/example.index.php" to "www/index.php" file (you may name it as you want or create several entry points, like index_fr.php)
+* Copy "example.config" directory to "config"
+* Rename "example.htaccess" to ".htaccess"
+
+Edit pages.php file to start create pages on your site.
 
 ROUTES.PHP
 --------------
@@ -23,17 +25,17 @@ In config/routes.php :
 ```php
 $routes['homepage'] = [
     'path' => '',
-    'return' => 'hello i am the homepage',
+    'content' => 'hello i am the homepage',
 ];
-// to render template page.php inside a layout.php template
+// to render a template page.php inside a layout.php template
 $routes['homepage'] = [
     'path'   => '',
     'template' => 'layout.php',
-    'return' =>  template('homepage.php')
+    'content' =>  template('homepage.php')
 ];
 $routes['hello'] => [
     'path' => 'hello',
-    'return' => function() {
+    'content' => function() {
       $controller = new \myVendor\myModule\myController();
       $controller->hello();
     }
@@ -53,4 +55,9 @@ Printing in a secured way a variable in a template :
 Never use print or echo to avoid code injection.
 ```php
 <?php e($variable) ?>
+```
+
+Use a function to format a value
+```php
+<?php e($prix, 'euros') ?>
 ```
