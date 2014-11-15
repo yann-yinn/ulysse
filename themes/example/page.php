@@ -18,8 +18,8 @@
 
 <nav>
   <ul>
-  <li><a class="<?php if(currentPathIs('')) echo 'active' ?>" href="<?php echo url('') ?>"> Homepage </a></li>
-  <li><a class="<?php if(currentPathIs('contact')) echo 'active' ?>" href="<?php echo url('contact') ?>"> Contact </a></li>
+  <li><a class="<?php if(isCurrentPath('')) echo 'active' ?>" href="<?php echo getUrlFromPath('') ?>"> Homepage </a></li>
+  <li><a class="<?php if(isCurrentPath('contact')) echo 'active' ?>" href="<?php echo getUrlFromPath('contact') ?>"> Contact </a></li>
   </ul>
 </nav>
 

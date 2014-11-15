@@ -8,5 +8,5 @@
 return [
   // set this to TRUE to add debug information about framework
   // and display logs.
-  'display_developper_toolbar' =>  FALSE,
+  'display_developper_toolbar' =>  TRUE,
 ];

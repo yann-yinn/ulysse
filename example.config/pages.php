@@ -5,13 +5,30 @@
 
 $pages = [];
 
+$pages['__PAGE_NOT_FOUND__'] = [
+  'template' => 'page.php',
+  'content' => function() {
+      setHttpResponseHeader(404);
+      return "Oooops page not found";
+    }
+];
+
+$pages['__ACCESS_DENIED__'] = [
+  'path'     => '',
+  'template' => 'page.php',
+  'content' => function() {
+      setHttpResponseHeader(403);
+      return "Access denied";
+    }
+];
+
 $pages['homepage'] = [
     'path'     => '',
-    'template' => 'layout.php',
+    'template' => 'page.php',
     'content'  =>  template('homepage.php'),
 ];
 
 // how to merge setting from another file :
-// $pages = merge_config_from_file($pages, 'myvendor/mymodule/config/pages.php');
+// $pages = mergeConfigFromFile($pages, 'myvendor/mymodule/config/pages.php');
 
 return $pages;

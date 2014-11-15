@@ -22,7 +22,7 @@ print '<section id = "okc-developper-toolbar">';
 
 print '<h2> Stats </h2>';
 $time_end = microtime(TRUE);
-$time = $time_end - getContextVariable('time_start');
+$time = $time_end - getSiteContextVariable('time_start');
 print '<ul>';
 print '<li>';
 print 'Time usage : ' . round($time * 1000) . 'ms';
@@ -35,14 +35,14 @@ print '</div>';
 print '<h2>Context </h2>';
 
 echo '<pre>';
-print_r(getAppContext());
+print_r(getSiteContext());
 echo '</pre>';
 
 
 print '<h2> Logs </h2>';
 print '<ul>';
 
-$logs = getLogs();
+$logs = getAllLogs();
 if (!empty($logs)) {
   foreach ($logs as $log) {
     print '<li>';
