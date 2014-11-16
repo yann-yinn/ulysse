@@ -12,10 +12,6 @@ function getContentStates() {
   return $contentStates;
 }
 
-function viewContentById($id) {
-
-}
-
 /**
  * Get all content of the site
  * @return array
