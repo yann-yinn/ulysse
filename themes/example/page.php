@@ -12,6 +12,11 @@
   a.active {
     font-weight: bold;
   }
+  .wrapper-content-editable {
+    border : solid silver 1px;
+    margin : 20px;
+    padding:20px:
+  }
 </style>
 
 <body>

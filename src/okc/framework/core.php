@@ -561,6 +561,13 @@ function getHttpRedirectionFromUrl() {
   return $path;
 }
 
+/**
+ * Redirect to path. If path is not set, function will look
+ * into the url for a GET "redirection" query param, and will use
+ * it as the redirection path.
+ * @param string $redirectionPath
+ *
+ */
 function redirection($redirectionPath = NULL) {
   if (is_null($redirectionPath)) {
     $redirectionPath = getHttpRedirectionFromUrl();
@@ -569,6 +576,10 @@ function redirection($redirectionPath = NULL) {
   exit;
 }
 
+/**
+ * One day, this function will check for user permissions. Maybe.
+ * @return bool
+ */
 function userHasPermission() {
   return TRUE;
 }

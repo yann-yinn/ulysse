@@ -2,7 +2,7 @@
 
 ?>
 
-<div class="content-editable">
+<div class="wrapper-content-editable">
 <?php if (userHasPermission('edit content')) : ?>
 <a class="content-editable" href="<?php echo url('admin/content/form', ['query' => ['id' => sanitizeString($id), 'redirection' => '']]) ?>">
   Edit this content</a>

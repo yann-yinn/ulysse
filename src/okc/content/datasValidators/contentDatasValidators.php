@@ -1,4 +1,7 @@
 <?php
+/**
+ * @FIXME add validation for content types.
+ */
 
 /**
  * Run all validators on content form.
