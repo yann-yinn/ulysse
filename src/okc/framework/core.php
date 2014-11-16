@@ -559,3 +559,7 @@ function setHttpRedirection($redirectionPath = NULL) {
   exit;
 }
 
+function userHasPermission() {
+  return TRUE;
+}
+
