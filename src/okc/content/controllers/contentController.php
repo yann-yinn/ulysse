@@ -34,7 +34,7 @@ function contentFormSavePage() {
       updateContentById($datas['id'], $datas);
       writeLog(['detail' => "Update existing content ." . sanitizeString($datas['id'])]);
     }
-    setHttpRedirection();
+    redirection();
   }
   else {
     return template('contentForm.php', ['content' => $_POST, 'errors' => $errors], 'okc/content/templates');

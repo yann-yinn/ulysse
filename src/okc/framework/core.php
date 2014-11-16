@@ -302,12 +302,22 @@ function getTranslation($string_id, $language = NULL)
 
 function url($path, array $options = [])
 {
-  $redirectionQuery = '';
+
+  $query = [];
   if (isset($options['redirection'])) {
-    $redirectionQuery = 'redirection=' . urlencode($options['redirection']);
+    $query['redirection'] = urlencode($options['redirection']);
   }
+  if (!empty($options['query'])) {
+    $query += $options['query'];
+  }
+
+  $queryString = http_build_query($query);
+
   $scriptName = sanitizeString(getSiteScriptName());
-  $url = getSiteBasePath($scriptName) . $scriptName . '/' . $path . '?' . $redirectionQuery;
+  $url = getSiteBasePath($scriptName) . $scriptName . '/' . $path;
+  if ($queryString) {
+    $url .= '?' . $queryString;
+  }
   return $url;
 }
 
@@ -544,15 +554,15 @@ function setHttpRedirectionHeader($path) {
 
 function getHttpRedirectionFromUrl() {
   $path = null;
-  if (!empty($_GET['redirection']))
+  if (isset($_GET['redirection']))
   {
     $path = urldecode($_GET['redirection']);
   }
   return $path;
 }
 
-function setHttpRedirection($redirectionPath = NULL) {
-  if (!$redirectionPath) {
+function redirection($redirectionPath = NULL) {
+  if (is_null($redirectionPath)) {
     $redirectionPath = getHttpRedirectionFromUrl();
   }
   setHttpRedirectionHeader($redirectionPath);

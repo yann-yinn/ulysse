@@ -1,4 +1,4 @@
-<form method="POST" action="<?php echo url("admin/content/form/save", ['redirection' => 'admin/content']) ?>">
+<form method="POST" action="<?php echo url("admin/content/form/save", ['redirection' => getHttpRedirectionFromUrl()]) ?>">
 
   <!-- ID FIELD -->
   <?php if(!empty($content['id'])) : ?>

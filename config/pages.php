@@ -25,8 +25,12 @@ $pages['homepage'] = [
   'layout' => 'page.php',
   'layout_variables' => [
     'zone_top' => function() {
+        $out = '';
         $content =  getContentByMachineName("homepage_bloc_1");
-        return template('contentView.php', $content, 'okc/content/templates');
+        $out .= template('contentView.php', $content, 'okc/content/templates');
+        $content =  getContentByMachineName("homepage_bloc_2");
+        $out .= template('contentView.php', $content, 'okc/content/templates');
+        return $out;
       },
   ],
   'content'  =>  function() {
