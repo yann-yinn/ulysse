@@ -7,7 +7,9 @@
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
-  <script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>
+  <?php if (isset($head)) : ?>
+    <?php echo $head(); ?>
+  <?php endif ?>
 </head>
 <style>
   a.active {
@@ -15,12 +17,14 @@
   }
 </style>
 
+
+
 <body>
 
 <nav>
   <ul>
-  <li><a class="<?php if(isCurrentPath('')) echo 'active' ?>" href="<?php echo getUrlFromPath('') ?>"> Homepage </a></li>
-  <li><a class="<?php if(isCurrentPath('contact')) echo 'active' ?>" href="<?php echo getUrlFromPath('contact') ?>"> Contact </a></li>
+  <li><a class="<?php if(isCurrentPath('')) echo 'active' ?>" href="<?php echo url('') ?>"> Homepage </a></li>
+  <li><a class="<?php if(isCurrentPath('contact')) echo 'active' ?>" href="<?php echo url('contact') ?>"> Contact </a></li>
   </ul>
 </nav>
 

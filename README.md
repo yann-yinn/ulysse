@@ -31,7 +31,7 @@ $pages['homepage'] = [
 $pages['homepage'] = [
     'path'   => '',
     'template' => 'layout.php',
-    'content' =>  template('homepage.php')
+    'content' =>  function() {template('homepage.php');}
 ];
 // MVC style :
 $pages['hello'] => [

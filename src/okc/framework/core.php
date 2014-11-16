@@ -10,11 +10,11 @@ define('PAGES_FILEPATH', '../config/pages.php');
 define('STRINGS_TRANSLATIONS_FILEPATH', '../config/translations.php');
 define('SETTINGS_FILEPATH', '../config/settings.php');
 define('SETTINGS_LOCAL_FILEPATH', '../config/settings.local.php');
-define('TEMPLATE_FORMATTERS_FILEPATH', '../config/template_formatters.php');
+define('TEMPLATE_FORMATTERS_FILEPATH', '../config/templateFormatters.php');
 
 /**
  * Bootstrap the okc framework : listen http request and map it to
- * a php controller.
+ * a php controller, looking at config/pages.php file.
  *
  * @param array $contextVariables : array of values to define site context
  * Use this bootstrap in a script in "www" directory with following example code :
@@ -25,34 +25,59 @@ define('TEMPLATE_FORMATTERS_FILEPATH', '../config/template_formatters.php');
  */
 function bootstrapFramework($contextVariables = [])
 {
+
   // Framework is not setup if "example.config" directory has not be renamed to "config".
   // Inform user and stop here for now.
   if (!file_exists(CONFIG_DIRECTORY_PATH)) {
     echo frameworkInstallationPage($contextVariables);
     exit;
   }
+
+  // Add include paths and class autoloaders first.
+  $includePaths = ['..', '../src', '../vendors'];
+  addPhpIncludePaths($includePaths);
+  setPsr0ClassAutoloader();
+
+  // Connect to database specified in database settings if any, using PDO
+  $database = getSetting("database");
+  if (!empty($database)) {
+    try {
+      $db = new PDO("mysql:host={$database['host']};dbname={$database['name']}", $database['user'], $database['password']);
+      $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      $contextVariables['db'] = $db;
+    }
+    catch (PDOException $e) {
+      echo $e->getMessage();
+      die();
+    }
+  }
+
   // Try to display framework logs even if php a fatal error occured
   register_shutdown_function("phpFatalErrorHandler");
   session_start();
-  // Add include paths for class autoloaders
-  $includePaths = ['..', '../src', '../vendors'];
-  setPhpIncludePaths($includePaths);
-  setPsr0ClassAutoloader();
+
   // register context variables in the site context
-  setSiteContextVariable('time_start', microtime(TRUE));
+  setContextVariable('time_start', microtime(TRUE));
   foreach ($contextVariables as $key => $contextVariable)
   {
-    setSiteContextVariable($key, $contextVariable);
+    setContextVariable($key, $contextVariable);
   }
+
   // include template formatters file, for template() function.
   require TEMPLATE_FORMATTERS_FILEPATH;
+
   // display page corresponding to submitted http request
-  $controllerOutput = getPageFromHttpRequest();
+  $controllerOutput = renderPageFromHttpRequest();
   echo $controllerOutput;
-  setLog(['level'    => 'notification', 'detail'   => "page content is '" . getSafeString($controllerOutput) . "'"]);
-  if (getSiteSetting('display_developper_toolbar') === TRUE) require_once "../src/okc/framework/developper_toolbar.php";
+
+  writeLog(['level'    => 'notification', 'detail'   => "page content is '" . sanitizeString($controllerOutput) . "'"]);
+  if (getSetting('display_developper_toolbar') === TRUE) require_once "../src/okc/framework/developperToolbar.php";
 }
 
+/**
+ * Display information about framework setup to the user.
+ * @return string html
+ */
 function frameworkInstallationPage() {
   $out = '';
   $out .= '<h1>Welcome to framework installation</h1>';
@@ -60,18 +85,34 @@ function frameworkInstallationPage() {
   return $out;
 }
 
+/**
+ * Get all site Logs
+ * @return array : all site logs
+ */
 function getAllLogs()
 {
   return $GLOBALS['_LOGS'];
 }
 
+/**
+ * Get database connexion to perform queries.
+ * @return PDO connexion object
+ */
+function getDbConnexion() {
+  return getContextVariable('db');
+}
+
+/**
+ * Get current language used on the site by the visitor
+ * @return string : langcode (fr, en etc...)
+ */
 function getCurrentLanguage()
 {
-  $currentLanguage = getSiteSetting('language_default');
+  $currentLanguage = getSetting('language_default');
   if (isset($_REQUEST['language']))
   {
-    $requestedLanguage = (string)getSafeString($_REQUEST['language']);
-    $definedLanguages = getSiteSetting('languages');
+    $requestedLanguage = (string)sanitizeString($_REQUEST['language']);
+    $definedLanguages = getSetting('languages');
     foreach ($definedLanguages as $id => $datas)
     {
       if ($definedLanguages[$id]['query'] == $requestedLanguage)
@@ -87,18 +128,21 @@ function getCurrentLanguage()
  * Load all routes defined in files.
  * @return mixed
  */
-function getPages()
+function getAllPages()
 {
-  return include PAGES_FILEPATH;
+  static $pages = [];
+  if (!$pages) $pages = include PAGES_FILEPATH;
+  return $pages;
 }
 
 /**
  * If there is several routes, last found route will be used.
+ * @see config/pages.php
  * @param $path
  * @param $pages
- * @return array
+ * @return array : page declaration
  */
-function getPageByPath($path, $pages)
+function getPageDeclarationByPath($path, $pages)
 {
   $page = [];
   foreach ($pages as $id => $datas)
@@ -112,39 +156,52 @@ function getPageByPath($path, $pages)
   return $page;
 }
 
-function getPageById($key, $pages) {
+/**
+ * Return a page by its key
+ * @see config/pages.php file.
+ * @param string $key
+ * @return array : the page definition as an array
+ */
+function getPageDeclarationByKey($key) {
+  $pages = getAllPages();
   return $pages[$key];
 }
 
-function getPageContentByPath($path) {
-  static $pages = [];
-  if (!$pages) $pages = getPages();
-  $page = getPageByPath($path, $pages);
+/**
+ * Render a page content using its path.
+ * @see config/pages.php file
+ * @param string $path
+ * @return string (html, json, xml or whatever the controller return to us.)
+ */
+function renderPageByPath($path) {
+  $pages = getAllPages();
+  $page = getPageDeclarationByPath($path, $pages);
   if (!$page) {
-    $page = getPageById('__PAGE_NOT_FOUND__', $pages);
+    $page = getPageDeclarationByKey('__PAGE_NOT_FOUND__', $pages);
   }
   $output = renderPage($page);
   return $output;
 }
 
 /**
- * Run our virtual server.
- * @return bool
+ * Render a page listening to incoming http request
+ * @see config/pages.php
+ * @return string
  */
-function getPageFromHttpRequest()
+function renderPageFromHttpRequest()
 {
   $scriptName = getSiteScriptName();
-  setLog(['level'  => 'notification', 'detail' => sprintf("Script name is %s", getSafeString($scriptName))]);
+  writeLog(['level'  => 'notification', 'detail' => sprintf("Script name is %s", sanitizeString($scriptName))]);
 
   $basePath = getSiteBasePath($scriptName);
-  setLog(['level' => 'notification', 'detail' => sprintf("base path is %s", getSafeString($basePath))]);
-  setSiteContextVariable('basePath', getSafeString($basePath));
+  writeLog(['level' => 'notification', 'detail' => sprintf("base path is %s", sanitizeString($basePath))]);
+  setContextVariable('basePath', sanitizeString($basePath));
 
   $path = getPagePathFromHttpRequest($scriptName, $basePath);
-  setLog(['level'    => 'notification', 'detail'   => "Framework determine path from http request as '$path'"]);
-  setSiteContextVariable('path', getSafeString($path));
+  writeLog(['level'    => 'notification', 'detail'   => "Framework determine path from http request as '$path'"]);
+  setContextVariable('path', sanitizeString($path));
 
-  return getPageContentByPath($path);
+  return renderPageByPath($path);
 }
 
 /**
@@ -164,14 +221,24 @@ function getPagePathFromHttpRequest($script_name, $base_path)
   return trim(parse_url($pagePath, PHP_URL_PATH), '/');
 }
 
-function getSiteSetting($id)
+/**
+ * Return value of a site settings
+ * @see config/settings.php file.
+ * @param string $key = settings identifier
+ * @return mixed
+ */
+function getSetting($key)
 {
   static $settings = [];
-  if (!$settings) $settings = getSiteAllSettings();
-  return $settings[$id];
+  if (!$settings) $settings = getAllSettings();
+  return $settings[$key];
 }
 
-function getSiteAllSettings() {
+/**
+ * Return all settings defined in config/settings.php file.
+ * @return array
+ */
+function getAllSettings() {
   $siteSettings = include SETTINGS_FILEPATH;
   if (is_readable(SETTINGS_LOCAL_FILEPATH))
   {
@@ -181,18 +248,27 @@ function getSiteAllSettings() {
   return $siteSettings;
 }
 
-function getSiteContext()
+/**
+ * Return full context for the current framework response to the http request.
+ * @return array
+ */
+function getContext()
 {
   return $GLOBALS['_CONTEXT'];
 }
 
-function getSiteContextVariable($id)
+/**
+ * Get a context Variable by its key
+ * @param string $key
+ * @return mixed
+ */
+function getContextVariable($key)
 {
-  return $GLOBALS['_CONTEXT'][$id];
+  return $GLOBALS['_CONTEXT'][$key];
 }
 
 /**
- * Return base path, if applications is installed in a subfolder.
+ * Return base path, if framework is installed in a subfolder of the host
  *
  * @param string $scriptName as returned by getSiteScriptName()
  * @return string
@@ -210,39 +286,62 @@ function getSiteScriptName()
   return basename($_SERVER['SCRIPT_NAME']);
 }
 
-function getTranslationByStringId($id, $language = NULL)
+/**
+ * Get a translation for a specific string_id
+ * @param $string_id
+ * @param string $language
+ * @return string : localized string
+ */
+function getTranslation($string_id, $language = NULL)
 {
   static $translations = [];
   if (!$translations) $translations = include STRINGS_TRANSLATIONS_FILEPATH;
   if (!$language) $language = getCurrentLanguage();
-  return $translations[$id][$language];
+  return $translations[$string_id][$language];
 }
 
-function getUrlFromPath($path)
+function url($path, array $options = [])
 {
-  $scriptName = getSafeString(getSiteScriptName());
-  $url = getSiteBasePath($scriptName) . $scriptName . '/' . $path;
+  $redirectionQuery = '';
+  if (isset($options['redirection'])) {
+    $redirectionQuery = 'redirection=' . urlencode($options['redirection']);
+  }
+  $scriptName = sanitizeString(getSiteScriptName());
+  $url = getSiteBasePath($scriptName) . $scriptName . '/' . $path . '?' . $redirectionQuery;
   return $url;
 }
 
+/**
+ * Return TRUE if $path is the current http requested path, FALSE otherwise.
+ * Usefull to set "active" classes in html, for example for menus.
+ * @param string $path
+ * @return bool
+ */
 function isCurrentPath($path)
 {
-  $scriptName  = getSafeString(getSiteScriptName());
+  $scriptName  = sanitizeString(getSiteScriptName());
   $basePath    = getSiteBasePath($scriptName);
   $urlPath     = getPagePathFromHttpRequest($scriptName, $basePath);
   return $path == $urlPath ? TRUE : FALSE;
 }
 
 /**
- * @param array $page as returned by getPageByPath()
+ * Render a page, parsing a page definition
+ * @see config/pages.php
+ * @param array $page : page array declaration as returned by getPageByPath() or getPageByKey()
  * @return bool
  */
 function renderPage(array $page)
 {
   $output = is_string($page['content']) ? $page['content'] : $page['content']();
-  if (!empty($page['template'])) {
-    if (empty($page['template_content_variable'])) $page['template_content_variable'] = 'content';
-    $output = template($page['template'], [$page['template_content_variable'] => $output]);
+  if (!empty($page['layout'])) {
+    $layoutVariables = [];
+
+    if (!empty($page['layout_variables'])) {
+      $layoutVariables = $page['layout_variables'];
+    }
+    $layoutVariables['content'] = $output;
+    $output = template($page['layout'], $layoutVariables);
   }
   return $output;
 }
@@ -255,7 +354,7 @@ function renderPage(array $page)
  * - level : notice, warning, error
  * - detail : detail of the log
  */
-function setLog($log)
+function writeLog($log)
 {
   $GLOBALS['_LOGS'][] = $log;
 }
@@ -266,7 +365,7 @@ function setLog($log)
  * @param $message : message associated to the http response code
  * @param $protocol (
  */
-function setHttpResponseHeader($code, $message = null, $protocol = null) {
+function addHttpResponseHeader($code, $message = null, $protocol = null) {
   $httpCodes = [
     200 => 'OK',
     403 => 'Forbidden',
@@ -284,20 +383,31 @@ function setHttpResponseHeader($code, $message = null, $protocol = null) {
     }
     else
     {
-      setLog(['level' => 'warning', 'detail' => sprintf("No message found for http code %s", getSafeString($code))]);
+      writeLog(['level' => 'warning', 'detail' => sprintf("No message found for http code %s", sanitizeString($code))]);
     }
   }
-  header(sprintf("%s %s %s", getSafeString($protocol), getSafeString($code), getSafeString($message)));
+  header(sprintf("%s %s %s", sanitizeString($protocol), sanitizeString($code), sanitizeString($message)));
 }
 
-function setSiteContextVariable($id, $value)
+/**
+ * Set or add a value to the context
+ * @param $id
+ * @param $value
+ */
+function setContextVariable($id, $value)
 {
   $GLOBALS['_CONTEXT'][$id] = $value;
 }
 
-function mergeConfigFromFile($variables, $filepath)
+/**
+ * Helper to merge settings from a file into settings of another file.
+ * @param array $variable
+ * @param string $filepath
+ * @return array
+ */
+function mergeConfigFromFile($variable, $filepath)
 {
-  return $variables += include $filepath;
+  return $variable += require_once $filepath;
 }
 
 /**
@@ -312,24 +422,24 @@ function setPsr0ClassAutoloader()
  * @param array $include_paths
  *   a list of php path that will be add to php include paths
  */
-function setPhpIncludePaths($include_paths)
+function addPhpIncludePaths($include_paths)
 {
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
 
 /**
- * Sanitize a variable, to display it.
+ * Sanitize a variable, to display it, encoding html.
  * @param string $value
  * @return string html encoded value
  */
-function getSafeString($value)
+function sanitizeString($value)
 {
   return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
 }
 
 function phpFatalErrorHandler()
 {
-  if(error_get_last() !== NULL) require "developper_toolbar.php";
+  if(error_get_last() !== NULL) require "developperToolbar.php";
 }
 
 /**
@@ -337,23 +447,23 @@ function phpFatalErrorHandler()
  *
  * @param string $templatePath : file path
  * @param array $variables
- * @param string $themePath : theme to use. Different themes
+ * @param string $directoryPath : theme to use. Different themes
  * may be defined. A theme is a collection of templates.
  * @return string
  */
-function template($templatePath, $variables = [], $themePath = NULL)
+function template($templatePath, $variables = [], $directoryPath = NULL)
 {
-  if (!$themePath)
+  if (!$directoryPath)
   {
-    $themePath = getSiteSetting('theme_path');
+    $directoryPath = getSetting('theme_path');
   }
   if ($variables) extract($variables);
   ob_start();
-  if (!is_readable($themePath . DIRECTORY_SEPARATOR . $templatePath))
+  if (!is_readable($directoryPath . DIRECTORY_SEPARATOR . $templatePath))
   {
-    setLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", getSafeString($themePath . '/' . $templatePath))]);
+    writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($directoryPath . '/' . $templatePath))]);
   }
-  include($themePath . '/' . $templatePath);
+  include($directoryPath . '/' . $templatePath);
   return ob_get_clean();
 }
 
@@ -370,7 +480,7 @@ function template($templatePath, $variables = [], $themePath = NULL)
 function e($value, $formatters = [])
 {
   // sanitize value string by default unless "raw" special formatter name is requested
-  $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : getSafeString($value);
+  $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : sanitizeString($value);
 
   if ($formatters) {
     // if formatters is a string, apply it directly and echo string :
@@ -389,3 +499,63 @@ function e($value, $formatters = [])
   }
   echo $output;
 }
+
+/**
+ * @param string $machine_name : a string containing only alphanumeric and underscore characters
+ * @return boolean : TRUE if machine_name is valid, FALSE otherwise
+ */
+function validateMachineName($machine_name)
+{
+  return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
+}
+
+function getServerName() {
+  return sanitizeString($_SERVER['SERVER_NAME']);
+}
+
+/**
+ * FIXME : https & http detection here
+ * @return string
+ */
+function getServerProtocol() {
+  return 'http://';
+}
+
+function getFullDomainName() {
+  return getServerProtocol() . getServerName();
+}
+
+function vde($value) {
+  var_dump($value);exit;
+}
+
+function pre($array) {
+  echo '<pre>';
+  print_r($array);
+  echo '</pre>';
+  exit;
+}
+
+function setHttpRedirectionHeader($path) {
+  $url = sanitizeString(url($path));
+  $fullUrl = getFullDomainName() . $url;
+  header("Location: $fullUrl");
+}
+
+function getHttpRedirectionFromUrl() {
+  $path = null;
+  if (!empty($_GET['redirection']))
+  {
+    $path = urldecode($_GET['redirection']);
+  }
+  return $path;
+}
+
+function setHttpRedirection($redirectionPath = NULL) {
+  if (!$redirectionPath) {
+    $redirectionPath = getHttpRedirectionFromUrl();
+  }
+  setHttpRedirectionHeader($redirectionPath);
+  exit;
+}
+

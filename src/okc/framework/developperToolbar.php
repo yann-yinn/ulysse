@@ -35,7 +35,7 @@ print '</div>';
 print '<h2>Context </h2>';
 
 echo '<pre>';
-print_r(getSiteContext());
+print_r(getContext());
 echo '</pre>';
 
 

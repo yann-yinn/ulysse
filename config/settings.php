@@ -2,6 +2,13 @@
 
 $settings = [
 
+  'database' => [
+    'host' => '127.0.0.1',
+    'name' => 'framework',
+    'user' => 'root',
+    'password' => 'spinoza',
+  ],
+
   // set content of 404 not found page. Use the same keys
   // than a page array in pages.php file.
   'page_not_found' => [
@@ -17,7 +24,7 @@ $settings = [
 
   // language used by default by the framework if no language are specified
   // in the http request.
-  'language_default' => 'en',
+  'language_default' => 'fr',
 
   // enabled languages on the site
   'languages' =>   [
@@ -33,6 +40,6 @@ $settings = [
 ];
 
 // example merge setting from another file :
-// $settings = mergeConfigFromFile($settings, 'myvendor/mymodule/config/settings.php');
+$settings = mergeConfigFromFile($settings, 'okc/content/config/settings.php');
 
 return $settings;

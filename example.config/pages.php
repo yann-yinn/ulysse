@@ -8,7 +8,7 @@ $pages = [];
 $pages['__PAGE_NOT_FOUND__'] = [
   'template' => 'page.php',
   'content' => function() {
-      setHttpResponseHeader(404);
+      addHttpResponseHeader(404);
       return "Oooops page not found";
     }
 ];
@@ -17,7 +17,7 @@ $pages['__ACCESS_DENIED__'] = [
   'path'     => '',
   'template' => 'page.php',
   'content' => function() {
-      setHttpResponseHeader(403);
+      addHttpResponseHeader(403);
       return "Access denied";
     }
 ];

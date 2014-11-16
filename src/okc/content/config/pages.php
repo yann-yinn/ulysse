@@ -5,17 +5,33 @@ $pages = [];
 require "okc/content/controllers/contentController.php";
 require_once 'okc/content/api/contentApi.php';
 
-$pages['content_form'] = [
+// list all site contents
+$pages['okc.content.list'] = [
+  'path' => 'admin/content',
+  'layout' => 'adminPage.php',
+  'content' => function() {
+      return contentListPage();
+    }
+];
+
+// display an add / edit content form
+$pages['okc.content.form'] = [
   'path' => 'admin/content/form',
-  'template' => 'adminPage.php',
+  'layout' => 'adminPage.php',
+  'layout_variables' => [
+    'head' => function() {
+        return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
+      },
+  ],
   'content' => function() {
       return contentFormPage();
     }
 ];
 
-$pages['content_form_save'] = [
+// save content to database
+$pages['okc.content.form.save'] = [
   'path' => 'admin/content/form/save',
-  'template' => 'adminPage.php',
+  'layout' => 'adminPage.php',
   'content' => function () {
       return contentFormSavePage();
     }

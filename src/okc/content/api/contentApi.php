@@ -1,30 +1,39 @@
 <?php
+/**
+ * @FIXME env draft et online (entry points ?)
+ */
 
 define('CONTENT_STATE_ONLINE', 'online');
 define('CONTENT_STATE_DRAFT', 'draft');
 define('CONTENT_STATE_TRASH', 'trash');
 
 function getContentStates() {
-  return [
-    CONTENT_STATE_ONLINE => [
-      'id' => CONTENT_STATE_ONLINE,
-      'title' => 'Online',
-    ],
-    CONTENT_STATE_DRAFT => [
-      'id' => CONTENT_STATE_DRAFT,
-      'title' => 'Draft',
-    ],
-    CONTENT_STATE_TRASH => [
-      'id' => CONTENT_STATE_TRASH,
-      'title' => 'Trash can',
-    ],
-  ];
+  $contentStates = getSetting('okc.content.states');
+  return $contentStates;
 }
 
 function viewContentById($id) {
 
 }
 
+/**
+ * Get all content of the site
+ * @return array
+ */
+function getContentList() {
+  $db      = getDbConnexion('db');
+  $sql =  'SELECT * FROM content ORDER BY id DESC';
+  $query  = $db->prepare($sql);
+  $query->execute();
+  $datas = $query->fetchAll();
+  return $datas;
+}
+
+/**
+ * Fetch a content by its id
+ * @param int $id
+ * @return array of content datas
+ */
 function getContentById($id) {
   $db = getDbConnexion('db');
   $sql =  'SELECT * FROM content WHERE id = :id';
@@ -35,13 +44,33 @@ function getContentById($id) {
   return $datas;
 }
 
-function updateContentById($id, $datas) {
+/**
+ * Get a content by its uniq machine name
+ * @param string $machineName
+ * @return array
+ */
+function getContentByMachineName($machineName) {
+  $db = getDbConnexion('db');
+  $sql =  'SELECT * FROM content WHERE machine_name = :machine_name';
+  $query = $db->prepare($sql);
+  $query->bindParam(':machine_name', $machineName, PDO::PARAM_STR);
+  $query->execute();
+  $datas = $query->fetch();
+  return $datas;
+}
 
-  $id = $datas['id'];
+/**
+ * Update a content by its id
+ * @param int $id
+ * @param array $datas
+ * @return bool
+ */
+function updateContentById($id, array $datas) {
+
   $content = $datas['content'];
   $title   = $datas['title'];
   $state   = $datas['state'];
-  $type    = 'content';
+  $machine_name = $datas['machine_name'];
   $changed = time();
 
   $db      = getDbConnexion('db');
@@ -49,7 +78,8 @@ function updateContentById($id, $datas) {
    title = :title,
    content = :content,
    changed = :changed,
-   state = :state
+   state = :state,
+   machine_name = :machine_name
    WHERE id = :id";
   $query  = $db->prepare($query);
 
@@ -58,11 +88,17 @@ function updateContentById($id, $datas) {
   $query->bindParam(':changed', $changed, PDO::PARAM_INT);
   $query->bindParam(':state', $state, PDO::PARAM_STR);
   $query->bindParam(':id', $id, PDO::PARAM_INT);
+  $query->bindParam(':machine_name', $machine_name, PDO::PARAM_STR);
 
   return $query->execute();
 
 }
 
+/**
+ * Insert a new content in database
+ * @param $datas
+ * @return bool
+ */
 function saveNewContent($datas) {
 
   $db      = getDbConnexion('db');
@@ -73,8 +109,8 @@ function saveNewContent($datas) {
   $content = $datas['content'];
   $title   = $datas['title'];
   $machine_name = $datas['machine_name'];
-  $state = $datas['state'];
-  $type    = 'content';
+  $state   = $datas['state'];
+  $type    = $datas['type'];
   $created = time();
   $changed = time();
 
