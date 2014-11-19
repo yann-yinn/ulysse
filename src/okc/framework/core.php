@@ -9,6 +9,7 @@ define('STRINGS_TRANSLATIONS_FILEPATH', '../../config/translations.php');
 define('SETTINGS_FILEPATH', '../../config/settings.php');
 define('SETTINGS_LOCAL_FILEPATH', '../../config/settings.local.php');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
+define('THEMES_DIRECTORY', 'themes');
 
 /**
  * Bootstrap the okc framework : listen http request and map it to
@@ -68,7 +69,6 @@ function bootstrapFramework($contextVariables = [])
   $controllerOutput = renderPageFromHttpRequest();
   echo $controllerOutput;
 
-  writeLog(['level'    => 'notification', 'detail'   => "page content is '" . sanitizeString($controllerOutput) . "'"]);
   if (getSetting('display_developper_toolbar') === TRUE) require_once "../src/okc/framework/developperToolbar.php";
 }
 
@@ -221,6 +221,9 @@ function getSetting($key)
 {
   static $settings = [];
   if (!$settings) $settings = getAllSettings();
+  if (!isset($settings[$key])) {
+    writeLog(['level' => 'error', 'detail' => sanitizeString($key) . ' setting not declared.']);
+  }
   return $settings[$key];
 }
 
@@ -353,12 +356,12 @@ function renderPage(array $page)
     }
     $layoutVariables['content'] = $output;
     if (!empty($page['theme'])) {
-      $templatesDirectoryPath = 'themes/admin';
+      $themePath = THEMES_DIRECTORY . DIRECTORY_SEPARATOR . $page['theme'];
     }
     else {
-      $templatesDirectoryPath = getSetting('theme_path');
+      $themePath = getSetting('theme_path');
     }
-    $output = template($page['layout'], $layoutVariables, $templatesDirectoryPath);
+    $output = template($page['layout'], $layoutVariables, $themePath);
   }
   return $output;
 }
@@ -462,25 +465,29 @@ function phpFatalErrorHandler()
 /**
  * Render a specific template file
  *
- * @param string $templatePath : file path
+ * First look for a file inside the currently active theme.
+ *
+ * @param string $templatePath : file path. e.g : ock/content/templates/mytemplate.php
  * @param array $variables
- * @param string $directoryPath : theme to use. Different themes
+ * @param string $themePath : force theme to use.
  * may be defined. A theme is a collection of templates.
  * @return string
  */
-function template($templatePath, $variables = [], $directoryPath = NULL)
+function template($templatePath, $variables = [], $themePath = null)
 {
-  if (!$directoryPath)
-  {
-    $directoryPath = getSetting('theme_path');
-  }
+  $searchPaths =
+  [
+    $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme_path') . DIRECTORY_SEPARATOR . $templatePath,
+    $templatePath,
+  ];
   if ($variables) extract($variables);
   ob_start();
-  if (!is_readable($directoryPath . DIRECTORY_SEPARATOR . $templatePath))
-  {
-    writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($directoryPath . '/' . $templatePath))]);
+  foreach ($searchPaths as $path) {
+    $include = @include($path);
+    if (!$include) {
+      writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($path))]);
+    }
   }
-  include($directoryPath . '/' . $templatePath);
   return ob_get_clean();
 }
 
@@ -540,6 +547,12 @@ function getServerProtocol() {
 
 function getFullDomainName() {
   return getServerProtocol() . getServerName();
+}
+
+function vd($value) {
+  echo '<pre>';
+  var_dump($value);
+  echo '</pre>';
 }
 
 function vde($value) {

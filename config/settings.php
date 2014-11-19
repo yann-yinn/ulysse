@@ -21,6 +21,7 @@ $settings = [
 
   // theme to use to fetch requested templates.
   'theme_path' => '../../themes/example',
+  'admin_theme_path' => '../../themes/admin',
 
   // language used by default by the framework if no language are specified
   // in the http request.

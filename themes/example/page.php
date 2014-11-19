@@ -19,8 +19,8 @@
 <body>
 
 <div class="row">
-  <h1><?php echo template('contentViewSetting.php', getContentByMachineName('site_name'), 'okc/content/templates') ?></h1>
-  <p><?php echo template('contentViewSetting.php', getContentByMachineName('site_slogan'), 'okc/content/templates') ?></p>
+  <h1><?php echo template('okc/content/templates/contentViewSetting.php', getContentByMachineName('site_name')) ?></h1>
+  <p><?php echo template('okc/content/templates/contentViewSetting.php', getContentByMachineName('site_slogan')) ?></p>
 </div>
 
 <div class="row">

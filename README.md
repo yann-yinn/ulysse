@@ -15,6 +15,12 @@ INSTALLATION
 
 Edit pages.php file to start create pages on your site.
 
+FEATURES
+--------------
+
+* templates by theme and templates overrides
+* settings
+
 CREATE PAGES
 --------------
 

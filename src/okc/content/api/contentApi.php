@@ -12,6 +12,11 @@ function getContentStates() {
   return $contentStates;
 }
 
+function getContentTypes() {
+  $contentStates = getSetting('okc.content.types');
+  return $contentStates;
+}
+
 /**
  * Get all content of the site
  * @return array

@@ -28,7 +28,7 @@ $pages['okc.framework.homepage'] = [
       $out .= getTranslation('okc.framework.welcome');
       $datas = getContentByMachineName('homepage_bloc_1');
       if ($datas) {
-        $out .= template('contentView.php', $datas, 'okc/content/templates');
+        $out .= template('okc/content/templates/contentView.php', $datas);
       }
       return $out;
     }

@@ -9,7 +9,7 @@ require_once 'okc/content/api/contentApi.php';
  */
 function contentListPage() {
   $datas = getContentList();
-  return template('contentList.php', ['datas' => $datas], 'okc/content/templates');
+  return template('okc/content/templates/contentList.php', ['datas' => $datas]);
 }
 
 /**
@@ -23,7 +23,7 @@ function contentFormPage() {
   if (!empty($_GET['id'])) {
     $content = getContentById($_GET['id']);
   }
-  return template('contentForm.php', ['content' => $content], 'okc/content/templates');
+  return template('okc/content/templates/contentForm.php', ['content' => $content]);
 }
 
 /**
@@ -58,7 +58,7 @@ function contentFormSavePage() {
   }
   // if thre are errors, display again the form populated with the posted values.
   else {
-    return template('contentForm.php', ['content' => $_POST, 'errors' => $errors], 'okc/content/templates');
+    return template('okc/content/templates/contentForm.php', ['content' => $_POST, 'errors' => $errors], 'okc/content/templates');
   }
 
 }

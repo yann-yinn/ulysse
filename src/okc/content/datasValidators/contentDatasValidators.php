@@ -11,6 +11,11 @@
 function validateContentForm($datas) {
   $errors = array();
 
+  if (!validateContentType($datas['type']))
+  {
+    $errors['type'][] = "Invalid content type received";
+  }
+
   if (!validateContentState($datas['state']))
   {
     $errors['state'][] = "Invalid state received";
@@ -35,8 +40,21 @@ function validateContentForm($datas) {
  * @return bool
  */
 function validateContentState($value) {
-  $allowedStates = array_keys(getContentStates());
-  if (in_array($value, $allowedStates)) {
+  $allowed = array_keys(getContentStates());
+  if (in_array($value, $allowed)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Validate state of a content type.
+ * @param string $value : state id string.
+ * @return bool
+ */
+function validateContentType($value) {
+  $allowed = array_keys(getContentTypes());
+  if (in_array($value, $allowed)) {
     return TRUE;
   }
   return FALSE;

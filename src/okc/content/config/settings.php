@@ -26,8 +26,8 @@ $settings['okc.content.types'] = [
   'content' => [
     'title' => 'Default content',
   ],
-  'news' => [
-    'title' => 'News',
+  'setting' => [
+    'title' => 'Site setting',
   ],
 ];
 
