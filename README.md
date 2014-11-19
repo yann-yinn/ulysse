@@ -23,11 +23,19 @@ INSTALLATION
 
 Edit pages.php file to start create pages on your site.
 
-FEATURES
+MAIN FEATURES
 --------------
 
-* templates by theme and templates overrides
-* settings
+* 0% OOP shit
+* Templates by theme and templates overrides
+* String translations
+* Settings in files
+* Organize code in modules
+* autoload for vendors PHP libraries
+* content staging : online, draft or trash
+* Edit links for content are displayed on the front-end content it-self
+* fucking fast
+
 
 CREATE PAGES
 --------------
