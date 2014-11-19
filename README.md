@@ -1,5 +1,6 @@
 Deadly fucking simple procedural Content Managment Framework, containing 0% OOP shit.
 Because unless you're Platoon, you know that real word is not about abstract objects.
+Because printing a fucking "hello world" should not require 15Mo of php memory. Becauce nice ideas are the worst way to get Things Done.
 
 DESCRIPTION
 ------------
