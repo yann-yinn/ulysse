@@ -5,7 +5,7 @@
     <input type="hidden" name="id" value="<?php echo $content['id'] ?>" />
   <?php endif ?>
 
-  <input type="hidden" name="type" value="content" />
+  <input type="hidden" name="type" value="<?php print !empty($_GET['type']) ? $_GET['type'] : 'content' ?>" />
 
   <div class="row">
     <div class="large-12 columns">

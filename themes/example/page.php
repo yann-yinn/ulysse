@@ -10,12 +10,17 @@
   <link rel="stylesheet" href="<?php echo getFrameworkBasePath() ?>/assets/foundation-5.4.6/css/foundation.css" />
 </head>
 <style>
+  .content-editable-link {
+    font-size : 14px;
+    float:right;
+  }
 </style>
 
 <body>
 
 <div class="row">
-  <h1>YELLOW FRAMEWORK</h1>
+  <h1><?php echo template('contentViewSetting.php', getContentByMachineName('site_name'), 'okc/content/templates') ?></h1>
+  <p><?php echo template('contentViewSetting.php', getContentByMachineName('site_slogan'), 'okc/content/templates') ?></p>
 </div>
 
 <div class="row">
