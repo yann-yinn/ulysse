@@ -20,21 +20,17 @@ $pages['__ACCESS_DENIED__'] = [
       return "Access denied";
     }
 ];
-$pages['homepage'] = [
+$pages['okc.framework.homepage'] = [
   'path'     => '',
   'layout' => 'page.php',
-  'layout_variables' => [
-    'zone_top' => function() {
-        $out = '';
-        $content =  getContentByMachineName("homepage_bloc_1");
-        $out .= template('contentView.php', $content, 'okc/content/templates');
-        $content =  getContentByMachineName("homepage_bloc_2");
-        $out .= template('contentView.php', $content, 'okc/content/templates');
-        return $out;
-      },
-  ],
   'content'  =>  function() {
-      template('homepage.php');
+      $out = '';
+      $out .= getTranslation('okc.framework.welcome');
+      $datas = getContentByMachineName('homepage_bloc_1');
+      if ($datas) {
+        $out .= template('contentView.php', $datas, 'okc/content/templates');
+      }
+      return $out;
     }
 ];
 

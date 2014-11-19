@@ -6,7 +6,7 @@ $settings = [
     'host' => '127.0.0.1',
     'name' => 'framework',
     'user' => 'root',
-    'password' => 'spinoza',
+    'password' => '',
   ],
 
   // set content of 404 not found page. Use the same keys
@@ -20,7 +20,7 @@ $settings = [
   ],
 
   // theme to use to fetch requested templates.
-  'theme_path' => 'themes/example',
+  'theme_path' => '../../themes/example',
 
   // language used by default by the framework if no language are specified
   // in the http request.

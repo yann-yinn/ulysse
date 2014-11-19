@@ -7,31 +7,33 @@
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
+  <link rel="stylesheet" href="<?php echo getFrameworkBasePath() ?>/assets/foundation-5.4.6/css/foundation.css" />
 </head>
 <style>
-  a.active {
-    font-weight: bold;
-  }
-  .wrapper-content-editable {
-    border : solid silver 1px;
-    margin : 20px;
-    padding:20px:
-  }
 </style>
 
 <body>
 
-<nav>
-  <ul>
-  <li><a class="<?php if(isCurrentPath('')) echo 'active' ?>" href="<?php echo url('') ?>"> Homepage </a></li>
-  <li><a class="<?php if(isCurrentPath('contact')) echo 'active' ?>" href="<?php echo url('contact') ?>"> Contact </a></li>
-  </ul>
-</nav>
-<?php if (isset($zone_top)) : ?>
- <?php echo $zone_top(); ?>
-<?php endif ?>
+<div class="row">
+  <h1>YELLOW FRAMEWORK</h1>
+</div>
 
-<?php print $content ?>
+<div class="row">
+
+  <nav>
+    <ul>
+      <li> <?php echo l('homepage', ''); ?> </li>
+      <li> <?php echo l('Page not Found', 'azertyuiop789456123') ?></li>
+    </ul>
+  </nav>
+  <?php if (isset($zone_top)) : ?>
+    <?php echo $zone_top(); ?>
+  <?php endif ?>
+
+  <?php print $content ?>
+
+</div>
 
 </body>
+
 </html>

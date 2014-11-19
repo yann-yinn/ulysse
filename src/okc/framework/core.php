@@ -3,14 +3,12 @@
  * PHP framework core file.
  */
 
-define("CONFIG_EXAMPLE_DIRECTORY", 'example.config');
-define('CONFIG_DIRECTORY_PATH', '../config');
-define('USER_CONTENT_DIRECTORY', 'user_content');
-define('PAGES_FILEPATH', '../config/pages.php');
-define('STRINGS_TRANSLATIONS_FILEPATH', '../config/translations.php');
-define('SETTINGS_FILEPATH', '../config/settings.php');
-define('SETTINGS_LOCAL_FILEPATH', '../config/settings.local.php');
-define('TEMPLATE_FORMATTERS_FILEPATH', '../config/templateFormatters.php');
+define('CONFIG_DIRECTORY_PATH', '../../config');
+define('PAGES_FILEPATH', '../../config/pages.php');
+define('STRINGS_TRANSLATIONS_FILEPATH', '../../config/translations.php');
+define('SETTINGS_FILEPATH', '../../config/settings.php');
+define('SETTINGS_LOCAL_FILEPATH', '../../config/settings.local.php');
+define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 
 /**
  * Bootstrap the okc framework : listen http request and map it to
@@ -34,7 +32,7 @@ function bootstrapFramework($contextVariables = [])
   }
 
   // Add include paths and class autoloaders first.
-  $includePaths = ['..', '../src', '../vendors'];
+  $includePaths = ['../..', '../../src', '../../vendors'];
   addPhpIncludePaths($includePaths);
   setPsr0ClassAutoloader();
 
@@ -190,29 +188,21 @@ function renderPageByPath($path) {
  */
 function renderPageFromHttpRequest()
 {
-  $scriptName = getSiteScriptName();
-  writeLog(['level'  => 'notification', 'detail' => sprintf("Script name is %s", sanitizeString($scriptName))]);
-
-  $basePath = getSiteBasePath($scriptName);
-  writeLog(['level' => 'notification', 'detail' => sprintf("base path is %s", sanitizeString($basePath))]);
-  setContextVariable('basePath', sanitizeString($basePath));
-
-  $path = getPagePathFromHttpRequest($scriptName, $basePath);
+  $path = getCurrentPath();
   writeLog(['level'    => 'notification', 'detail'   => "Framework determine path from http request as '$path'"]);
   setContextVariable('path', sanitizeString($path));
-
   return renderPageByPath($path);
 }
 
 /**
  * Extract path from incoming http request.
- *
- * @param string $script_name as returned by getSiteScriptName()
- * @param string $base_path as returned by getSiteBasePath()
+
  * @return string
  */
-function getPagePathFromHttpRequest($script_name, $base_path)
+function getCurrentPath()
 {
+  $script_name = getFrameworkScriptName();
+  $base_path = getFrameworkBasePath();
   // Remove base path (for installations in subdirectories) from URI.
   $pagePath = substr_replace($_SERVER['REQUEST_URI'], '', 0, strlen($base_path));
   // Remove scriptname "index.php" if present. scriptname is not present at all if .htaccess is enabled.
@@ -270,18 +260,18 @@ function getContextVariable($key)
 /**
  * Return base path, if framework is installed in a subfolder of the host
  *
- * @param string $scriptName as returned by getSiteScriptName()
+ * @param string $scriptName as returned by getFrameworkScriptName()
  * @return string
  */
-function getSiteBasePath($scriptName)
+function getFrameworkBasePath()
 {
-  return str_replace($scriptName, '', $_SERVER['SCRIPT_NAME']);
+  return str_replace(getFrameworkScriptName(), '', $_SERVER['SCRIPT_NAME']);
 }
 
 /**
  * file php which is the entry point of your application; usually "index.php".
  */
-function getSiteScriptName()
+function getFrameworkScriptName()
 {
   return basename($_SERVER['SCRIPT_NAME']);
 }
@@ -300,23 +290,36 @@ function getTranslation($string_id, $language = NULL)
   return $translations[$string_id][$language];
 }
 
-function url($path, array $options = [])
+function url($path, $queryString = '')
+{
+  $queryArray = [];
+  if ($queryString) parse_str($queryString, $queryArray);
+  if (isset($queryArray['form_redirection'])) {
+    //$queryArray['form_redirection'] = urlencode($queryArray['form_redirection']);
+  }
+  // build back a query string
+  $queryString = http_build_query($queryArray);
+  $url = sanitizeString(getFrameworkBasePath() . getFrameworkScriptName() . '/' . $path);
+  if ($queryString) $url .= '?' . sanitizeString($queryString);
+  return $url;
+}
+
+function urlOld($path, array $options = [])
 {
 
   $query = [];
-  if (isset($options['redirection'])) {
-    $query['redirection'] = urlencode($options['redirection']);
-  }
   if (!empty($options['query'])) {
-    $query += $options['query'];
+    $query = $options['query'];
+  }
+  if (isset($options['form_redirection'])) {
+    $query['form_redirection'] = urlencode($options['form_redirection']);
   }
 
   $queryString = http_build_query($query);
 
-  $scriptName = sanitizeString(getSiteScriptName());
-  $url = getSiteBasePath($scriptName) . $scriptName . '/' . $path;
+  $url = sanitizeString(getFrameworkBasePath() . getFrameworkScriptName() . '/' . $path);
   if ($queryString) {
-    $url .= '?' . $queryString;
+    $url .= '?' . sanitizeString($queryString);
   }
   return $url;
 }
@@ -329,9 +332,7 @@ function url($path, array $options = [])
  */
 function isCurrentPath($path)
 {
-  $scriptName  = sanitizeString(getSiteScriptName());
-  $basePath    = getSiteBasePath($scriptName);
-  $urlPath     = getPagePathFromHttpRequest($scriptName, $basePath);
+  $urlPath     = getCurrentPath();
   return $path == $urlPath ? TRUE : FALSE;
 }
 
@@ -351,7 +352,13 @@ function renderPage(array $page)
       $layoutVariables = $page['layout_variables'];
     }
     $layoutVariables['content'] = $output;
-    $output = template($page['layout'], $layoutVariables);
+    if (!empty($page['theme'])) {
+      $templatesDirectoryPath = 'themes/admin';
+    }
+    else {
+      $templatesDirectoryPath = getSetting('theme_path');
+    }
+    $output = template($page['layout'], $layoutVariables, $templatesDirectoryPath);
   }
   return $output;
 }
@@ -554,25 +561,26 @@ function setHttpRedirectionHeader($path) {
 
 function getHttpRedirectionFromUrl() {
   $path = null;
-  if (isset($_GET['redirection']))
+  if (isset($_GET['form_redirection']))
   {
-    $path = urldecode($_GET['redirection']);
+    $path = urldecode($_GET['form_redirection']);
   }
   return $path;
 }
 
 /**
- * Redirect to path. If path is not set, function will look
+ * Redirect to specified path.
+ * If path is not specified, function will look
  * into the url for a GET "redirection" query param, and will use
  * it as the redirection path.
- * @param string $redirectionPath
+ * @param string $path
  *
  */
-function redirection($redirectionPath = NULL) {
-  if (is_null($redirectionPath)) {
-    $redirectionPath = getHttpRedirectionFromUrl();
+function redirection($path = NULL) {
+  if (is_null($path)) {
+    $path = getHttpRedirectionFromUrl();
   }
-  setHttpRedirectionHeader($redirectionPath);
+  setHttpRedirectionHeader($path);
   exit;
 }
 
@@ -582,5 +590,13 @@ function redirection($redirectionPath = NULL) {
  */
 function userHasPermission() {
   return TRUE;
+}
+
+function htmlAttributes(array $attributes = array()) {
+  foreach ($attributes as $attribute => &$data) {
+    $data = implode(' ', (array) $data);
+    $data = $attribute . '="' . check_plain($data) . '"';
+  }
+  return $attributes ? ' ' . implode(' ', $attributes) : '';
 }
 

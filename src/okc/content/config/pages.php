@@ -8,7 +8,8 @@ require_once 'okc/content/api/contentApi.php';
 // list all site contents
 $pages['okc.content.list'] = [
   'path' => 'admin/content',
-  'layout' => 'adminPage.php',
+  'theme' => 'admin',
+  'layout' => 'page.php',
   'content' => function() {
       return contentListPage();
     }
@@ -17,10 +18,11 @@ $pages['okc.content.list'] = [
 // display an add / edit content form
 $pages['okc.content.form'] = [
   'path' => 'admin/content/form',
-  'layout' => 'adminPage.php',
+  'theme' => 'admin',
+  'layout' => 'page.php',
   'layout_variables' => [
     'head' => function() {
-        return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
+        //return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
       },
   ],
   'content' => function() {
@@ -31,7 +33,8 @@ $pages['okc.content.form'] = [
 // save content to database
 $pages['okc.content.form.save'] = [
   'path' => 'admin/content/form/save',
-  'layout' => 'adminPage.php',
+  'theme' => 'admin',
+  'layout' => 'page.php',
   'content' => function () {
       return contentFormSavePage();
     }

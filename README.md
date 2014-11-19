@@ -1,4 +1,4 @@
-PHP fucking deadly simple light procedural framework.
+PHP View-Controller procedural framework.
 
 REQUIREMENTS
 -------------
