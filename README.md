@@ -1,4 +1,11 @@
-PHP View-Controller procedural framework.
+Deadly fucking simple procedural Content Managment Framework, containing 0% OOP shit.
+Because unless you're Platoon, you know that real word is not about abstract objects.
+
+DESCRIPTION
+------------
+
+Ulysse is a PHP procedural framework. It also provides a basic user friendly content managment module.
+There is no learning curve, because Ulysse is simply PHP, using good pratices without OOP java-like shit.
 
 REQUIREMENTS
 -------------
