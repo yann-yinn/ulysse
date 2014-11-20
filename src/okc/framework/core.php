@@ -475,6 +475,7 @@ function phpFatalErrorHandler()
  */
 function template($templatePath, $variables = [], $themePath = null)
 {
+  $templateFound = FALSE;
   $searchPaths =
   [
     $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme_path') . DIRECTORY_SEPARATOR . $templatePath,
@@ -484,9 +485,16 @@ function template($templatePath, $variables = [], $themePath = null)
   ob_start();
   foreach ($searchPaths as $path) {
     $include = @include($path);
-    if (!$include) {
-      writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($path))]);
+    if ($include) {
+      $templateFound = TRUE;
+      break;
     }
+  }
+  if (!$templateFound) {
+    writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($path))]);
+  }
+  else {
+    writeLog(['level' => 'notification', 'detail' => sprintf('Template "%s" rendered. ', sanitizeString($path))]);
   }
   return ob_get_clean();
 }
