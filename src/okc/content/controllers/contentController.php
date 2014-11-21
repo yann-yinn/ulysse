@@ -34,7 +34,7 @@ function contentFormPage() {
 function contentFormSavePage() {
   if (!$_POST)
   {
-    addHttpResponseHeader(403, 'No post datas received');
+    setHttpResponseCode(403, 'No post datas received');
     return "No POST datas detected";
     exit;
   }

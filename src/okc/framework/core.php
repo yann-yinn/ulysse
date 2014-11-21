@@ -35,7 +35,7 @@ function bootstrapFramework($contextVariables = [])
   // Add include paths and class autoloaders first.
   $includePaths = ['../..', '../../src', '../../vendors'];
   addPhpIncludePaths($includePaths);
-  setPsr0ClassAutoloader();
+  registerPsr0ClassAutoloader();
 
   // Connect to database specified in database settings if any, using PDO
   $database = getSetting("database");
@@ -204,7 +204,7 @@ function getCurrentPath()
   $script_name = getFrameworkScriptName();
   $base_path = getFrameworkBasePath();
   // Remove base path (for installations in subdirectories) from URI.
-  $pagePath = substr_replace($_SERVER['REQUEST_URI'], '', 0, strlen($base_path));
+  $pagePath = substr_replace(getServerRequestUri(), '', 0, strlen($base_path));
   // Remove scriptname "index.php" if present. scriptname is not present at all if .htaccess is enabled.
   if (strpos($pagePath, $script_name) === 0) $pagePath = str_replace($script_name, '', $pagePath);
   // remove query string and slashes from pagePath.
@@ -385,38 +385,33 @@ function writeLog($log)
  * @param $message : message associated to the http response code
  * @param $protocol (
  */
-function addHttpResponseHeader($code, $message = null, $protocol = null) {
-  $httpCodes = [
+function setHttpResponseCode($code, $message = null, $protocol = null) {
+  // most common response code and their associated messages.
+  $codesMessages = [
     200 => 'OK',
+    201 => 'Created',
+    301 => 'Moved Permanently',
+    302 => 'Moved Temporarily',
     403 => 'Forbidden',
     404 => 'Not Found',
+    405 => 'Method Not Allowed',
+    418 => 'I’m a teapot',
+    500 => 'Internal Server Error',
+    503 => 'Service Unavailable',
   ];
-  if (!$protocol)
-  {
-    $protocol = $_SERVER["SERVER_PROTOCOL"];
-  }
-  if (!$message)
-  {
-    if (!empty($httpCodes[$code]))
-    {
-      $message = $httpCodes[$code];
-    }
-    else
-    {
-      writeLog(['level' => 'warning', 'detail' => sprintf("No message found for http code %s", sanitizeString($code))]);
-    }
-  }
-  header(sprintf("%s %s %s", sanitizeString($protocol), sanitizeString($code), sanitizeString($message)));
+  $protocol = $protocol ? $protocol : getServerProtocol();
+  $message  = $message ? $message : $codesMessages[$code];
+  header(sprintf("%s %s %s", $protocol, sanitizeString($code), sanitizeString($message)));
 }
 
 /**
  * Set or add a value to the context
- * @param $id
- * @param $value
+ * @param string $key
+ * @param mixed $value
  */
-function setContextVariable($id, $value)
+function setContextVariable($key, $value)
 {
-  $GLOBALS['_CONTEXT'][$id] = $value;
+  $GLOBALS['_CONTEXT'][$key] = $value;
 }
 
 /**
@@ -433,7 +428,7 @@ function mergeConfigFromFile($variable, $filepath)
 /**
  * Register a basic psr0 class autoloader.
  */
-function setPsr0ClassAutoloader()
+function registerPsr0ClassAutoloader()
 {
   spl_autoload_register(function($class){require_once str_replace('\\','/', $class).'.php';});
 }
@@ -476,21 +471,23 @@ function phpFatalErrorHandler()
 function template($templatePath, $variables = [], $themePath = null)
 {
   $templateFound = FALSE;
-  $searchPaths =
-  [
+  $searchPaths = [
     $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme_path') . DIRECTORY_SEPARATOR . $templatePath,
     $templatePath,
   ];
   if ($variables) extract($variables);
   ob_start();
-  foreach ($searchPaths as $path) {
+  foreach ($searchPaths as $path)
+  {
     $include = @include($path);
-    if ($include) {
+    if ($include)
+    {
       $templateFound = TRUE;
       break;
     }
   }
-  if (!$templateFound) {
+  if (!$templateFound)
+  {
     writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($path))]);
   }
   else {
@@ -545,16 +542,24 @@ function getServerName() {
   return sanitizeString($_SERVER['SERVER_NAME']);
 }
 
+function getServerRequestUri() {
+  return sanitizeString($_SERVER['REQUEST_URI']);
+}
+
+function getUrlScheme() {
+  return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
+}
+
 /**
  * FIXME : https & http detection here
  * @return string
  */
 function getServerProtocol() {
-  return 'http://';
+  return sanitizeString($_SERVER["SERVER_PROTOCOL"]);
 }
 
 function getFullDomainName() {
-  return getServerProtocol() . getServerName();
+  return getUrlScheme() . getServerName();
 }
 
 function vd($value) {
@@ -580,7 +585,7 @@ function setHttpRedirectionHeader($path) {
   header("Location: $fullUrl");
 }
 
-function getHttpRedirectionFromUrl() {
+function getFormRedirectionFromUrl() {
   $path = null;
   if (isset($_GET['form_redirection']))
   {
@@ -599,7 +604,7 @@ function getHttpRedirectionFromUrl() {
  */
 function redirection($path = NULL) {
   if (is_null($path)) {
-    $path = getHttpRedirectionFromUrl();
+    $path = getFormRedirectionFromUrl();
   }
   setHttpRedirectionHeader($path);
   exit;

@@ -14,7 +14,7 @@ $settings = [
   'page_not_found' => [
     'template' => 'page.php',
     'content' => function() {
-        addHttpResponseHeader(404);
+        setHttpResponseCode(404);
         return "Oooops page not found" . e(40, 'euros');
       }
   ],
