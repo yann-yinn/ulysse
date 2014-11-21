@@ -12,13 +12,13 @@ define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('THEMES_DIRECTORY', 'themes');
 
 /**
- * Bootstrap the okc framework : listen http request and map it to
+ * Bootstrap the ulysse framework : listen http request and map it to
  * a php controller, looking at config/pages.php file.
  *
  * @param array $contextVariables : array of values to define site context
  * Use this bootstrap in a script in "www" directory with following example code :
  * @code
- * require_once "../src/okc/framework/bootstrap.php";
+ * require_once "../src/ulysse/framework/bootstrap.php";
  * bootstrapFramework();
  * @endocde
  */
@@ -69,7 +69,7 @@ function bootstrapFramework($contextVariables = [])
   $controllerOutput = renderPageFromHttpRequest();
   echo $controllerOutput;
 
-  if (getSetting('display_developper_toolbar') === TRUE) require_once "../src/okc/framework/developperToolbar.php";
+  if (getSetting('display_developper_toolbar') === TRUE) require_once "../src/ulysse/framework/developperToolbar.php";
 }
 
 /**

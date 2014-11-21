@@ -14,7 +14,7 @@ namespace okc\framework;
  * Elle ne génère aucun code html et l'objet formController doit ensuite être utilisé
  * dans un template html pour créer manuellement un formulaire à l'ancienne.
  *
- * @package okc\simulateur\forms
+ * @package ulysse\simulateur\forms
  */
 abstract class formController {
 

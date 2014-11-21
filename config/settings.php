@@ -41,6 +41,6 @@ $settings = [
 ];
 
 // example merge setting from another file :
-$settings = mergeConfigFromFile($settings, 'okc/content/config/settings.php');
+$settings = mergeConfigFromFile($settings, 'ulysse/content/config/settings.php');
 
 return $settings;

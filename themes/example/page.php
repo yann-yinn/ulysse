@@ -19,8 +19,8 @@
 <body>
 
 <div class="row">
-  <h1><?php echo template('okc/content/templates/contentViewSetting.php', getContentByMachineName('site_name')) ?></h1>
-  <p><?php echo template('okc/content/templates/contentViewSetting.php', getContentByMachineName('site_slogan')) ?></p>
+  <h1><?php echo template('ulysse/content/templates/contentViewSetting.php', getContentByMachineName('site_name')) ?></h1>
+  <p><?php echo template('ulysse/content/templates/contentViewSetting.php', getContentByMachineName('site_slogan')) ?></p>
 </div>
 
 <div class="row">

@@ -2,11 +2,11 @@
 
 $pages = [];
 
-require "okc/content/controllers/contentController.php";
-require_once 'okc/content/api/contentApi.php';
+require "ulysse/content/controllers/contentController.php";
+require_once 'ulysse/content/api/contentApi.php';
 
 // list all site contents
-$pages['okc.content.list'] = [
+$pages['ulysse.content.list'] = [
   'path' => 'admin/content',
   'theme' => 'admin',
   'layout' => 'page.php',
@@ -16,7 +16,7 @@ $pages['okc.content.list'] = [
 ];
 
 // display an add / edit content form
-$pages['okc.content.form'] = [
+$pages['ulysse.content.form'] = [
   'path' => 'admin/content/form',
   'theme' => 'admin',
   'layout' => 'page.php',
@@ -31,7 +31,7 @@ $pages['okc.content.form'] = [
 ];
 
 // save content to database
-$pages['okc.content.form.save'] = [
+$pages['ulysse.content.form.save'] = [
   'path' => 'admin/content/form/save',
   'theme' => 'admin',
   'layout' => 'page.php',

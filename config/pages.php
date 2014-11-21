@@ -20,21 +20,21 @@ $pages['__ACCESS_DENIED__'] = [
       return "Access denied";
     }
 ];
-$pages['okc.framework.homepage'] = [
+$pages['ulysse.framework.homepage'] = [
   'path'     => '',
   'layout' => 'page.php',
   'content'  =>  function() {
       $out = '';
-      $out .= getTranslation('okc.framework.welcome');
+      $out .= getTranslation('ulysse.framework.welcome');
       $datas = getContentByMachineName('homepage_bloc_1');
       if ($datas) {
-        $out .= template('okc/content/templates/contentView.php', $datas);
+        $out .= template('ulysse/content/templates/contentView.php', $datas);
       }
       return $out;
     }
 ];
 
 // how to merge setting from another file :
-$pages = mergeConfigFromFile($pages, 'okc/content/config/pages.php');
+$pages = mergeConfigFromFile($pages, 'ulysse/content/config/pages.php');
 
 return $pages;

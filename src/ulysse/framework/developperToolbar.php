@@ -2,13 +2,13 @@
 
 print "
 <style>
-#okc-developper-toolbar {
+#ulysse-developper-toolbar {
   margin-top : 50px;
   padding : 20px;
   border-top : solid silver 1px;
 }
 
-#okc-developper-toolbar h2 {
+#ulysse-developper-toolbar h2 {
 
 }
 
@@ -18,7 +18,7 @@ print "
 
 
 
-print '<section id = "okc-developper-toolbar">';
+print '<section id = "ulysse-developper-toolbar">';
 
 print '<h2> Stats </h2>';
 $time_end = microtime(TRUE);

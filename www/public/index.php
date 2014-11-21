@@ -9,7 +9,7 @@
  */
 
 
-require_once "../../src/okc/framework/core.php";
+require_once "../../src/ulysse/framework/core.php";
 bootstrapFramework(['site.staging' => 'online']);
 
 

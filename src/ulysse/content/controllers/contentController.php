@@ -1,7 +1,7 @@
 <?php
 
-require_once 'okc/content/datasValidators/contentDatasValidators.php';
-require_once 'okc/content/api/contentApi.php';
+require_once 'ulysse/content/datasValidators/contentDatasValidators.php';
+require_once 'ulysse/content/api/contentApi.php';
 
 /**
  * Display all sites content with edit / add / delete link.
@@ -9,7 +9,7 @@ require_once 'okc/content/api/contentApi.php';
  */
 function contentListPage() {
   $datas = getContentList();
-  return template('okc/content/templates/contentList.php', ['datas' => $datas]);
+  return template('ulysse/content/templates/contentList.php', ['datas' => $datas]);
 }
 
 /**
@@ -23,7 +23,7 @@ function contentFormPage() {
   if (!empty($_GET['id'])) {
     $content = getContentById($_GET['id']);
   }
-  return template('okc/content/templates/contentForm.php', ['content' => $content]);
+  return template('ulysse/content/templates/contentForm.php', ['content' => $content]);
 }
 
 /**
@@ -58,7 +58,7 @@ function contentFormSavePage() {
   }
   // if thre are errors, display again the form populated with the posted values.
   else {
-    return template('okc/content/templates/contentForm.php', ['content' => $_POST, 'errors' => $errors], 'okc/content/templates');
+    return template('ulysse/content/templates/contentForm.php', ['content' => $_POST, 'errors' => $errors], 'ulysse/content/templates');
   }
 
 }

@@ -8,12 +8,12 @@ define('CONTENT_STATE_DRAFT', 'draft');
 define('CONTENT_STATE_TRASH', 'trash');
 
 function getContentStates() {
-  $contentStates = getSetting('okc.content.states');
+  $contentStates = getSetting('ulysse.content.states');
   return $contentStates;
 }
 
 function getContentTypes() {
-  $contentStates = getSetting('okc.content.types');
+  $contentStates = getSetting('ulysse.content.types');
   return $contentStates;
 }
 
