@@ -559,7 +559,7 @@ function getServerProtocol() {
 }
 
 function getFullDomainName() {
-  return getUrlScheme() . getServerName();
+  return getUrlScheme() . '://' . getServerName();
 }
 
 function vd($value) {
