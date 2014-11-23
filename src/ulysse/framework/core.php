@@ -3,13 +3,21 @@
  * PHP Ulysse framework core file.
  */
 
+// filepath considering www/public/index.php file.
 define('CONFIG_DIRECTORY_PATH', '../../config');
+define('CONFIG_EXAMPLE_DIRECTORY_PATH', '../../example.config');
 define('PAGES_FILEPATH', '../../config/pages.php');
-define('STRINGS_TRANSLATIONS_FILEPATH', '../../config/translations.php');
-define('SETTINGS_FILEPATH', '../../config/settings.php');
-define('SETTINGS_LOCAL_FILEPATH', '../../config/settings.local.php');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('THEMES_DIRECTORY', 'themes');
+
+/**
+ * Return TRUE if framework has already been setup, FALSE otherwise
+ * @return bool
+ */
+function frameworkIsInstalled()
+{
+  return file_exists(CONFIG_DIRECTORY_PATH);
+}
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
@@ -18,42 +26,30 @@ define('THEMES_DIRECTORY', 'themes');
  * @param array $contextVariables : array of values to define site context
  * Use this bootstrap in a script in "www" directory with following example code :
  * @code
- * require_once "../src/ulysse/framework/bootstrap.php";
- * bootstrapFramework();
+ * require_once "../src/ulysse/framework/core.php";
+ * startUlysse();
  * @endocde
  */
-function bootstrapFramework($contextVariables = [])
+function startUlysse($contextVariables = [])
 {
 
-  // Framework is not setup if "example.config" directory has not be renamed to "config".
-  // Inform user and stop here for now.
-  if (!file_exists(CONFIG_DIRECTORY_PATH)) {
+  // if framework is not yet installed, display information about installation.
+  if (!frameworkIsInstalled())
+  {
     echo frameworkInstallationPage($contextVariables);
     exit;
   }
 
-  // Add include paths and class autoloaders first.
-  $includePaths = ['../..', '../../src', '../../vendors'];
-  addPhpIncludePaths($includePaths);
+  // add some php usefull include paths.
+  _addPhpIncludePaths(['../..', '../../src', '../../vendors']);
   registerPsr0ClassAutoloader();
-
-  // Connect to database specified in database settings if any, using PDO
-  $database = getSetting("database");
-  if (!empty($database)) {
-    try {
-      $db = new PDO("mysql:host={$database['host']};dbname={$database['name']}", $database['user'], $database['password']);
-      $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      $contextVariables['db'] = $db;
-    }
-    catch (PDOException $e) {
-      echo $e->getMessage();
-      die();
-    }
-  }
 
   // Try to display framework logs even if php a fatal error occured
   register_shutdown_function("phpFatalErrorHandler");
   session_start();
+
+  // connect to database and register it in the context.
+  $contextVariables['db'] = connectToDatabase();
 
   // register context variables in the site context
   setContextVariable('time_start', microtime(TRUE));
@@ -65,12 +61,28 @@ function bootstrapFramework($contextVariables = [])
   // include template formatters file, for template() function.
   require TEMPLATE_FORMATTERS_FILEPATH;
 
-  // display page corresponding to submitted http request
-  $controllerOutput = renderPageFromHttpRequest();
-  echo $controllerOutput;
+  // executing controller and returning output to the browser
+  echo renderPageByPath(getCurrentPath());
 
-  if (getSetting('display_developper_toolbar') === TRUE) require_once "../src/ulysse/framework/developperToolbar.php";
+  // display developper informations.
+  if (getSetting('display_developper_toolbar') === TRUE) {
+    require_once "../src/ulysse/framework/developperToolbar.php";
+  }
+
 }
+
+/**
+ * connect to database with PDO
+ * @return PDO connexion
+ */
+function connectToDatabase()
+{
+  $databaseDatas = getSetting("database");
+  $db = _connectToDatabase($databaseDatas);
+  return $db;
+}
+
+
 
 /**
  * Return base path, if framework is installed in a subfolder of the host
@@ -120,14 +132,14 @@ function getServerScriptName()
 }
 
 /**
- * Display information about framework setup to the user.
+ * Display information about framework setup.
  * @return string html
  */
 function frameworkInstallationPage()
 {
   $out = '';
-  $out .= '<h1>Welcome to framework installation</h1>';
-  $out .= 'Please rename "example.config" directory to "config" to start using framework.';
+  $out .= '<h1>' . getTranslation("ulysse.framework.installationTitle") . '</h1>';
+  $out .= getTranslation('ulysse.framework.installationText');
   return $out;
 }
 
@@ -230,17 +242,9 @@ function renderPageByPath($path) {
   return $output;
 }
 
-/**
- * Render a page listening to incoming http request
- * @see config/pages.php
- * @return string
- */
-function renderPageFromHttpRequest()
+function getConfigDirectoryPath()
 {
-  $path = getCurrentPath();
-  writeLog(['level'    => 'notification', 'detail'   => "Framework determine path from http request as '$path'"]);
-  setContextVariable('path', sanitizeValue($path));
-  return renderPageByPath($path);
+  return frameworkIsInstalled() ? CONFIG_DIRECTORY_PATH : CONFIG_EXAMPLE_DIRECTORY_PATH;
 }
 
 /**
@@ -260,18 +264,38 @@ function getSetting($key)
 }
 
 /**
- * Return all settings defined in config/settings.php file.
+ * Get settings from settings.php file.
+ * @return array
+ *   an associative array of site settings.
+ */
+function getSettings()
+{
+  return include getConfigDirectoryPath() . '/settings.php';
+}
+
+/**
+ * Return all settings defined in config/settings.php file,
+ * including "settings.local.php"
  * @return array
  */
-function getAllSettings() {
-  $siteSettings = include SETTINGS_FILEPATH;
-  if (is_readable(SETTINGS_LOCAL_FILEPATH))
-  {
-    $siteSettingsLocal = include SETTINGS_LOCAL_FILEPATH;
-    $siteSettings = array_merge($siteSettings, $siteSettingsLocal);
-  }
-  return $siteSettings;
+function getAllSettings()
+{
+  return array_merge(getSettings(), getLocalSettings());
 }
+
+/**
+ * Return array of settings from settings.local.php
+ * @return array
+ */
+function getLocalSettings() {
+  $settings = [];
+  if (is_readable(getConfigDirectoryPath() . '/settings.local.php'))
+  {
+    $settings = include getConfigDirectoryPath() . '/settings.local.php';
+  }
+  return $settings;
+}
+
 
 /**
  * Return full context for the current framework response to the http request.
@@ -292,6 +316,10 @@ function getContextVariable($key)
   return $GLOBALS['_CONTEXT'][$key];
 }
 
+function getAllTranslations() {
+    return include getConfigDirectoryPath() . '/translations.php';
+}
+
 /**
  * Get a translation for a specific string_id
  * @param $string_id
@@ -301,7 +329,7 @@ function getContextVariable($key)
 function getTranslation($string_id, $language = NULL)
 {
   static $translations = [];
-  if (!$translations) $translations = include STRINGS_TRANSLATIONS_FILEPATH;
+  if (!$translations) $translations = getAllTranslations();
   if (!$language) $language = getCurrentLanguage();
   return $translations[$string_id][$language];
 }
@@ -426,14 +454,7 @@ function registerPsr0ClassAutoloader()
   spl_autoload_register(function($class){require_once str_replace('\\','/', $class).'.php';});
 }
 
-/**
- * @param array $include_paths
- *   a list of php path that will be add to php include paths
- */
-function addPhpIncludePaths($include_paths)
-{
-  set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
-}
+
 
 /**
  * Sanitize a variable, to display it, encoding html.
@@ -536,36 +557,15 @@ function getFullDomainName() {
   return _getUrlScheme() . '://' . _getServerName();
 }
 
-function vd($value) {
-  echo '<pre>';
-  var_dump($value);
-  echo '</pre>';
-}
-
-function vde($value) {
-  var_dump($value);exit;
-}
-
-function pre($array) {
-  echo '<pre>';
-  print_r($array);
-  echo '</pre>';
-  exit;
-}
-
 function setHttpRedirection($path) {
   $url = sanitizeValue(url($path));
+  getFullDomainName();
   $fullUrl = getFullDomainName() . $url;
-  header("Location: $fullUrl");
+  _setHttpRedirection($fullUrl);
 }
 
 function getFormRedirectionFromUrl() {
-  $path = null;
-  if (isset($_GET['form_redirection']))
-  {
-    $path = urldecode($_GET['form_redirection']);
-  }
-  return $path;
+  return _getFormRedirectionFromUrl();
 }
 
 /**
@@ -578,7 +578,7 @@ function getFormRedirectionFromUrl() {
  */
 function redirection($path = NULL) {
   if (is_null($path)) {
-    $path = getFormRedirectionFromUrl();
+    $path = _getFormRedirectionFromUrl();
   }
   setHttpRedirection($path);
   exit;
@@ -593,16 +593,16 @@ function userHasPermission()
   return TRUE;
 }
 
-/* ==============
-   ATOMS
-   ==============*/
+/* ==================
+   UNIT FUNCTIONS
+   ================== */
 
 function _setHtmlAttributes(array $attributes = array())
 {
   foreach ($attributes as $attribute => &$data)
   {
     $data = implode(' ', (array) $data);
-    $data = $attribute . '="' . sanitizeValue($data) . '"';
+    $data = $attribute . '="' . htmlspecialchars($data, ENT_QUOTES, 'utf-8') . '"';
   }
   return $attributes ? ' ' . implode(' ', $attributes) : '';
 }
@@ -740,4 +740,59 @@ function _getServerRequestUri()
 function _getServerName()
 {
   return $_SERVER['SERVER_NAME'];
+}
+
+function _connectToDatabase($databaseDatas)
+{
+  // Connect to database specified in database settings if any, using PDO
+  $db = FALSE;
+  if (!empty($databaseDatas))
+  {
+    try
+    {
+      $db = new PDO("mysql:host={$databaseDatas['host']};dbname={$databaseDatas['name']}", $databaseDatas['user'], $databaseDatas['password']);
+      $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    }
+    catch (PDOException $e)
+    {
+      echo $e->getMessage();
+      die();
+    }
+  }
+  return $db;
+}
+
+/**
+ * @param array $include_paths
+ *   a list of php paths that will be added to php include path variable.
+ */
+function _addPhpIncludePaths($include_paths)
+{
+  set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
+}
+
+function vd($value) {
+  echo '<pre>';
+  var_dump($value);
+  echo '</pre>';
+}
+
+function vde($value) {
+  var_dump($value);exit;
+}
+
+function pre($array) {
+  echo '<pre>';
+  print_r($array);
+  echo '</pre>';
+  exit;
+}
+
+function _getFormRedirectionFromUrl() {
+  $path = null;
+  if (isset($_GET['form_redirection']))
+  {
+    $path = urldecode($_GET['form_redirection']);
+  }
+  return $path;
 }
