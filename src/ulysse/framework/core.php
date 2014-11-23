@@ -116,8 +116,8 @@ function getCurrentPath()
   $scriptName = _getServerScriptName($scriptNamePath);
   $basePath = _getBasePath($scriptName, $scriptNamePath);
   $serverRequestUri = _getServerRequestUri();
-  $serverRequestUriWihoutBasePath = _getRequestUriWithoutBasePath($serverRequestUri, $basePath);
-  $path = _getPath($serverRequestUriWihoutBasePath, $scriptName);
+  $serverRequestUriWihoutBasePath = _removeBasePathFromRequestUri($serverRequestUri, $basePath);
+  $path = _removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
   $path = _removeTrailingSlashFromPath($path);
   return $path;
 }
@@ -221,7 +221,8 @@ function getPageDeclarationByPath($path, $pages)
  * @param string $key
  * @return array : the page definition as an array
  */
-function getPageDeclarationByKey($key) {
+function getPageDeclarationByKey($key)
+{
   $pages = getAllPages();
   return $pages[$key];
 }
@@ -235,7 +236,8 @@ function getPageDeclarationByKey($key) {
 function renderPageByPath($path) {
   $pages = getAllPages();
   $page = getPageDeclarationByPath($path, $pages);
-  if (!$page) {
+  if (!$page)
+  {
     $page = getPageDeclarationByKey('__PAGE_NOT_FOUND__', $pages);
   }
   $output = renderPage($page);
@@ -287,7 +289,8 @@ function getAllSettings()
  * Return array of settings from settings.local.php
  * @return array
  */
-function getLocalSettings() {
+function getLocalSettings()
+{
   $settings = [];
   if (is_readable(getConfigDirectoryPath() . '/settings.local.php'))
   {
@@ -295,7 +298,6 @@ function getLocalSettings() {
   }
   return $settings;
 }
-
 
 /**
  * Return full context for the current framework response to the http request.
@@ -316,8 +318,9 @@ function getContextVariable($key)
   return $GLOBALS['_CONTEXT'][$key];
 }
 
-function getAllTranslations() {
-    return include getConfigDirectoryPath() . '/translations.php';
+function getAllTranslations()
+{
+  return include getConfigDirectoryPath() . '/translations.php';
 }
 
 /**
@@ -356,7 +359,7 @@ function url($path, $queryString = '')
  */
 function isCurrentPath($path)
 {
-  $urlPath     = getCurrentPath();
+  $urlPath = getCurrentPath();
   return $path == $urlPath ? TRUE : FALSE;
 }
 
@@ -454,8 +457,6 @@ function registerPsr0ClassAutoloader()
   spl_autoload_register(function($class){require_once str_replace('\\','/', $class).'.php';});
 }
 
-
-
 /**
  * Sanitize a variable, to display it, encoding html.
  * @param string $value
@@ -544,24 +545,14 @@ function e($value, $formatters = [])
   echo $output;
 }
 
-/**
- * @param string $machine_name : a string containing only alphanumeric and underscore characters
- * @return boolean : TRUE if machine_name is valid, FALSE otherwise
- */
-function validateMachineName_atom($machine_name)
+function getFullDomainName()
 {
-  return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
-}
-
-function getFullDomainName() {
   return _getUrlScheme() . '://' . _getServerName();
 }
 
 function setHttpRedirection($path) {
   $url = sanitizeValue(url($path));
-  getFullDomainName();
-  $fullUrl = getFullDomainName() . $url;
-  _setHttpRedirection($fullUrl);
+  _setHttpRedirection(getFullDomainName() . $url);
 }
 
 function getFormRedirectionFromUrl() {
@@ -655,7 +646,7 @@ function _getServerScriptName($serverScriptName)
  *   it will return "/index.php/azertyuiop789456123"
  *   Idem for "http://ulysse.local/index.php/azertyuiop789456123"
  */
-function _getPath($serverRequestUriWithoutBasePath, $scriptName)
+function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName)
 {
   if (strpos($serverRequestUriWithoutBasePath, $scriptName) === 0)
   {
@@ -673,13 +664,13 @@ function _getPath($serverRequestUriWithoutBasePath, $scriptName)
  * For "localhost/ulysse/www/public/index.php/azertyuiop789456123"
  * it return also "index.php/azertyuiop789456123".
  */
-function _getRequestUriWithoutBasePath($serverRequestUri, $basePath)
+function _removeBasePathFromRequestUri($serverRequestUri, $basePath)
 {
   return substr_replace($serverRequestUri, '', 0, strlen($basePath));
 }
 
 /**
- * @param string $path : @see _getPath()
+ * @param string $path : @see _removeScriptNameFromPath()
  * @return string :
  * for "/hello", returns "hello".
  * for "/hello/", returns "hello".
@@ -795,4 +786,13 @@ function _getFormRedirectionFromUrl() {
     $path = urldecode($_GET['form_redirection']);
   }
   return $path;
+}
+
+/**
+ * @param string $machine_name : a string containing only alphanumeric and underscore characters
+ * @return boolean : TRUE if machine_name is valid, FALSE otherwise
+ */
+function _validateMachineName($machine_name)
+{
+  return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
 }
