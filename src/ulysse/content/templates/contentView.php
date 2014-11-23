@@ -4,7 +4,7 @@
 
 <div class="content-editable-wrapper panel">
 <?php if (userHasPermission('edit content')) : ?>
-<a class="content-editable-link" href="<?php echo url('admin/content/form', "form_redirection=" . getCurrentPath() .  "&id=" . sanitizeString($id)) ?>">
+<a class="content-editable-link" href="<?php echo url('admin/content/form', "form_redirection=" . getCurrentPath() .  "&id=" . sanitizeValue($id)) ?>">
   Edit</a>
 <?php endif ?>
 

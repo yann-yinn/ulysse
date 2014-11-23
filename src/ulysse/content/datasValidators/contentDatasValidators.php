@@ -21,7 +21,7 @@ function validateContentForm($datas) {
     $errors['state'][] = "Invalid state received";
   }
 
-  if (!validateMachineName($datas['machine_name']))
+  if (!validateMachineName_atom($datas['machine_name']))
   {
     $errors['machine_name'][] = "Invalid machine name ! ";
   }

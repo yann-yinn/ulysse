@@ -51,7 +51,7 @@ function contentFormSavePage() {
     // else, we are updating an existing content.
     else {
       updateContentById($datas['id'], $datas);
-      writeLog(['detail' => "Update existing content ." . sanitizeString($datas['id'])]);
+      writeLog(['detail' => "Update existing content ." . sanitizeValue($datas['id'])]);
     }
     // redirect to "redirection" param passed in the url
     redirection();

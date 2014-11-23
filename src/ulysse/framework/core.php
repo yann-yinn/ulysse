@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP framework core file.
+ * PHP Ulysse framework core file.
  */
 
 define('CONFIG_DIRECTORY_PATH', '../../config');
@@ -73,10 +73,58 @@ function bootstrapFramework($contextVariables = [])
 }
 
 /**
+ * Return base path, if framework is installed in a subfolder of the host
+ *
+ * @return string
+ */
+function getBasePath()
+{
+  $scriptNamePath = _getServerScriptNamePath();
+  $scriptName = _getServerScriptName($scriptNamePath);
+  return _getBasePath($scriptName, $scriptNamePath);
+}
+
+/**
+ * Extract framework path from an incoming http request.
+ * Heart of the framework routing system.
+ *
+ * @return string :
+ * For "http://localhost/ulysse/www/public/index.php/hello/world" returns "hello/world"
+ * For "http://ulysse.local/index.php/hello/world" returns "hello/world"
+ * For "http://ulysse.local/index.php/hello/world?test=value" returns "hello/world".
+ *
+ * This path is then fetched in pages.php file. If a matching page is found,
+ * page controller will be executed.
+ */
+function getCurrentPath()
+{
+  static $path = null;
+  if ($path) return $path;
+  $scriptNamePath = _getServerScriptNamePath();
+  $scriptName = _getServerScriptName($scriptNamePath);
+  $basePath = _getBasePath($scriptName, $scriptNamePath);
+  $serverRequestUri = _getServerRequestUri();
+  $serverRequestUriWihoutBasePath = _getRequestUriWithoutBasePath($serverRequestUri, $basePath);
+  $path = _getPath($serverRequestUriWihoutBasePath, $scriptName);
+  $path = _removeTrailingSlashFromPath($path);
+  return $path;
+}
+
+/**
+ * Get framework script entry point, usually "index.php"
+ * @return string
+ */
+function getServerScriptName()
+{
+  return _getServerScriptName(_getServerScriptNamePath());
+}
+
+/**
  * Display information about framework setup to the user.
  * @return string html
  */
-function frameworkInstallationPage() {
+function frameworkInstallationPage()
+{
   $out = '';
   $out .= '<h1>Welcome to framework installation</h1>';
   $out .= 'Please rename "example.config" directory to "config" to start using framework.';
@@ -96,7 +144,8 @@ function getAllLogs()
  * Get database connexion to perform queries.
  * @return PDO connexion object
  */
-function getDbConnexion() {
+function getDbConnexion()
+{
   return getContextVariable('db');
 }
 
@@ -109,7 +158,7 @@ function getCurrentLanguage()
   $currentLanguage = getSetting('language_default');
   if (isset($_REQUEST['language']))
   {
-    $requestedLanguage = (string)sanitizeString($_REQUEST['language']);
+    $requestedLanguage = (string)sanitizeValue($_REQUEST['language']);
     $definedLanguages = getSetting('languages');
     foreach ($definedLanguages as $id => $datas)
     {
@@ -190,25 +239,8 @@ function renderPageFromHttpRequest()
 {
   $path = getCurrentPath();
   writeLog(['level'    => 'notification', 'detail'   => "Framework determine path from http request as '$path'"]);
-  setContextVariable('path', sanitizeString($path));
+  setContextVariable('path', sanitizeValue($path));
   return renderPageByPath($path);
-}
-
-/**
- * Extract path from incoming http request.
-
- * @return string
- */
-function getCurrentPath()
-{
-  $script_name = getFrameworkScriptName();
-  $base_path = getFrameworkBasePath();
-  // Remove base path (for installations in subdirectories) from URI.
-  $pagePath = substr_replace(getServerRequestUri(), '', 0, strlen($base_path));
-  // Remove scriptname "index.php" if present. scriptname is not present at all if .htaccess is enabled.
-  if (strpos($pagePath, $script_name) === 0) $pagePath = str_replace($script_name, '', $pagePath);
-  // remove query string and slashes from pagePath.
-  return trim(parse_url($pagePath, PHP_URL_PATH), '/');
 }
 
 /**
@@ -222,7 +254,7 @@ function getSetting($key)
   static $settings = [];
   if (!$settings) $settings = getAllSettings();
   if (!isset($settings[$key])) {
-    writeLog(['level' => 'error', 'detail' => sanitizeString($key) . ' setting not declared.']);
+    writeLog(['level' => 'error', 'detail' => sanitizeValue($key) . ' setting not declared.']);
   }
   return $settings[$key];
 }
@@ -261,25 +293,6 @@ function getContextVariable($key)
 }
 
 /**
- * Return base path, if framework is installed in a subfolder of the host
- *
- * @param string $scriptName as returned by getFrameworkScriptName()
- * @return string
- */
-function getFrameworkBasePath()
-{
-  return str_replace(getFrameworkScriptName(), '', $_SERVER['SCRIPT_NAME']);
-}
-
-/**
- * file php which is the entry point of your application; usually "index.php".
- */
-function getFrameworkScriptName()
-{
-  return basename($_SERVER['SCRIPT_NAME']);
-}
-
-/**
  * Get a translation for a specific string_id
  * @param $string_id
  * @param string $language
@@ -302,28 +315,8 @@ function url($path, $queryString = '')
   }
   // build back a query string
   $queryString = http_build_query($queryArray);
-  $url = sanitizeString(getFrameworkBasePath() . getFrameworkScriptName() . '/' . $path);
-  if ($queryString) $url .= '?' . sanitizeString($queryString);
-  return $url;
-}
-
-function urlOld($path, array $options = [])
-{
-
-  $query = [];
-  if (!empty($options['query'])) {
-    $query = $options['query'];
-  }
-  if (isset($options['form_redirection'])) {
-    $query['form_redirection'] = urlencode($options['form_redirection']);
-  }
-
-  $queryString = http_build_query($query);
-
-  $url = sanitizeString(getFrameworkBasePath() . getFrameworkScriptName() . '/' . $path);
-  if ($queryString) {
-    $url .= '?' . sanitizeString($queryString);
-  }
+  $url = sanitizeValue(getBasePath() . getServerScriptName() . '/' . $path);
+  if ($queryString) $url .= '?' . sanitizeValue($queryString);
   return $url;
 }
 
@@ -399,9 +392,9 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
     500 => 'Internal Server Error',
     503 => 'Service Unavailable',
   ];
-  $protocol = $protocol ? $protocol : getServerProtocol();
+  $protocol = $protocol ? $protocol : _getServerProtocol();
   $message  = $message ? $message : $codesMessages[$code];
-  header(sprintf("%s %s %s", $protocol, sanitizeString($code), sanitizeString($message)));
+  header(sprintf("%s %s %s", $protocol, sanitizeValue($code), sanitizeValue($message)));
 }
 
 /**
@@ -447,9 +440,10 @@ function addPhpIncludePaths($include_paths)
  * @param string $value
  * @return string html encoded value
  */
-function sanitizeString($value)
+function sanitizeValue($value)
 {
-  return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
+  return _sanitizeValue($value);
+
 }
 
 function phpFatalErrorHandler()
@@ -488,10 +482,10 @@ function template($templatePath, $variables = [], $themePath = null)
   }
   if (!$templateFound)
   {
-    writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeString($path))]);
+    writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeValue($path))]);
   }
   else {
-    writeLog(['level' => 'notification', 'detail' => sprintf('Template "%s" rendered. ', sanitizeString($path))]);
+    writeLog(['level' => 'notification', 'detail' => sprintf('Template "%s" rendered. ', sanitizeValue($path))]);
   }
   return ob_get_clean();
 }
@@ -509,7 +503,7 @@ function template($templatePath, $variables = [], $themePath = null)
 function e($value, $formatters = [])
 {
   // sanitize value string by default unless "raw" special formatter name is requested
-  $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : sanitizeString($value);
+  $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : sanitizeValue($value);
 
   if ($formatters) {
     // if formatters is a string, apply it directly and echo string :
@@ -533,33 +527,13 @@ function e($value, $formatters = [])
  * @param string $machine_name : a string containing only alphanumeric and underscore characters
  * @return boolean : TRUE if machine_name is valid, FALSE otherwise
  */
-function validateMachineName($machine_name)
+function validateMachineName_atom($machine_name)
 {
   return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
 }
 
-function getServerName() {
-  return sanitizeString($_SERVER['SERVER_NAME']);
-}
-
-function getServerRequestUri() {
-  return sanitizeString($_SERVER['REQUEST_URI']);
-}
-
-function getUrlScheme() {
-  return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
-}
-
-/**
- * FIXME : https & http detection here
- * @return string
- */
-function getServerProtocol() {
-  return sanitizeString($_SERVER["SERVER_PROTOCOL"]);
-}
-
 function getFullDomainName() {
-  return getUrlScheme() . '://' . getServerName();
+  return _getUrlScheme() . '://' . _getServerName();
 }
 
 function vd($value) {
@@ -579,8 +553,8 @@ function pre($array) {
   exit;
 }
 
-function setHttpRedirectionHeader($path) {
-  $url = sanitizeString(url($path));
+function setHttpRedirection($path) {
+  $url = sanitizeValue(url($path));
   $fullUrl = getFullDomainName() . $url;
   header("Location: $fullUrl");
 }
@@ -606,7 +580,7 @@ function redirection($path = NULL) {
   if (is_null($path)) {
     $path = getFormRedirectionFromUrl();
   }
-  setHttpRedirectionHeader($path);
+  setHttpRedirection($path);
   exit;
 }
 
@@ -614,15 +588,156 @@ function redirection($path = NULL) {
  * One day, this function will check for user permissions. Maybe.
  * @return bool
  */
-function userHasPermission() {
+function userHasPermission()
+{
   return TRUE;
 }
 
-function htmlAttributes(array $attributes = array()) {
-  foreach ($attributes as $attribute => &$data) {
+/* ==============
+   ATOMS
+   ==============*/
+
+function _setHtmlAttributes(array $attributes = array())
+{
+  foreach ($attributes as $attribute => &$data)
+  {
     $data = implode(' ', (array) $data);
-    $data = $attribute . '="' . check_plain($data) . '"';
+    $data = $attribute . '="' . sanitizeValue($data) . '"';
   }
   return $attributes ? ' ' . implode(' ', $attributes) : '';
 }
 
+/**
+ * get path to build links, href, src etc .... in templates.
+ * @param string $serverScriptName
+ * @param string $serverScriptNamePath
+ * @return string
+ *   If entry point is an "index.php" file :
+ *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/"
+ *   For "mysite.local" it will returns "/"
+ */
+function _getBasePath($serverScriptName, $serverScriptNamePath)
+{
+  return str_replace($serverScriptName, '', $serverScriptNamePath);
+}
+
+/**
+ * Return framework entry point.
+ * @return string
+ *   If entry point is an "index.php" file :
+ *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/index.php"
+ *   For "mysite.local" it will returns "/index.php"
+ */
+function _getServerScriptNamePath()
+{
+  return $_SERVER['SCRIPT_NAME'];
+}
+
+/**
+ * @param string $serverScriptName
+ *   server script name as return by $_SERVER['script_name'] or _getServerScriptNamePath().
+ * @return string
+ *   For "/ulysse/www/public/index.php" it will returns "index.php"
+ *   For "mysite.local/index.php" it will returns "index.php"
+ */
+function _getServerScriptName($serverScriptName)
+{
+  return basename($serverScriptName);
+}
+
+/**
+ * @param string $serverRequestUriWithoutBasePath
+ *   @see _getServerRequestUriWithoutBasePath()
+ * @param string $scriptName
+ *   @see _getServerScriptName()
+ * @return string :
+ *   For "http://localhost/ulysse/www/public/index.php/azertyuiop789456123"
+ *   it will return "/index.php/azertyuiop789456123"
+ *   Idem for "http://ulysse.local/index.php/azertyuiop789456123"
+ */
+function _getPath($serverRequestUriWithoutBasePath, $scriptName)
+{
+  if (strpos($serverRequestUriWithoutBasePath, $scriptName) === 0)
+  {
+    return str_replace($scriptName, '', $serverRequestUriWithoutBasePath);
+  }
+  return $serverRequestUriWithoutBasePath;
+}
+
+/**
+ * @param string $serverRequestUri
+ * @param string $basePath
+ * @return string
+ * For "http://ulysse.local/index.php/azertyuiop789456123"
+ * it returns "index.php/azertyuiop789456123".
+ * For "localhost/ulysse/www/public/index.php/azertyuiop789456123"
+ * it return also "index.php/azertyuiop789456123".
+ */
+function _getRequestUriWithoutBasePath($serverRequestUri, $basePath)
+{
+  return substr_replace($serverRequestUri, '', 0, strlen($basePath));
+}
+
+/**
+ * @param string $path : @see _getPath()
+ * @return string :
+ * for "/hello", returns "hello".
+ * for "/hello/", returns "hello".
+ */
+function _removeTrailingSlashFromPath($path)
+{
+  return trim(parse_url($path, PHP_URL_PATH), '/');
+}
+
+/**
+ * @param string $fullUrl
+ */
+function _setHttpRedirection($fullUrl) {
+  header("Location: $fullUrl");
+}
+
+/**
+ * Désactiver du code malicieux
+ * @param $value
+ * @return string
+ */
+function _sanitizeValue($value)
+{
+  return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
+}
+
+/**
+ * Return le scheme d'une url (http ou https)
+ * @return string
+ */
+function _getUrlScheme()
+{
+  return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
+}
+
+/**
+ * FIXME : https & http detection here
+ * @return string
+ */
+function _getServerProtocol()
+{
+  return $_SERVER["SERVER_PROTOCOL"];
+}
+
+/**
+ * Return requested uri.
+ * @return string
+ * For "http://ulysse.local/index.php/azertyuiop789456123"
+ * it will return "/index.php/azertyuiop789456123".
+ * For "http://eurl.local/ulysse/www/public/index.php/azertyuiop789456123"
+ * it will return "/ulysse/www/public/index.php/azertyuiop789456123".
+ */
+function _getServerRequestUri()
+{
+  return $_SERVER['REQUEST_URI'];
+}
+
+function _getServerName()
+{
+  return $_SERVER['SERVER_NAME'];
+}
