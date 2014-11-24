@@ -20,8 +20,8 @@ function contentFormPage() {
   $content = NULL;
   // if there is an id in the url, this a existing content, pass
   // populated content array to the form.
-  if (!empty($_GET['id'])) {
-    $content = getContentById($_GET['id']);
+  if (!empty($_GET['machine_name'])) {
+    $content = getContentByMachineName($_GET['machine_name']);
   }
   return template('ulysse/content/templates/contentForm.php', ['content' => $content]);
 }
@@ -42,22 +42,26 @@ function contentFormSavePage() {
   $datas = $_POST;
   // validate datas posted by the form.
   $errors = validateContentForm($datas);
-  if (!$errors) {
-    // if id is not set, this is a new content. Id is an hidden input field.
-    if (empty($datas['id'])) {
+  if (!$errors)
+  {
+    // if machine name does not exist yet, this is a new content.
+    if (!getContentByMachineName($datas['machine_name']))
+    {
       saveNewContent($datas);
       writeLog(['detail' => "Save new content"]);
     }
     // else, we are updating an existing content.
-    else {
-      updateContentById($datas['id'], $datas);
+    else
+    {
+      updateContentByMachineName($datas['machine_name'], $datas);
       writeLog(['detail' => "Update existing content ." . sanitizeValue($datas['id'])]);
     }
     // redirect to "redirection" param passed in the url
     redirection();
   }
   // if thre are errors, display again the form populated with the posted values.
-  else {
+  else
+  {
     return template('ulysse/content/templates/contentForm.php', ['content' => $_POST, 'errors' => $errors], 'ulysse/content/templates');
   }
 

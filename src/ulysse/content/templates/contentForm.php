@@ -1,8 +1,8 @@
 <form method="POST" action="<?php echo url("admin/content/form/save", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
 
   <!-- ID FIELD -->
-  <?php if(!empty($content['id'])) : ?>
-    <input type="hidden" name="id" value="<?php echo $content['id'] ?>" />
+  <?php if(!empty($content['machine_name'])) : ?>
+    <input type="hidden" name="machine_name" value="<?php echo $content['machine_name'] ?>" />
   <?php endif ?>
 
   <input type="hidden" name="type" value="<?php print !empty($_GET['type']) ? $_GET['type'] : 'content' ?>" />

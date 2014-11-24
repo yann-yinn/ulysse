@@ -20,7 +20,7 @@
 
 <div class="row">
   <h1><?php echo template('ulysse/content/templates/contentViewSetting.php', getContentByMachineName('site_name')) ?></h1>
-  <p><?php echo template('ulysse/content/templates/contentViewSetting.php', getContentByMachineName('site_slogan')) ?></p>
+  <p><?php echo template('ulysse/content/templates/contentViewSetting.php', getContentByMachineName('site_slogan', CONTENT_STATE_ONLINE)) ?></p>
 </div>
 
 <div class="row">

@@ -5,6 +5,7 @@
 
 // filepath considering www/public/index.php file.
 define('CONFIG_DIRECTORY_PATH', '../../config');
+define('FRAMEWORK_ROOT', '../..');
 define('CONFIG_EXAMPLE_DIRECTORY_PATH', '../../example.config');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('THEMES_DIRECTORY', 'themes');
@@ -748,16 +749,25 @@ function _getServerName()
   return $_SERVER['SERVER_NAME'];
 }
 
-function _connectToDatabase($databaseDatas)
+function _connectToDatabase($databaseDatas, $id = 'default')
 {
   // Connect to database specified in database settings if any, using PDO
   $db = FALSE;
-  if (!empty($databaseDatas))
+  if (!empty($databaseDatas[$id]))
   {
     try
     {
-      $db = new PDO("mysql:host={$databaseDatas['host']};dbname={$databaseDatas['name']}", $databaseDatas['user'], $databaseDatas['password']);
-      $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      if ($databaseDatas[$id]['driver'] == 'mysql')
+      {
+        $db = new PDO("{$databaseDatas[$id]['driver']}:host={$databaseDatas[$id]['host']};dbname={$databaseDatas[$id]['name']}", $databaseDatas[$id]['user'], $databaseDatas[$id]['password']);
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      }
+      if ($databaseDatas[$id]['driver'] == 'sqlite')
+      {
+        $sqliteFile = FRAMEWORK_ROOT . DIRECTORY_SEPARATOR . "{$databaseDatas[$id]['sqlite_file']}";
+        $db = new PDO("{$databaseDatas[$id]['driver']}:$sqliteFile");
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      }
     }
     catch (PDOException $e)
     {

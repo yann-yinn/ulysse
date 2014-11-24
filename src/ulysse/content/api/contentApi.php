@@ -23,7 +23,7 @@ function getContentTypes() {
  */
 function getContentList() {
   $db      = getDbConnexion('db');
-  $sql =  'SELECT * FROM content ORDER BY id DESC';
+  $sql =  'SELECT * FROM content ORDER BY changed DESC';
   $query  = $db->prepare($sql);
   $query->execute();
   $datas = $query->fetchAll();
@@ -48,13 +48,20 @@ function getContentById($id) {
 /**
  * Get a content by its uniq machine name
  * @param string $machineName
+ * @param string $state : online, trash, draft
  * @return array
  */
-function getContentByMachineName($machineName) {
+function getContentByMachineName($machineName, $state = NULL) {
   $db = getDbConnexion('db');
   $sql =  'SELECT * FROM content WHERE machine_name = :machine_name';
+  if ($state) {
+    $sql .= ' AND state = :state';
+  }
   $query = $db->prepare($sql);
   $query->bindParam(':machine_name', $machineName, PDO::PARAM_STR);
+  if ($state) {
+    $query->bindParam(':state', $state, PDO::PARAM_STR);
+  }
   $query->execute();
   $datas = $query->fetch();
   return $datas;
@@ -62,11 +69,11 @@ function getContentByMachineName($machineName) {
 
 /**
  * Update a content by its id
- * @param int $id
+ * @param int $machine_name
  * @param array $datas
  * @return bool
  */
-function updateContentById($id, array $datas) {
+function updateContentByMachineName($machine_name, array $datas) {
 
   $content = $datas['content'];
   $title   = $datas['title'];
@@ -79,16 +86,14 @@ function updateContentById($id, array $datas) {
    title = :title,
    content = :content,
    changed = :changed,
-   state = :state,
-   machine_name = :machine_name
-   WHERE id = :id";
+   state = :state
+   WHERE machine_name = :machine_name";
   $query  = $db->prepare($query);
 
   $query->bindParam(':content', $content, PDO::PARAM_STR);
   $query->bindParam(':title', $title, PDO::PARAM_STR);
   $query->bindParam(':changed', $changed, PDO::PARAM_INT);
   $query->bindParam(':state', $state, PDO::PARAM_STR);
-  $query->bindParam(':id', $id, PDO::PARAM_INT);
   $query->bindParam(':machine_name', $machine_name, PDO::PARAM_STR);
 
   return $query->execute();

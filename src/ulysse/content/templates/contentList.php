@@ -33,7 +33,7 @@
 
           <td><?php e($data['state']) ?></td>
 
-          <td><a href="<?php e(url("admin/content/form", 'id=' . $data['id'] . '&form_redirection=admin/content')) ?>">Edit</a></td>
+          <td><a href="<?php e(url("admin/content/form", 'machine_name=' . $data['machine_name'] . '&form_redirection=admin/content')) ?>">Edit</a></td>
 
         </tr>
       <?php endforeach ?>

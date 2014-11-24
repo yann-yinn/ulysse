@@ -3,10 +3,16 @@
 $settings = [
 
   'database' => [
-    'host' => '127.0.0.1',
-    'name' => 'framework',
-    'user' => 'root',
-    'password' => '',
+    'default' => [
+      'driver' => 'sqlite',
+      'sqlite_file' => 'writable/database.sqlite',
+      // for mysql :
+      #'host' => '127.0.0.1',
+      #'name' => 'framework',
+      #'user' => 'root',
+      #'password' => '',
+    ]
+
   ],
 
   // set content of 404 not found page. Use the same keys
