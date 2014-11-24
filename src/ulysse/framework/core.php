@@ -6,7 +6,6 @@
 // filepath considering www/public/index.php file.
 define('CONFIG_DIRECTORY_PATH', '../../config');
 define('CONFIG_EXAMPLE_DIRECTORY_PATH', '../../example.config');
-define('PAGES_FILEPATH', '../../config/pages.php');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('THEMES_DIRECTORY', 'themes');
 
@@ -16,6 +15,7 @@ define('THEMES_DIRECTORY', 'themes');
  */
 function frameworkIsInstalled()
 {
+  //
   return file_exists(CONFIG_DIRECTORY_PATH);
 }
 
@@ -82,8 +82,6 @@ function connectToDatabase()
   return $db;
 }
 
-
-
 /**
  * Return base path, if framework is installed in a subfolder of the host
  *
@@ -112,13 +110,28 @@ function getCurrentPath()
 {
   static $path = null;
   if ($path) return $path;
+
+  // "/ulysse/www/public/index.php" < "http://localhost/ulysse/www/public/index.php/admin/content/form"
   $scriptNamePath = _getServerScriptNamePath();
+
+  // "index.php" <  "/ulysse/www/public/index.php"
   $scriptName = _getServerScriptName($scriptNamePath);
+
+  // "/ulysse/www/public/" < "/ulysse/www/public/index.php"
   $basePath = _getBasePath($scriptName, $scriptNamePath);
+
+  // "/ulysse/www/public/index.php/admin/content/form" < "http://localhost/ulysse/www/public/index.php/admin/content/form"
   $serverRequestUri = _getServerRequestUri();
+
+  // "index.php/admin/content/form" < "/ulysse/www/public/index.php/admin/content/form"
   $serverRequestUriWihoutBasePath = _removeBasePathFromRequestUri($serverRequestUri, $basePath);
+
+  // "/admin/content/form" < "index.php/admin/content/form"
   $path = _removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
+
+  // "admin/content/form" < "/admin/content/form"
   $path = _removeTrailingSlashFromPath($path);
+
   return $path;
 }
 
@@ -190,7 +203,7 @@ function getCurrentLanguage()
 function getAllPages()
 {
   static $pages = [];
-  if (!$pages) $pages = include PAGES_FILEPATH;
+  if (!$pages) $pages = include getConfigDirectoryPath() . '/pages.php';
   return $pages;
 }
 
@@ -250,7 +263,7 @@ function getConfigDirectoryPath()
 }
 
 /**
- * Return value of a site settings
+ * Return value of a site setting
  * @see config/settings.php file.
  * @param string $key = settings identifier
  * @return mixed
@@ -276,8 +289,7 @@ function getSettings()
 }
 
 /**
- * Return all settings defined in config/settings.php file,
- * including "settings.local.php"
+ * Return all settings defined in config/settings.php AND "settings.local.php"
  * @return array
  */
 function getAllSettings()
@@ -404,7 +416,7 @@ function writeLog($log)
 }
 
 /**
- * Add an http header, using http or https given the curre
+ * Add an http response code header, using http or https for the sheme
  * @param int $code : http response code 200, 400 etc...
  * @param $message : message associated to the http response code
  * @param $protocol (
@@ -550,12 +562,14 @@ function getFullDomainName()
   return _getUrlScheme() . '://' . _getServerName();
 }
 
-function setHttpRedirection($path) {
+function setHttpRedirection($path)
+{
   $url = sanitizeValue(url($path));
   _setHttpRedirection(getFullDomainName() . $url);
 }
 
-function getFormRedirectionFromUrl() {
+function getFormRedirectionFromUrl()
+{
   return _getFormRedirectionFromUrl();
 }
 
@@ -568,7 +582,8 @@ function getFormRedirectionFromUrl() {
  *
  */
 function redirection($path = NULL) {
-  if (is_null($path)) {
+  if (is_null($path))
+  {
     $path = _getFormRedirectionFromUrl();
   }
   setHttpRedirection($path);

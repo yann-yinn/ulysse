@@ -2,8 +2,8 @@
 
 $translations = [
   'ulysse.framework.welcome' => [
-    'fr' => 'Bienvenue sur votre premiere page.  Editer le fichier ' . PAGES_FILEPATH . ' pour commencer.',
-    'en' => 'Welcome to your first framework page. Edit ' . PAGES_FILEPATH . ' file to customize.',
+    'fr' => 'Bienvenue sur votre premiere page.  Editer le fichier "config/pages.php" pour commencer.',
+    'en' => 'Welcome to your first framework page. Edit "config/pages.php" file to customize.',
   ],
   'ulysse.framework.installationTitle' => [
     'fr' => 'Bienvenue sur Ulysse',
