@@ -10,6 +10,16 @@ $pages['ulysse.content.list'] = [
     }
 ];
 
+// list all site contents
+$pages['ulysse.content.list'] = [
+  'path' => 'admin/content',
+  'theme' => 'admin',
+  'layout' => 'page.php',
+  'callable' => function() {
+      return contentListPage();
+    }
+];
+
 // display an add / edit content form
 $pages['ulysse.content.form'] = [
   'path' => 'admin/content/form',
