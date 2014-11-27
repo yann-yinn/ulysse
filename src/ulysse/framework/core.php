@@ -328,11 +328,12 @@ function getConfig($type = null) {
   if (!$config)
   {
     include getConfigDirectoryPath() . '/config.php';
-    // register config variables into a global $config variable.
-    $config['settings'] = $settings;
-    $config['translations'] = $translations;
-    $config['pages'] = $pages;
-    $config['listeners'] = $listeners;
+    // special local config file.
+    if (is_readable(getConfigDirectoryPath() . '/config.local.php'))
+    {
+      include getConfigDirectoryPath() . '/config.local.php';
+    }
+
   }
   if ($type)
   {

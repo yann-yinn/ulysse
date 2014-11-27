@@ -1,6 +1,6 @@
 <?php
 
-$settings = [
+$config['settings'] = [
 
   'database' => [
     'default' => [

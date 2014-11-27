@@ -1,5 +1,5 @@
 <?php
 
-$listeners = [];
+$config['listeners'] = [];
 
 

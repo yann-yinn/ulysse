@@ -5,4 +5,4 @@
  * It is ignored by gyt but not for other versionning systems.
  */
 
-$settings['display_developper_toolbar'] = TRUE;
+$config['settings']['display_developper_toolbar'] = TRUE;

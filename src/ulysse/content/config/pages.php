@@ -1,7 +1,7 @@
 <?php
 
 // list all site contents
-$pages['ulysse.content.list'] = [
+$config['pages']['ulysse.content.list'] = [
   'path' => 'admin/content',
   'theme' => 'admin',
   'layout' => 'page.php',
@@ -11,7 +11,7 @@ $pages['ulysse.content.list'] = [
 ];
 
 // list all site contents
-$pages['ulysse.content.list'] = [
+$config['pages']['ulysse.content.list'] = [
   'path' => 'admin/content',
   'theme' => 'admin',
   'layout' => 'page.php',
@@ -21,7 +21,7 @@ $pages['ulysse.content.list'] = [
 ];
 
 // display an add / edit content form
-$pages['ulysse.content.form'] = [
+$config['pages']['ulysse.content.form'] = [
   'path' => 'admin/content/form',
   'theme' => 'admin',
   'layout' => 'page.php',
@@ -31,7 +31,7 @@ $pages['ulysse.content.form'] = [
 ];
 
 // save content to database
-$pages['ulysse.content.form.save'] = [
+$config['pages']['ulysse.content.form.save'] = [
   'path' => 'admin/content/form/save',
   'theme' => 'admin',
   'layout' => 'page.php',

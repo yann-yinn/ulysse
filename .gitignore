@@ -1,2 +1,3 @@
 .idea
-config/settings.local.php
+# for local configuration only.
+config/config.local.php

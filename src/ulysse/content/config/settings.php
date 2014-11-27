@@ -7,7 +7,7 @@
  * - trash : content has been deleted but may be recovered
  * Thos keys will be value stored in "states" column of "content" table.
  */
-$settings['ulysse.content.states'] = [
+$config['settings']['ulysse.content.states'] = [
   'online' => [
     'title' => 'Online',
   ],
@@ -22,7 +22,7 @@ $settings['ulysse.content.states'] = [
 /**
  * Define allow content types on the site.
  **/
-$settings['ulysse.content.types'] = [
+$config['settings']['ulysse.content.types'] = [
   'content' => [
     'title' => 'Default content',
     'field.title.label' => 'title',
