@@ -10,6 +10,8 @@ $config['listeners']['ulysse.framework.afterBootstrap'][] = [
 ];
 $config['listeners']['ulysse.framework.javascripts'][] = [
   'callable' => function() {
-      //return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
+      if (getCurrentPath() == 'admin/content/form') {
+        return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
+      }
     }
 ];
