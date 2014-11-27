@@ -292,6 +292,16 @@ function getAllListeners() {
 }
 
 /**
+ * Fire a Dom Event
+ * @param string $event_id
+ * @return string
+ */
+function fireDomEvent($event_id) {
+  $returns = fireEvent($event_id);
+  return implode("\r\n", $returns);
+}
+
+/**
  * @param string $event_id : event id
  * @return array all returns by all executed listeners
  */
@@ -299,14 +309,17 @@ function fireEvent($event_id) {
   $listeners = getAllListeners();
   $returns = [];
   if (isset($listeners[$event_id])) {
-    foreach($listeners[$event_id] as $listener) {
-      $returns[$event_id][] = executeListener($listener);
+    foreach($listeners[$event_id] as $listener_id => $listener) {
+      $return = executeListener($listener);
+      $returns[] = $return;
+      writeLog(['detail' => "Executing '$listener_id' listener for event '$event_id' : listener returned : " . var_export($return, TRUE)]);
     }
+    return $returns;
   }
   else {
     writeLog(['detail' => 'No listeners found for ' . $event_id . ' event']);
+    return FALSE;
   }
-  return $returns;
 }
 
 /**
