@@ -10,6 +10,6 @@ $listeners['ulysse.framework.afterBootstrap'][] = [
 ];
 $listeners['ulysse.framework.stylesheets'][] = [
   'callable' => function() {
-      return "<script>Alert OK</script>";
+      //return "<script>Alert OK</script>";
     }
 ];

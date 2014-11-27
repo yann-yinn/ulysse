@@ -46,8 +46,6 @@ function startUlysse($contextVariables = [])
   _addPhpIncludePaths(['../..', '../../src', '../../vendors']);
   registerPsr0ClassAutoloader();
 
-  // Try to display framework logs even if php a fatal error occured
-  register_shutdown_function("phpFatalErrorHandler");
   session_start();
 
   // connect to database and register it in the context.
@@ -70,7 +68,7 @@ function startUlysse($contextVariables = [])
 
   // display developper informations.
   if (getSetting('display_developper_toolbar') === TRUE) {
-    require_once "../src/ulysse/framework/developperToolbar.php";
+    //require_once "../src/ulysse/framework/developperToolbar.php";
   }
 
 }
@@ -361,7 +359,8 @@ function getAllSettings()
  */
 function getLocalSettings()
 {
-  $settings = [];
+  static $settings = [];
+  if ($settings) return $settings;
   if (is_readable(getConfigDirectoryPath() . '/settings.local.php'))
   {
     include getConfigDirectoryPath() . '/settings.local.php';
@@ -544,11 +543,6 @@ function sanitizeValue($value)
 {
   return _sanitizeValue($value);
 
-}
-
-function phpFatalErrorHandler()
-{
-  if(error_get_last() !== NULL) require "developperToolbar.php";
 }
 
 /**
