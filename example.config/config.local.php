@@ -5,8 +5,4 @@
  * It is ignored by gyt but not for other versionning systems.
  */
 
-return [
-  // set this to TRUE to add debug information about framework
-  // and display logs.
-  'display_developper_toolbar' =>  FALSE,
-];
+$config['settings']['display_developper_toolbar'] = TRUE;
