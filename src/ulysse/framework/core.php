@@ -269,7 +269,8 @@ function getSetting($key)
  * @param string $event_id
  * @return string
  */
-function fireDomEvent($event_id) {
+function fireDomEvent($event_id)
+{
   $returns = fireEvent($event_id);
   return implode("\r\n", $returns);
 }
@@ -278,18 +279,22 @@ function fireDomEvent($event_id) {
  * @param string $event_id : event id
  * @return array all returns by all executed listeners
  */
-function fireEvent($event_id) {
+function fireEvent($event_id)
+{
   $listeners = getConfig('listeners');
   $returns = [];
-  if (isset($listeners[$event_id])) {
-    foreach($listeners[$event_id] as $listener_id => $listener) {
+  if (isset($listeners[$event_id]))
+  {
+    foreach($listeners[$event_id] as $listener_id => $listener)
+    {
       $return = executeListener($listener);
       $returns[] = $return;
       writeLog(['detail' => "Executing '$listener_id' listener for event '$event_id' : listener returned : " . var_export($return, TRUE)]);
     }
     return $returns;
   }
-  else {
+  else
+  {
     writeLog(['detail' => 'No listeners found for ' . $event_id . ' event']);
     return FALSE;
   }
@@ -323,7 +328,8 @@ function getContextVariable($key)
   return $GLOBALS['_CONTEXT'][$key];
 }
 
-function getConfig($type = null) {
+function getConfig($type = null)
+{
   static $config = [];
   if (!$config)
   {
@@ -428,20 +434,22 @@ function writeLog($log)
  * @param $message : message associated to the http response code
  * @param $protocol (
  */
-function setHttpResponseCode($code, $message = null, $protocol = null) {
+function setHttpResponseCode($code, $message = null, $protocol = null)
+{
   // most common response code and their associated messages.
-  $codesMessages = [
-    200 => 'OK',
-    201 => 'Created',
-    301 => 'Moved Permanently',
-    302 => 'Moved Temporarily',
-    403 => 'Forbidden',
-    404 => 'Not Found',
-    405 => 'Method Not Allowed',
-    418 => 'I’m a teapot',
-    500 => 'Internal Server Error',
-    503 => 'Service Unavailable',
-  ];
+  $codesMessages =
+    [
+      200 => 'OK',
+      201 => 'Created',
+      301 => 'Moved Permanently',
+      302 => 'Moved Temporarily',
+      403 => 'Forbidden',
+      404 => 'Not Found',
+      405 => 'Method Not Allowed',
+      418 => 'I’m a teapot',
+      500 => 'Internal Server Error',
+      503 => 'Service Unavailable',
+    ];
   $protocol = $protocol ? $protocol : _getServerProtocol();
   $message  = $message ? $message : $codesMessages[$code];
   header(sprintf("%s %s %s", $protocol, sanitizeValue($code), sanitizeValue($message)));
@@ -455,22 +463,6 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
 function setContextVariable($key, $value)
 {
   $GLOBALS['_CONTEXT'][$key] = $value;
-}
-
-/**
- * Helper to merge settings from a file into settings of another file.
- * @param array $variable
- * @param string $filepath
- * @return array
- */
-function mergeConfigFromFile($variables, $filepath)
-{
-  $newVariables = require $filepath;
-
-  foreach ($newVariables as $key => $value) {
-    $variables[$key] = $value;
-  }
-  return $variables;
 }
 
 /**
@@ -489,7 +481,6 @@ function registerPsr0ClassAutoloader()
 function sanitizeValue($value)
 {
   return _sanitizeValue($value);
-
 }
 
 /**
@@ -546,7 +537,8 @@ function e($value, $formatters = [])
   // sanitize value string by default unless "raw" special formatter name is requested
   $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : sanitizeValue($value);
 
-  if ($formatters) {
+  if ($formatters)
+  {
     // if formatters is a string, apply it directly and echo string :
     if (is_string($formatters))
     {
