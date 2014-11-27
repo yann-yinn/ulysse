@@ -21,15 +21,18 @@ $settings['ulysse.content.states'] = [
 
 /**
  * Define allow content types on the site.
- */
+ **/
 $settings['ulysse.content.types'] = [
   'content' => [
     'title' => 'Default content',
+    'field.title.label' => 'title',
+    'field.title.body' => 'body'
   ],
   'setting' => [
     'title' => 'Site setting',
+    'field.title.label' => 'title',
+    'field.body.label' => 'body',
   ],
 ];
 
 
-return $settings;

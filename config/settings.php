@@ -46,7 +46,5 @@ $settings = [
 
 ];
 
-// example merge setting from another file :
-$settings = mergeConfigFromFile($settings, 'ulysse/content/config/settings.php');
-
-return $settings;
+// include content config file
+require 'ulysse/content/config/settings.php';

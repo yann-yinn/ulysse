@@ -1,10 +1,5 @@
 <?php
 
-$pages = [];
-
-require "ulysse/content/controllers/contentController.php";
-require_once 'ulysse/content/api/contentApi.php';
-
 // list all site contents
 $pages['ulysse.content.list'] = [
   'path' => 'admin/content',
@@ -22,6 +17,7 @@ $pages['ulysse.content.form'] = [
   'layout' => 'page.php',
   'layout_variables' => [
     'head' => function() {
+
         //return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
       },
   ],
@@ -40,4 +36,3 @@ $pages['ulysse.content.form.save'] = [
     }
 ];
 
-return $pages;

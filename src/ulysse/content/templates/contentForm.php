@@ -12,7 +12,7 @@
 
   <div class="row">
     <div class="large-12 columns">
-      <label>Title
+      <label><?php echo getTranslation('ulysse.content.form.title.label') ?>
         <input type="text" name="title" value="<?php if(!empty($content['title'])) echo $content['title'] ?>">
       </label>
     </div>
@@ -35,7 +35,7 @@
 
   <!-- CONTENT FIELD -->
   <div>
-    <label>Content</label>
+    <label><?php echo getTranslation('ulysse.content.form.body.label') ?></label>
     <?php if (!empty($errors['content'])) : ?>
       <div class="error"><?php echo implode("; ", $errors['content']) ?></div>
     <?php endif ?>
@@ -49,7 +49,7 @@
 
   <!-- STATE FIELD -->
   <div>
-    <label>Content state
+    <label><?php echo getTranslation('ulysse.content.form.status.label') ?>
       <select name="state">
         <option <?php if(!empty($content['state']) && $content['state'] == CONTENT_STATE_DRAFT) echo 'selected="selected"' ?> value="<?php print CONTENT_STATE_DRAFT ?>"> Draft </option>
         <option <?php if(!empty($content['state']) && $content['state'] == CONTENT_STATE_ONLINE) echo 'selected="selected"' ?> value="<?php print CONTENT_STATE_ONLINE ?>"> Online </option>

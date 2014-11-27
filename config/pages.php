@@ -34,7 +34,4 @@ $pages['ulysse.framework.homepage'] = [
     }
 ];
 
-// how to merge setting from another file :
-$pages = mergeConfigFromFile($pages, 'ulysse/content/config/pages.php');
-
-return $pages;
+include 'ulysse/content/config/pages.php';

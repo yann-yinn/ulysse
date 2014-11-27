@@ -2,9 +2,10 @@
 
 ?>
 
+<?php if($machine_name) : ?>
 <div class="content-editable-wrapper panel">
 <?php if (userHasPermission('edit content')) : ?>
-<a class="content-editable-link" href="<?php echo url('admin/content/form', "form_redirection=" . getCurrentPath() .  "&id=" . sanitizeValue($id)) ?>">
+<a class="content-editable-link" href="<?php echo url('admin/content/form', "form_redirection=" . getCurrentPath() .  "&machine_name=" . sanitizeValue($machine_name)) ?>">
   Edit</a>
 <?php endif ?>
 
@@ -12,3 +13,4 @@
 
 <p><?php e($content) ?></p>
 </div>
+<?php endif ?>

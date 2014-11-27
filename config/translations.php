@@ -17,4 +17,3 @@ $translations = [
 
 $translations = mergeConfigFromFile($translations, 'ulysse/content/config/translations.php');
 
-return $translations;
