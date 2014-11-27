@@ -9,9 +9,9 @@ include "listeners.php";
 include "pages.php";
 
 // include content module configuration here
-include('ulysse/content/config/config.php');
+include 'ulysse/content/config/config.php';
 
-
+// import custom module configuration here :
 
 
 
