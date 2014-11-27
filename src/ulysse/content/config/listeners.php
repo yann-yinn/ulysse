@@ -8,8 +8,8 @@ $listeners['ulysse.framework.afterBootstrap'][] = [
       include_once 'ulysse/content/api/contentApi.php';
     }
 ];
-$listeners['ulysse.framework.stylesheets'][] = [
+$listeners['ulysse.framework.javascripts'][] = [
   'callable' => function() {
-      //return "<script>Alert OK</script>";
+      return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
     }
 ];

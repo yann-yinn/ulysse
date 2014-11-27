@@ -2,5 +2,4 @@
 
 $listeners = [];
 
-include 'ulysse/content/config/listeners.php';
 

@@ -10,7 +10,7 @@
 
 
 require_once "../../src/ulysse/framework/core.php";
-startUlysse(['site.staging' => 'online']);
+startFramework(['site.staging' => 'online']);
 
 
 

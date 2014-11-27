@@ -7,7 +7,7 @@ $pages = [];
 
 $pages['__PAGE_NOT_FOUND__'] = [
   'layout' => 'page.php',
-  'content' => function() {
+  'callable' => function() {
       setHttpResponseCode(404);
       return "Oooops page not found";
     }
@@ -15,7 +15,7 @@ $pages['__PAGE_NOT_FOUND__'] = [
 $pages['__ACCESS_DENIED__'] = [
   'path'     => '',
   'layout' => 'page.php',
-  'content' => function() {
+  'callable' => function() {
       setHttpResponseCode(403);
       return "Access denied";
     }
@@ -23,7 +23,7 @@ $pages['__ACCESS_DENIED__'] = [
 $pages['ulysse.framework.homepage'] = [
   'path'     => '',
   'layout' => 'page.php',
-  'content'  =>  function() {
+  'callable'  =>  function() {
       $out = '';
       $out .= getTranslation('ulysse.framework.welcome');
       $datas = getContentByMachineName('homepage_bloc_1');
@@ -33,5 +33,3 @@ $pages['ulysse.framework.homepage'] = [
       return $out;
     }
 ];
-
-include 'ulysse/content/config/pages.php';

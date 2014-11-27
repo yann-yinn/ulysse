@@ -5,7 +5,7 @@ $pages['ulysse.content.list'] = [
   'path' => 'admin/content',
   'theme' => 'admin',
   'layout' => 'page.php',
-  'content' => function() {
+  'callable' => function() {
       return contentListPage();
     }
 ];
@@ -15,13 +15,7 @@ $pages['ulysse.content.form'] = [
   'path' => 'admin/content/form',
   'theme' => 'admin',
   'layout' => 'page.php',
-  'layout_variables' => [
-    'head' => function() {
-
-        //return '<script src="//cdn.ckeditor.com/4.4.5.1/standard/ckeditor.js"></script>';
-      },
-  ],
-  'content' => function() {
+  'callable' => function() {
       return contentFormPage();
     }
 ];
@@ -31,7 +25,7 @@ $pages['ulysse.content.form.save'] = [
   'path' => 'admin/content/form/save',
   'theme' => 'admin',
   'layout' => 'page.php',
-  'content' => function () {
+  'callable' => function () {
       return contentFormSavePage();
     }
 ];

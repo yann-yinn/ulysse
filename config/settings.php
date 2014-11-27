@@ -45,6 +45,3 @@ $settings = [
   ]
 
 ];
-
-// include content config file
-require 'ulysse/content/config/settings.php';

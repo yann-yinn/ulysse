@@ -16,7 +16,6 @@ define('THEMES_DIRECTORY', 'themes');
  */
 function frameworkIsInstalled()
 {
-  //
   return file_exists(CONFIG_DIRECTORY_PATH);
 }
 
@@ -28,10 +27,10 @@ function frameworkIsInstalled()
  * Use this bootstrap in a script in "www" directory with following example code :
  * @code
  * require_once "../src/ulysse/framework/core.php";
- * startUlysse();
+ * startFramework();
  * @endocde
  */
-function startUlysse($contextVariables = [])
+function startFramework($contextVariables = [])
 {
 
   require "core.atoms.php";
@@ -68,7 +67,7 @@ function startUlysse($contextVariables = [])
 
   // display developper informations.
   if (getSetting('display_developper_toolbar') === TRUE) {
-    //require_once "../src/ulysse/framework/developperToolbar.php";
+    require_once "ulysse/framework/developperToolbar.php";
   }
 
 }
@@ -199,19 +198,6 @@ function getCurrentLanguage()
 }
 
 /**
- * Load all routes defined in files.
- * @return mixed
- */
-function getAllPages()
-{
-  static $pages = [];
-  if (!$pages) {
-    include getConfigDirectoryPath() . '/pages.php';
-  }
-  return $pages;
-}
-
-/**
  * If there is several routes, last found route will be used.
  * @see config/pages.php
  * @param $path
@@ -240,7 +226,7 @@ function getPageDeclarationByPath($path, $pages)
  */
 function getPageDeclarationByKey($key)
 {
-  $pages = getAllPages();
+  $pages = getConfig('pages');
   return $pages[$key];
 }
 
@@ -251,7 +237,7 @@ function getPageDeclarationByKey($key)
  * @return string (html, json, xml or whatever the controller return to us.)
  */
 function renderPageByPath($path) {
-  $pages = getAllPages();
+  $pages = getConfig('pages');
   $page = getPageDeclarationByPath($path, $pages);
   if (!$page)
   {
@@ -274,19 +260,8 @@ function getConfigDirectoryPath()
  */
 function getSetting($key)
 {
-  static $settings = [];
-  if (!$settings) $settings = getAllSettings();
-  if (!isset($settings[$key])) {
-    writeLog(['level' => 'error', 'detail' => sanitizeValue($key) . ' setting not declared.']);
-  }
+  $settings = getConfig('settings');
   return $settings[$key];
-}
-
-function getAllListeners() {
-  static $listeners = [];
-  if ($listeners) return $listeners;
-  include getConfigDirectoryPath() . '/listeners.php';
-  return $listeners;
 }
 
 /**
@@ -304,7 +279,7 @@ function fireDomEvent($event_id) {
  * @return array all returns by all executed listeners
  */
 function fireEvent($event_id) {
-  $listeners = getAllListeners();
+  $listeners = getConfig('listeners');
   $returns = [];
   if (isset($listeners[$event_id])) {
     foreach($listeners[$event_id] as $listener_id => $listener) {
@@ -324,48 +299,9 @@ function fireEvent($event_id) {
  * @param array $listener with a "callable" key which is a closure.
  * @return mixed
  */
-function executeListener($listener) {
+function executeListener($listener)
+{
   return $listener['callable']();
-}
-
-/**
- * Get settings from settings.php file.
- * @return array
- *   an associative array of site settings.
- */
-function getSettings()
-{
-  static $settings = [];
-  if ($settings) return $settings;
-  include getConfigDirectoryPath() . '/settings.php';
-  return $settings;
-}
-
-/**
- * Return all settings defined in config/settings.php AND "settings.local.php"
- * @return array
- */
-function getAllSettings()
-{
-  static $settings = [];
-  if ($settings) return $settings;
-  $settings = array_merge(getSettings(), getLocalSettings());
-  return $settings;
-}
-
-/**
- * Return array of settings from settings.local.php
- * @return array
- */
-function getLocalSettings()
-{
-  static $settings = [];
-  if ($settings) return $settings;
-  if (is_readable(getConfigDirectoryPath() . '/settings.local.php'))
-  {
-    include getConfigDirectoryPath() . '/settings.local.php';
-  }
-  return $settings;
 }
 
 /**
@@ -387,13 +323,19 @@ function getContextVariable($key)
   return $GLOBALS['_CONTEXT'][$key];
 }
 
-function getAllTranslations()
-{
-  static $translations = [];
-  if ($translations) return $translations;
-  include getConfigDirectoryPath() . '/translations.php';
-  return $translations;
+function getConfig($type = null) {
+  static $config = [];
+  if (!$config)
+  {
+    include getConfigDirectoryPath() . '/config.php';
+  }
+  if ($type)
+  {
+    return $config[$type];
+  }
+  return $config;
 }
+
 
 /**
  * Get a translation for a specific string_id
@@ -403,8 +345,7 @@ function getAllTranslations()
  */
 function getTranslation($string_id, $language = NULL)
 {
-  static $translations = [];
-  if (!$translations) $translations = getAllTranslations();
+  $translations = getConfig('translations');
   if (!$language) $language = getCurrentLanguage();
   return $translations[$string_id][$language];
 }
@@ -443,7 +384,7 @@ function isCurrentPath($path)
  */
 function renderPage(array $page)
 {
-  $output = is_string($page['content']) ? $page['content'] : $page['content']();
+  $output = is_string($page['callable']) ? $page['callable'] : $page['callable']();
   if (!empty($page['layout'])) {
     $layoutVariables = [];
 
