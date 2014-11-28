@@ -16,7 +16,7 @@ $config['settings'] = [
   ],
 
   // set content of 404 not found page. Use the same keys
-  // than a page array in pages.php file.
+  // than a page array in _pages.php file.
   'page_not_found' => [
     'template' => 'page.php',
     'content' => function() {

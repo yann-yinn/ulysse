@@ -3,10 +3,10 @@
 $config = [];
 
 // include framework settings
-include "settings.php";
-include "translations.php";
-include "listeners.php";
-include "pages.php";
+include "_settings.php";
+include "_translations.php";
+include "_listeners.php";
+include "_pages.php";
 
 // include content module configuration here
 include 'ulysse/content/config/config.php';

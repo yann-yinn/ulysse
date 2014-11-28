@@ -1,6 +1,6 @@
 <?php
 
-include 'settings.php';
-include 'listeners.php';
-include 'translations.php';
-include 'pages.php';
+include '_settings.php';
+include '_listeners.php';
+include '_translations.php';
+include '_pages.php';

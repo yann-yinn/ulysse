@@ -1,15 +1,17 @@
 ULYSSE
 ------------
 
-Deadly fucking simple procedural Content Managment Framework, containing 0% OOP shit.
-Because unless you're Platoon, you know that real word is not about abstract objects.
-Because printing a fucking "hello world" should not require 15Mo of php memory. Becauce nice ideas are the worst way to get Things Done.
+PHP Procedural Content Managment Framework, with 0% OOP shit.
+Because unless you're Platon, you know that real word is not about abstract objects.
 
-DESCRIPTION
+FEATURES
 ------------
 
-Ulysse is a PHP procedural framework. It also provides a basic user friendly content managment module.
-There is no learning curve, because Ulysse is simply PHP, using good pratices without OOP java-like shit.
+* routeur
+* Config files
+* Events listeners
+* String translations
+* MVC
 
 REQUIREMENTS
 -------------

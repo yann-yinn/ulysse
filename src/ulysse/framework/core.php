@@ -21,7 +21,7 @@ function frameworkIsInstalled()
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
- * a php controller, looking at config/pages.php file.
+ * a php controller, looking at config/_pages.php file.
  *
  * @param array $contextVariables : array of values to define site context
  * Use this bootstrap in a script in "www" directory with following example code :
@@ -104,7 +104,7 @@ function getBasePath()
  * For "http://ulysse.local/index.php/hello/world" returns "hello/world"
  * For "http://ulysse.local/index.php/hello/world?test=value" returns "hello/world".
  *
- * This path is then fetched in pages.php file. If a matching page is found,
+ * This path is then fetched in _pages.php file. If a matching page is found,
  * page controller will be executed.
  */
 function getCurrentPath()
@@ -199,7 +199,7 @@ function getCurrentLanguage()
 
 /**
  * If there is several routes, last found route will be used.
- * @see config/pages.php
+ * @see config/_pages.php
  * @param $path
  * @param $pages
  * @return array : page declaration
@@ -220,7 +220,7 @@ function getPageDeclarationByPath($path, $pages)
 
 /**
  * Return a page by its key
- * @see config/pages.php file.
+ * @see config/_pages.php file.
  * @param string $key
  * @return array : the page definition as an array
  */
@@ -232,7 +232,7 @@ function getPageDeclarationByKey($key)
 
 /**
  * Render a page content using its path.
- * @see config/pages.php file
+ * @see config/_pages.php file
  * @param string $path
  * @return string (html, json, xml or whatever the controller return to us.)
  */
@@ -254,7 +254,7 @@ function getConfigDirectoryPath()
 
 /**
  * Return value of a site setting
- * @see config/settings.php file.
+ * @see config/_settings.php file.
  * @param string $key = settings identifier
  * @return mixed
  */
@@ -390,7 +390,7 @@ function isCurrentPath($path)
 
 /**
  * Render a page, parsing a page definition
- * @see config/pages.php
+ * @see config/_pages.php
  * @param array $page : page array declaration as returned by getPageByPath() or getPageByKey()
  * @return bool
  */
