@@ -47,7 +47,7 @@ function startFramework($contextVariables = [])
 
   session_start();
 
-  // connect to database and register it in the context.
+  // connect to database and register its connexion in the context.
   $contextVariables['db'] = connectToDatabase();
 
   // register context variables in the site context
