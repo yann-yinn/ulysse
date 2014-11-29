@@ -6,7 +6,7 @@
 // filepath considering www/public/index.php file.
 define('CONFIG_DIRECTORY_PATH', '../../config');
 define('FRAMEWORK_ROOT', '../..');
-define('CONFIG_EXAMPLE_DIRECTORY_PATH', '../../example.config');
+define('CONFIG_EXAMPLE_DIRECTORY_PATH', '../../dist.config');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('THEMES_DIRECTORY', 'themes');
 
@@ -37,7 +37,7 @@ function startFramework($contextVariables = [])
   // if framework is not yet installed, display information about installation.
   if (!frameworkIsInstalled())
   {
-    echo frameworkInstallationPage($contextVariables);
+    frameworkInstallationPage($contextVariables);
     exit;
   }
 
@@ -117,9 +117,11 @@ function getCurrentPath()
 
   // "index.php" <  "/ulysse/www/public/index.php"
   $scriptName = _getServerScriptName($scriptNamePath);
+  writeLog(['detail' => sprintf('Framework determined "%s" as the entry point', $scriptName)]);
 
   // "/ulysse/www/public/" < "/ulysse/www/public/index.php"
   $basePath = _getBasePath($scriptName, $scriptNamePath);
+  writeLog(['detail' => sprintf('Framework determined "%s" as the base Path', $basePath)]);
 
   // "/ulysse/www/public/index.php/admin/content/form" < "http://localhost/ulysse/www/public/index.php/admin/content/form"
   $serverRequestUri = _getServerRequestUri();
@@ -132,6 +134,7 @@ function getCurrentPath()
 
   // "admin/content/form" < "/admin/content/form"
   $path = _removeTrailingSlashFromPath($path);
+  writeLog(['detail' => sprintf('Framework determined "%s" as the path', $path)]);
 
   return $path;
 }
@@ -151,10 +154,7 @@ function getServerScriptName()
  */
 function frameworkInstallationPage()
 {
-  $out = '';
-  $out .= '<h1>' . getTranslation("ulysse.framework.installationTitle") . '</h1>';
-  $out .= getTranslation('ulysse.framework.installationText');
-  return $out;
+  include 'templates/installation-page.php';
 }
 
 /**
@@ -261,7 +261,9 @@ function getConfigDirectoryPath()
 function getSetting($key)
 {
   $settings = getConfig('settings');
-  return $settings[$key];
+  if (isset($settings[$key])) {
+    return $settings[$key];
+  }
 }
 
 /**

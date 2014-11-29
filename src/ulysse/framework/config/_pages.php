@@ -25,10 +25,6 @@ $config['pages']['ulysse.framework.homepage'] = [
   'callable'  =>  function() {
       $out = '';
       $out .= getTranslation('ulysse.framework.welcome');
-      $datas = getContentByMachineName('homepage_bloc_1');
-      if ($datas) {
-        $out .= template('ulysse/content/templates/contentView.php', $datas);
-      }
       return $out;
     }
 ];

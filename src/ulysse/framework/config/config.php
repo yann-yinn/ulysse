@@ -14,16 +14,13 @@
 
 $config = [];
 
-// enable framework. You should _really_ not remove this.
-include 'ulysse/framework/config/config.php';
+// include framework settings
+include "_settings.php";
+include "_translations.php";
+include "_listeners.php";
+include "_pages.php";
 
-// include global config
-include '_settings.php';
-include '_translations.php';
-include '_listeners.php';
-include '_pages.php';
-
-// enable content module
+// include content module configuration here
 include 'ulysse/content/config/config.php';
 
 // import custom module configuration here :

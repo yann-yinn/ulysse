@@ -1,1 +1,0 @@
-Default theme for framework templates.

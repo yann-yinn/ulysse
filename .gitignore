@@ -1,3 +1,5 @@
 .idea
 # for local configuration only.
 config/config.local.php
+.htaccess
+themes/dev
