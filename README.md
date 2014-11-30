@@ -10,10 +10,9 @@ FEATURES
 * MVC : routes -> controllers -> template
 * template system, with overridable templates and switchable themes.
 * Config files
-* organize code in module, config file by module.
-* Events listeners, events are also used in templates to let module include dynamically html or js / css.
+* organize code in module, config files by module.
+* Events listeners, events are also used in templates to let modules include dynamically html or js / css, blocks etc ...
 * String translations
-* Front-end edit links for contents.
 * PSR0 autoloader for vendors library or your own code.
 
 REQUIREMENTS
@@ -25,12 +24,10 @@ REQUIREMENTS
 INSTALLATION
 -------------
 
-* Copy "www/example.index.php" to "www/index.php" file (you may name it as you want or create several entry points, like index_fr.php)
-* Copy "example.config" directory to "config"
-* Rename "example.htaccess" to ".htaccess"
-* make sure "writable" directory is writable by apache
+* Copy "example.application" directory to "application".
+* make sure "application/writable" directory is writable & readable by apache
 
-Edit pages.php file to start create pages on your site.
+Edit applications/config/_pages.php file to start create pages on your site.
 
 
 CREATE PAGES
@@ -39,7 +36,7 @@ CREATE PAGES
 pages.php file map a framework path to a php callable.
 It uses php closures or simple strings.
 A page may return a string or a closure :
-In config/_pages.php :
+In application/config/_pages.php :
 
 ```php
 $config['pages']['homepage'] = [
@@ -87,7 +84,7 @@ TEMPLATES OVERRIDABLE AND THEMES
 
 By default, templates will use simply path passed as an argument :
 For "path/to/template.php", "'path/to/template.php', will be used to render the template.
-But Ulysse will first look for an existing "themes/mytheme/path/to/template.php"
+But Ulysse will first look for an existing "application/themes/mytheme/path/to/template.php"
 and will use it if found.
 
 "mytheme" is the default enabled theme, unless you specify theme to use in the template function
