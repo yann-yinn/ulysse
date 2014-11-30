@@ -1,9 +1,5 @@
 <?php
-/**
- * Example settings
- */
 
-/*
 $config['settings']['database'] = [
   'default' => [
     'driver' => 'sqlite',
@@ -15,20 +11,16 @@ $config['settings']['database'] = [
     #'password' => '',
   ]
 ];
-*/
 
 // theme to use to fetch requested templates.
-/*
-$config['settings']['theme_path'] = '../../themes/dist.ulysse';
-$config['settings']['admin_theme_path'] = '../../themes/dist.admin';
-*/
+$config['settings']['theme_path'] = FRAMEWORK_ROOT . '/themes/ulysse';
+$config['settings']['admin_theme_path'] = FRAMEWORK_ROOT . '/themes/admin';
 
 // language used by default by the framework if no language are specified
 // in the http request.
-// $config['settings']['language_default'] = 'fr';
+$config['settings']['language_default'] = 'fr';
 
 // enabled languages on the site
-/*
 $config['settings']['languages'] = [
   'fr' => [
     // using ?language='fr' in
@@ -38,4 +30,4 @@ $config['settings']['languages'] = [
     'query' => 'en',
   ],
 ];
-*/
+

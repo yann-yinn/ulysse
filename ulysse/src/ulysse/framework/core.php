@@ -3,12 +3,20 @@
  * PHP Ulysse framework core file.
  */
 
-// filepath considering www/public/index.php file.
-define('CONFIG_DIRECTORY_PATH', '../../config');
-define('FRAMEWORK_ROOT', '../..');
-define('CONFIG_EXAMPLE_DIRECTORY_PATH', '../../dist.config');
+
+// filepaths considering user/www/public/index.php file.
+
+define('FRAMEWORK_ROOT', '../../../ulysse');
+define('USER_ROOT', '../../../user');
+
+define('FRAMEWORK_CONFIG_DIRECTORY_PATH', FRAMEWORK_ROOT . '/config');
+define('FRAMEWORK_WRITABLE_DIRECTORY_PATH', FRAMEWORK_ROOT . '/writable');
+define('USER_CONFIG_DIRECTORY_PATH', USER_ROOT . '/config');
+define('USER_DIST_CONFIG_DIRECTORY_PATH', USER_ROOT . '/dist.config');
+
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
-define('THEMES_DIRECTORY', 'themes');
+define('FRAMEWORK_THEMES_DIRECTORY', 'themes');
+define('USER_THEMES_DIRECTORY', 'themes');
 
 /**
  * Return TRUE if framework has already been setup, FALSE otherwise
@@ -16,7 +24,7 @@ define('THEMES_DIRECTORY', 'themes');
  */
 function frameworkIsInstalled()
 {
-  return file_exists(CONFIG_DIRECTORY_PATH);
+  return file_exists(USER_CONFIG_DIRECTORY_PATH);
 }
 
 /**
@@ -42,7 +50,13 @@ function startFramework($contextVariables = [])
   }
 
   // add some php usefull include paths.
-  _addPhpIncludePaths(['../..', '../../src', '../../vendors']);
+  _addPhpIncludePaths([
+      FRAMEWORK_ROOT . '/src',
+      FRAMEWORK_ROOT . '/vendors',
+      USER_ROOT . '/src',
+      USER_ROOT . '/vendors',
+
+    ]);
   registerPsr0ClassAutoloader();
 
   session_start();
@@ -134,7 +148,7 @@ function getCurrentPath()
 
   // "admin/content/form" < "/admin/content/form"
   $path = _removeTrailingSlashFromPath($path);
-  writeLog(['detail' => sprintf('Framework determined "%s" as the path', $path)]);
+  writeLog(['detail' => sprintf('Framework determined "%s" as the http requested path', $path)]);
 
   return $path;
 }
@@ -247,11 +261,6 @@ function renderPageByPath($path) {
   return $output;
 }
 
-function getConfigDirectoryPath()
-{
-  return frameworkIsInstalled() ? CONFIG_DIRECTORY_PATH : CONFIG_EXAMPLE_DIRECTORY_PATH;
-}
-
 /**
  * Return value of a site setting
  * @see config/_settings.php file.
@@ -335,18 +344,20 @@ function getConfig($type = null)
   static $config = [];
   if (!$config)
   {
-    include getConfigDirectoryPath() . '/config.php';
+    include FRAMEWORK_CONFIG_DIRECTORY_PATH . '/config.php';
+    include USER_CONFIG_DIRECTORY_PATH . '/config.php';
     // special local config file.
-    if (is_readable(getConfigDirectoryPath() . '/config.local.php'))
+    if (is_readable(USER_CONFIG_DIRECTORY_PATH  . '/config.local.php'))
     {
-      include getConfigDirectoryPath() . '/config.local.php';
+      include USER_CONFIG_DIRECTORY_PATH  . '/config.local.php';
     }
 
   }
-  if ($type)
+  if ($type && isset($config[$type]))
   {
     return $config[$type];
   }
+
   return $config;
 }
 
@@ -407,7 +418,7 @@ function renderPage(array $page)
     }
     $layoutVariables['content'] = $output;
     if (!empty($page['theme'])) {
-      $themePath = THEMES_DIRECTORY . DIRECTORY_SEPARATOR . $page['theme'];
+      $themePath = FRAMEWORK_THEMES_DIRECTORY . DIRECTORY_SEPARATOR . $page['theme'];
     }
     else {
       $themePath = getSetting('theme_path');

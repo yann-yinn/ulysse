@@ -37,4 +37,3 @@ $config['pages']['ulysse.framework.homepage'] = [
     }
 ];
 */
-

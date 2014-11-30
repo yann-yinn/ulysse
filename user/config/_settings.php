@@ -19,8 +19,8 @@ $config['settings']['database'] = [
 
 // theme to use to fetch requested templates.
 /*
-$config['settings']['theme_path'] = '../../themes/dist.ulysse';
-$config['settings']['admin_theme_path'] = '../../themes/dist.admin';
+$config['settings']['theme_path'] = FRAMEWORK_ROOT . '/themes/ulysse';
+$config['settings']['admin_theme_path'] = FRAMEWORK_ROOT . '/themes/admin';
 */
 
 // language used by default by the framework if no language are specified
