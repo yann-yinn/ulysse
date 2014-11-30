@@ -3,7 +3,7 @@
 $config['settings']['database'] = [
   'default' => [
     'driver' => 'sqlite',
-    'sqlite_file' => 'writable/database.sqlite',
+    'sqlite_file' => APPLICATION_ROOT . '/writable/database.sqlite',
     // for mysql :
     #'host' => '127.0.0.1',
     #'name' => 'framework',

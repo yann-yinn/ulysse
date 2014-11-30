@@ -1,6 +1,7 @@
 .idea
 # for local configuration only.
-user/config/config.local.php
+application/config/config.local.php
 # for ulysse dev
-user/themes/dev
+application/themes/dev
+application
 
