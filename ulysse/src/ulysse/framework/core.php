@@ -391,24 +391,32 @@ function renderPage(array $page)
     }
     $layoutVariables['content'] = $output;
     if (!empty($page['theme'])) {
-      if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme']))
-      {
-        $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme'];
-      }
-      elseif(file_exists(FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme']))
-      {
-        $themePath = FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme'];
-      }
-      else {
-        writeLog(['detail' => 'Theme not found for layout page property']);
-      }
+      $themePath = getThemePath($page['theme']);
     }
     else {
-      $themePath = getSetting('theme_path');
+      $themePath = getThemePath(getSetting('theme'));
     }
     $output = template($page['layout'], $layoutVariables, $themePath);
   }
   return $output;
+}
+
+/**
+ * @param string $theme
+ * @return bool|string
+ */
+function getThemePath($theme)
+{
+  $themePath = FALSE;
+  if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme))
+  {
+    $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
+  }
+  elseif(file_exists(FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme))
+  {
+    $themePath = FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
+  }
+  return $themePath;
 }
 
 /**
