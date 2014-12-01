@@ -1,6 +1,16 @@
 <?php
 
 // list all site contents
+$config['pages']['ulysse.admin.index'] = [
+  'path' => 'admin',
+  'theme' => 'admin',
+  'layout' => 'page.php',
+  'callable' => function() {
+      return '';
+    }
+];
+
+// list all site contents
 $config['pages']['ulysse.content.list'] = [
   'path' => 'admin/content',
   'theme' => 'admin',

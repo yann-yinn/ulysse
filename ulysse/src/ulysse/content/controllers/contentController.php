@@ -1,8 +1,5 @@
 <?php
 
-require_once 'ulysse/content/datasValidators/contentDatasValidators.php';
-require_once 'ulysse/content/api/contentApi.php';
-
 /**
  * Display all sites content with edit / add / delete link.
  * @return string
