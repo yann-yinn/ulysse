@@ -4,14 +4,14 @@
  */
 
 
-$config['pages']['__PAGE_NOT_FOUND__'] = [
+$config['pages']['__HTTP_404__'] = [
   'layout' => 'page.php',
   'callable' => function() {
       setHttpResponseCode(404);
       return "Oooops page not found";
     }
 ];
-$config['pages']['__ACCESS_DENIED__'] = [
+$config['pages']['__HTTP_403__'] = [
   'path'     => '',
   'layout' => 'page.php',
   'callable' => function() {

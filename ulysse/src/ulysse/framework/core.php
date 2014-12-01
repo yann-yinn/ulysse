@@ -1,18 +1,14 @@
 <?php
 /**
- * PHP Ulysse framework core file.
+ * PHP Ulysse framework core files.
  */
 
 
-// filepaths considering user/www/public/index.php file.
-
+// filepaths considering /application/www/public/index.php file.
 define('FRAMEWORK_ROOT', '../../../ulysse');
 define('APPLICATION_ROOT', '../../../application');
-
 define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
-
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
-
 define('FRAMEWORK_THEMES_DIRECTORY_PATH', 'themes');
 define('APPLICATION_THEMES_DIRECTORY_PATH', 'themes');
 
@@ -38,14 +34,18 @@ function startFramework($contextVariables = [])
       APPLICATION_ROOT . '/vendors',
 
     ]);
+  // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
 
+  // for user connexion.
   session_start();
 
-  // connect to database and register its connexion in the context.
+  // connect to database and register its connexion in the context, so
+  // that we can access db connexion from anywhere in the code.
+  // @see getDbConnexion();
   $contextVariables['db'] = connectToDatabase();
 
-  // register context variables in the site context
+  // register context variables in the application context
   setContextVariable('time_start', microtime(TRUE));
   foreach ($contextVariables as $key => $contextVariable)
   {
@@ -53,6 +53,7 @@ function startFramework($contextVariables = [])
   }
 
   // include template formatters file, for template() function.
+  // @FIXME find a better place for formatters ? is this needed at all ?
   require TEMPLATE_FORMATTERS_FILEPATH;
 
   fireEvent('ulysse.framework.afterBootstrap');
@@ -61,7 +62,7 @@ function startFramework($contextVariables = [])
   echo renderPageByPath(getCurrentPath());
 
   // display developper informations.
-  if (getSetting('display_developper_toolbar') === TRUE) {
+  if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
     require_once "ulysse/framework/developperToolbar.php";
   }
 
@@ -91,7 +92,7 @@ function getBasePath()
 }
 
 /**
- * Extract framework path from an incoming http request.
+ * Extract a path usable by the framework from an incoming http request.
  * Heart of the framework routing system.
  *
  * @return string :
@@ -99,7 +100,7 @@ function getBasePath()
  * For "http://ulysse.local/index.php/hello/world" returns "hello/world"
  * For "http://ulysse.local/index.php/hello/world?test=value" returns "hello/world".
  *
- * This path is then fetched in _pages.php file. If a matching page is found,
+ * This path is then fetched in $config['pages'] array. If a matching page is found,
  * page controller will be executed.
  */
 function getCurrentPath()
@@ -120,7 +121,7 @@ function getCurrentPath()
   $serverRequestUri = _getServerRequestUri();
 
   // "index.php/admin/content/form" < "/ulysse/www/public/index.php/admin/content/form"
-  $serverRequestUriWihoutBasePath = _removeBasePathFromRequestUri($serverRequestUri, $basePath);
+  $serverRequestUriWihoutBasePath = _removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
 
   // "/admin/content/form" < "index.php/admin/content/form"
   $path = _removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
@@ -138,15 +139,6 @@ function getCurrentPath()
 function getServerScriptName()
 {
   return _getServerScriptName(_getServerScriptNamePath());
-}
-
-/**
- * Display information about framework setup.
- * @return string html
- */
-function frameworkInstallationPage()
-{
-  include 'templates/installation-page.php';
 }
 
 /**
@@ -223,17 +215,18 @@ function getPageDeclarationByKey($key)
 }
 
 /**
- * Render a page content using its path.
- * @see config/_pages.php file
+ * Render a page using its path.
+ * @see $config['pages']
  * @param string $path
  * @return string (html, json, xml or whatever the controller return to us.)
  */
-function renderPageByPath($path) {
+function renderPageByPath($path)
+{
   $pages = getConfig('pages');
   $page = getPageDeclarationByPath($path, $pages);
   if (!$page)
   {
-    $page = getPageDeclarationByKey('__PAGE_NOT_FOUND__', $pages);
+    $page = getPageDeclarationByKey('__HTTP_404__', $pages);
   }
   $output = renderPage($page);
   return $output;
@@ -248,7 +241,8 @@ function renderPageByPath($path) {
 function getSetting($key)
 {
   $settings = getConfig('settings');
-  if (isset($settings[$key])) {
+  if (isset($settings[$key]))
+  {
     return $settings[$key];
   }
 }
@@ -352,14 +346,16 @@ function getTranslation($string_id, $language = NULL)
   return $translations[$string_id][$language];
 }
 
+/**
+ * Build a full url from a framework path.
+ * @param string $path : e.g "hello/world"
+ * @param string $queryString : e.g "value=4&test=true&form_redirection=contact"
+ * @return string : full url suitable to build an html link.
+ */
 function url($path, $queryString = '')
 {
   $queryArray = [];
   if ($queryString) parse_str($queryString, $queryArray);
-  if (isset($queryArray['form_redirection'])) {
-    //$queryArray['form_redirection'] = urlencode($queryArray['form_redirection']);
-  }
-  // build back a query string
   $queryString = http_build_query($queryArray);
   $url = sanitizeValue(getBasePath() . getServerScriptName() . '/' . $path);
   if ($queryString) $url .= '?' . sanitizeValue($queryString);
@@ -380,13 +376,13 @@ function isCurrentPath($path)
 
 /**
  * Render a page, parsing a page definition
- * @see config/_pages.php
+ * @see $config['pages']
  * @param array $page : page array declaration as returned by getPageByPath() or getPageByKey()
  * @return bool
  */
 function renderPage(array $page)
 {
-  $output = is_string($page['callable']) ? $page['callable'] : $page['callable']();
+  $output = getPagePropertyValue($page['callable']);
   if (!empty($page['layout'])) {
     $layoutVariables = [];
 
@@ -403,6 +399,15 @@ function renderPage(array $page)
     $output = template($page['layout'], $layoutVariables, $themePath);
   }
   return $output;
+}
+
+/**
+ * Page properties might be strings or closure.
+ * @param $property
+ * @return string
+ */
+function getPagePropertyValue($property) {
+  return is_string($property) ? $property : $property();
 }
 
 /**
@@ -486,29 +491,36 @@ function sanitizeValue($value)
  */
 function template($templatePath, $variables = [], $themePath = null)
 {
-  $templateFound = FALSE;
+  $output = FALSE;
   $searchPaths = [
     $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme_path') . DIRECTORY_SEPARATOR . $templatePath,
     $templatePath,
   ];
-  if ($variables) extract($variables);
-  ob_start();
   foreach ($searchPaths as $path)
   {
-    $include = @include($path);
-    if ($include)
-    {
-      $templateFound = TRUE;
-      break;
-    }
+     $output = @_template($path, $variables);
+     if ($output) break;
   }
-  if (!$templateFound)
+  if (!$output)
   {
     writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeValue($path))]);
   }
-  else {
+  else
+  {
     writeLog(['level' => 'notification', 'detail' => sprintf('Template "%s" rendered. ', sanitizeValue($path))]);
   }
+  return $output;
+}
+
+/**
+ * @param string $path : path to the template file
+ * @param array $variables
+ * @return string : template parsed with variables, ready to be printed
+ */
+function _template($path, $variables = []) {
+  if ($variables) extract($variables);
+  ob_start();
+  include $path;
   return ob_get_clean();
 }
 
@@ -674,7 +686,7 @@ function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName
  * For "localhost/ulysse/www/public/index.php/azertyuiop789456123"
  * it return also "index.php/azertyuiop789456123".
  */
-function _removeBasePathFromRequestUri($serverRequestUri, $basePath)
+function _removeBasePathFromServerRequestUri($serverRequestUri, $basePath)
 {
   return substr_replace($serverRequestUri, '', 0, strlen($basePath));
 }
@@ -743,6 +755,23 @@ function _getServerName()
   return $_SERVER['SERVER_NAME'];
 }
 
+/**
+ * @TODO : databases whould be passed without the id for
+ * this atomic function.
+ * Connect to a database with PDO
+ * @param array $databaseDatas = [
+ *   'default' => [
+ *     'driver' => 'sqlite',
+ *     'sqlite_file' => 'writable/database.sqlite',
+ *     // for mysql :
+ *     //'host' => '127.0.0.1',
+ *     //'name' => 'framework',
+ *     //'user' => 'root',
+ *     //'password' => '',
+ * ]
+ * @param string $id
+ * @return bool|PDO
+ */
 function _connectToDatabase($databaseDatas, $id = 'default')
 {
   // Connect to database specified in database settings if any, using PDO
@@ -781,23 +810,6 @@ function _addPhpIncludePaths($include_paths)
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
 
-function vd($value) {
-  echo '<pre>';
-  var_dump($value);
-  echo '</pre>';
-}
-
-function vde($value) {
-  var_dump($value);exit;
-}
-
-function pre($array) {
-  echo '<pre>';
-  print_r($array);
-  echo '</pre>';
-  exit;
-}
-
 function _getFormRedirectionFromUrl() {
   $path = null;
   if (isset($_GET['form_redirection']))
@@ -814,6 +826,26 @@ function _getFormRedirectionFromUrl() {
 function _validateMachineName($machine_name)
 {
   return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
+}
+
+function vd($value)
+{
+  echo '<pre>';
+  var_dump($value);
+  echo '</pre>';
+}
+
+function vde($value)
+{
+  var_dump($value);exit;
+}
+
+function pre($array)
+{
+  echo '<pre>';
+  print_r($array);
+  echo '</pre>';
+  exit;
 }
 
 

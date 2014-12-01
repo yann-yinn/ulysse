@@ -7,16 +7,16 @@
  * You may redefined as you wish those existings pages.
  */
 /*
-// special page for 404 not found error
-$config['pages']['__PAGE_NOT_FOUND__'] = [
+// customize page for 404 not found error
+$config['pages']['__HTTP_404__'] = [
   'layout' => 'page.php',
   'callable' => function() {
       setHttpResponseCode(404);
       return "Oooops page not found";
     }
 ];
-// special page for 403 not found error
-$config['pages']['__ACCESS_DENIED__'] = [
+// customize page for 403 not found error
+$config['pages']['__HTTP_403__'] = [
   'layout' => 'page.php',
   'callable' => function() {
       setHttpResponseCode(403);

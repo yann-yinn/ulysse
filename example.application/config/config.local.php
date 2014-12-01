@@ -4,7 +4,7 @@
  * This file is should NOT be versionned.
  */
 
-$config['settings']['display_developper_toolbar'] = TRUE;
+$config['settings']['ulysse.framework.displayDevelopperToolbar'] = TRUE;
 
 
 
