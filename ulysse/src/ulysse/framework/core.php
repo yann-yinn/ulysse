@@ -9,8 +9,8 @@ define('FRAMEWORK_ROOT', '../../../ulysse');
 define('APPLICATION_ROOT', '../../../application');
 define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
-define('FRAMEWORK_THEMES_DIRECTORY_PATH', 'themes');
-define('APPLICATION_THEMES_DIRECTORY_PATH', 'themes');
+define('FRAMEWORK_THEMES_DIRECTORY_PATH', FRAMEWORK_ROOT . '/themes');
+define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
@@ -391,7 +391,17 @@ function renderPage(array $page)
     }
     $layoutVariables['content'] = $output;
     if (!empty($page['theme'])) {
-      $themePath = FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme'];
+      if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme']))
+      {
+        $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme'];
+      }
+      elseif(file_exists(FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme']))
+      {
+        $themePath = FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $page['theme'];
+      }
+      else {
+        writeLog(['detail' => 'Theme not found for layout page property']);
+      }
     }
     else {
       $themePath = getSetting('theme_path');
