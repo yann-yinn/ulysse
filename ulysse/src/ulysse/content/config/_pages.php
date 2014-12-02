@@ -2,7 +2,7 @@
 
 // list all site contents
 $config['pages']['ulysse.content.list'] = [
-  'path' => 'admin/content',
+  'path' => 'admin',
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function() {

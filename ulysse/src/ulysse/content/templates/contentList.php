@@ -3,7 +3,7 @@
 ?>
 
 <div id="actions">
-  <a href="<?php e(url('admin/content/form', 'form_redirection=admin/content')) ?>">+ Add content</a>
+  <a href="<?php e(url('admin/content/form', 'form_redirection=admin')) ?>">+ Add content</a>
 </div>
 
 <div class="row">
@@ -35,7 +35,7 @@
           <td><?php e($data['created']) ?></td>
 
 
-          <td><a href="<?php e(url("admin/content/form", 'machine_name=' . $data['machine_name'] . '&form_redirection=admin/content')) ?>">Edit</a></td>
+          <td><a href="<?php e(url("admin/content/form", 'machine_name=' . $data['machine_name'] . '&form_redirection=admin')) ?>">Edit</a></td>
 
 
         </tr>

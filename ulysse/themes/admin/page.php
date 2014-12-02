@@ -40,7 +40,7 @@
     <!-- Left Nav Section -->
     <ul class="left">
       <li><a class="<?php if(getCurrentPath() == 'admin/content/form') echo 'active' ?>" href="<?php echo url('admin/content/form') ?>"> Add content </a></li>
-      <li><a class="<?php if(getCurrentPath() == 'admin/content') echo 'active' ?>" href="<?php echo url('admin/content') ?>"> Content list </a></li>
+      <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo url('admin') ?>"> Content list </a></li>
     </ul>
   </section>
 </nav>
