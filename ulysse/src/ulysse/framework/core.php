@@ -26,13 +26,11 @@ define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
 function startFramework($contextVariables = [])
 {
 
-  // add some php usefull include paths.
   _addPhpIncludePaths([
       FRAMEWORK_ROOT . '/src',
       FRAMEWORK_ROOT . '/vendors',
       APPLICATION_ROOT . '/src',
       APPLICATION_ROOT . '/vendors',
-
     ]);
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
@@ -509,9 +507,12 @@ function sanitizeValue($value)
  */
 function template($templatePath, $variables = [], $themePath = null)
 {
+  // content.php
   $output = FALSE;
   $searchPaths = [
-    $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme_path') . DIRECTORY_SEPARATOR . $templatePath,
+    // first check for this path in the theme directory
+    getThemePath(getSetting('theme')) . DIRECTORY_SEPARATOR . $templatePath,
+    $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme') . DIRECTORY_SEPARATOR . $templatePath,
     $templatePath,
   ];
   foreach ($searchPaths as $path)

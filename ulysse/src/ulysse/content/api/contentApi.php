@@ -44,6 +44,10 @@ function getContentById($id) {
   $datas = $query->fetch();
   return $datas;
 }
+function getContent($machineName) {
+  return getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE);
+}
+
 
 /**
  * Get a content by its uniq machine name
@@ -51,15 +55,15 @@ function getContentById($id) {
  * @param string $state : online, trash, draft
  * @return array
  */
-function getContentByMachineName($machineName, $state = NULL) {
+function getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE) {
   $db = getDbConnexion('db');
   $sql =  'SELECT * FROM content WHERE machine_name = :machine_name';
-  if ($state) {
+  if ($state != CONTENT_STATE_ONLINE) {
     $sql .= ' AND state = :state';
   }
   $query = $db->prepare($sql);
   $query->bindParam(':machine_name', $machineName, PDO::PARAM_STR);
-  if ($state) {
+  if ($state != CONTENT_STATE_ONLINE ) {
     $query->bindParam(':state', $state, PDO::PARAM_STR);
   }
   $query->execute();
