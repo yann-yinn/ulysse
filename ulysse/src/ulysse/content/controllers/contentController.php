@@ -1,15 +1,20 @@
 <?php
 
 require_once 'ulysse/content/datasValidators/contentDatasValidators.php';
-require_once 'ulysse/content/api/contentApi.php';
 
 /**
  * Display all sites content with edit / add / delete link.
  * @return string
  */
 function contentListPage() {
-  $datas = getContentList();
-  return template('ulysse/content/templates/contentList.php', ['datas' => $datas]);
+  $datas = getContentList(CONTENT_STATE_ONLINE);
+  $out = '';
+  $out.= template('ulysse/content/templates/contentList.php', ['state' => 'Online', 'datas' => $datas]);
+  $datas = getContentList(CONTENT_STATE_DRAFT);
+  $out.= template('ulysse/content/templates/contentList.php', ['state' => 'Draft', 'datas' => $datas]);
+  $datas = getContentList(CONTENT_STATE_TRASH);
+  $out.= template('ulysse/content/templates/contentList.php', ['state' => 'Trash', 'datas' => $datas]);
+  return $out;
 }
 
 /**

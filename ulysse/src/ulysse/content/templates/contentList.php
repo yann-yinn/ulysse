@@ -9,13 +9,16 @@
 <div class="row">
   <div class="small-12 columns">
 
+
     <table>
+
+      <caption><?php e($state) ?></caption>
+
       <thead>
       <th>Type</th>
       <th>title</th>
       <th>machine name</th>
       <th>Created</th>
-      <th>State</th>
       <th>Edit</th>
       </thead>
 
@@ -31,9 +34,9 @@
 
           <td><?php e($data['created']) ?></td>
 
-          <td><?php e($data['state']) ?></td>
 
           <td><a href="<?php e(url("admin/content/form", 'machine_name=' . $data['machine_name'] . '&form_redirection=admin/content')) ?>">Edit</a></td>
+
 
         </tr>
       <?php endforeach ?>

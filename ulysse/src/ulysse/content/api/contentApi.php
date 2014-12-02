@@ -19,12 +19,14 @@ function getContentTypes() {
 
 /**
  * Get all content of the site
+ * @param string $state
  * @return array
  */
-function getContentList() {
+function getContentList($state) {
   $db      = getDbConnexion('db');
-  $sql =  'SELECT * FROM content ORDER BY changed DESC';
+  $sql =  'SELECT * FROM content WHERE state = :state ORDER BY changed DESC';
   $query  = $db->prepare($sql);
+  $query->bindParam(':state', $state, PDO::PARAM_STR);
   $query->execute();
   $datas = $query->fetchAll();
   return $datas;
