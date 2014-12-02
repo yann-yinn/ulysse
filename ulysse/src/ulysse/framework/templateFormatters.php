@@ -21,3 +21,7 @@ function l($text, $path, $queryString = '') {
   $classes = isCurrentPath($path) ? 'active' : '';
   return sprintf('<a class="%s" href="%s">%s</a>', $classes, $href, $text);
 }
+
+function dateFull($timestamp) {
+ return gmdate("d-m-Y H:i:s", $timestamp);
+}

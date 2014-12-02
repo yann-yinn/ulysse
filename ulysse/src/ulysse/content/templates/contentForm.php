@@ -21,15 +21,17 @@
   <!-- MACHINE NAME FIELD -->
   <div class="row">
     <div class="small-12 columns">
-      <label>Machine name :</label>
+
+      <label class="<?php echo !empty($errors['machine_name']) ? "error": '' ?>">
+        Machine name :
+      <input type="<?php empty($content['machine_name']) || isset($errors['machine_name']) ? print "text" : print "hidden" ?>" value="<?php if(!empty($content['machine_name'])) echo $content['machine_name'] ?>" name="machine_name">
+      <?php if (!empty($content['machine_name']) && !isset($errors['machine_name'])): ?>
+        <?php e($content['machine_name']) ?>
+      <?php endif ?>
       <?php if (!empty($errors['machine_name'])) : ?>
         <small class="error"><?php echo implode("; ", $errors['machine_name']) ?></small>
       <?php endif ?>
-
-      <input type="<?php empty($content['machine_name']) ? print "text" : print "hidden" ?>" value="<?php if(!empty($content['machine_name'])) echo $content['machine_name'] ?>" name="machine_name">
-      <?php if (!empty($content['machine_name'])) : ?>
-        <?php e($content['machine_name']) ?>
-      <?php endif ?>
+      </label>
     </div>
   </div>
 

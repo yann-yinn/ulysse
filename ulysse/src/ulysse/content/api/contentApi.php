@@ -24,7 +24,7 @@ function getContentTypes() {
  */
 function getContentList($state) {
   $db      = getDbConnexion('db');
-  $sql =  'SELECT * FROM content WHERE state = :state ORDER BY changed DESC';
+  $sql =  'SELECT * FROM content WHERE state = :state ORDER BY created DESC';
   $query  = $db->prepare($sql);
   $query->bindParam(':state', $state, PDO::PARAM_STR);
   $query->execute();
@@ -132,7 +132,7 @@ function saveNewContent($datas) {
   $query->bindParam(':title', $title, PDO::PARAM_STR);
   $query->bindParam(':created', $created, PDO::PARAM_INT);
   $query->bindParam(':changed', $changed, PDO::PARAM_INT);
-  $query->bindParam(':state', $state, PDO::PARAM_INT);
+  $query->bindParam(':state', $state, PDO::PARAM_STR);
 
   return $query->execute();
 }

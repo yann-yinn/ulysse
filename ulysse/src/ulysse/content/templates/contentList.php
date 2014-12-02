@@ -32,7 +32,7 @@
 
           <td><?php e($data['machine_name']) ?></td>
 
-          <td><?php e($data['created']) ?></td>
+          <td><?php e($data['created'], 'dateFull') ?></td>
 
 
           <td><a href="<?php e(url("admin/content/form", 'machine_name=' . $data['machine_name'] . '&form_redirection=admin')) ?>">Edit</a></td>
