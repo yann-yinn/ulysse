@@ -355,7 +355,14 @@ function url($path, $queryString = '')
   $queryArray = [];
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
-  $url = sanitizeValue(getBasePath() . getServerScriptName() . '/' . $path);
+  if (getSetting('cleanUrls') == FALSE)
+  {
+    $url = sanitizeValue(getBasePath() . getServerScriptName() . '/' . $path);
+  }
+  else
+  {
+    $url = sanitizeValue(getBasePath() . $path);
+  }
   if ($queryString) $url .= '?' . sanitizeValue($queryString);
   return $url;
 }
