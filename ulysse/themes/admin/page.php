@@ -39,7 +39,7 @@
 
     <!-- Left Nav Section -->
     <ul class="left">
-      <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo href('ulysse.content.create', 'form_redirection=admin') ?>"> Add content </a></li>
+      <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a></li>
       <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo href('ulysse.content.list') ?>"> Content list </a></li>
     </ul>
   </section>

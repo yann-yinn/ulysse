@@ -1,8 +1,4 @@
 
-<div id="actions">
-  <a href="<?php e(url('admin/content/create', 'form_redirection=admin')) ?>">+ Add content</a>
-</div>
-
 <?php
 echo template('ulysse/content/templates/contentList.php', [
     'state' => CONTENT_STATE_ONLINE,
