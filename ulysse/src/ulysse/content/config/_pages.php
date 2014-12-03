@@ -30,3 +30,24 @@ $config['pages']['ulysse.content.form.save'] = [
     }
 ];
 
+// confirm deletion
+$config['pages']['ulysse.content.form.deleteConfirm'] = [
+  'path' => 'admin/content/delete/confirm',
+  'theme' => 'admin',
+  'layout' => 'page.php',
+  'callable' => function () {
+      return contentDeleteConfirmPage();
+    }
+];
+
+// confirm deletion
+$config['pages']['ulysse.content.form.delete'] = [
+  'path' => 'admin/content/delete',
+  'theme' => 'admin',
+  'layout' => 'page.php',
+  'callable' => function () {
+      return contentDeletePage();
+    }
+];
+
+

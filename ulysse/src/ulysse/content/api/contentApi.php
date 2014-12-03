@@ -36,7 +36,7 @@ function getContentList($state) {
  * Fetch a content by its id
  * @param int $id
  * @return array of content datas
- */
+ * @deprecated, we use machine name each time now, for deployment reasons
 function getContentById($id) {
   $db = getDbConnexion('db');
   $sql =  'SELECT * FROM content WHERE id = :id';
@@ -46,6 +46,13 @@ function getContentById($id) {
   $datas = $query->fetch();
   return $datas;
 }
+*/
+
+/**
+ * Shortcut to get a published content.
+ * @param $machineName
+ * @return array
+ */
 function getContent($machineName) {
   return getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE);
 }
@@ -60,22 +67,26 @@ function getContent($machineName) {
 function getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE) {
   $db = getDbConnexion('db');
   $sql =  'SELECT * FROM content WHERE machine_name = :machine_name';
+
   if ($state != CONTENT_STATE_ONLINE) {
     $sql .= ' AND state = :state';
   }
+
   $query = $db->prepare($sql);
   $query->bindParam(':machine_name', $machineName, PDO::PARAM_STR);
+
   if ($state != CONTENT_STATE_ONLINE ) {
     $query->bindParam(':state', $state, PDO::PARAM_STR);
   }
+
   $query->execute();
   $datas = $query->fetch();
   return $datas;
 }
 
 /**
- * Update a content by its id
- * @param int $machine_name
+ * Update a content by its machine_name
+ * @param string $machine_name
  * @param array $datas
  * @return bool
  */
@@ -84,7 +95,6 @@ function updateContentByMachineName($machine_name, array $datas) {
   $content = $datas['content'];
   $title   = $datas['title'];
   $state   = $datas['state'];
-  $machine_name = $datas['machine_name'];
   $changed = time();
 
   $db      = getDbConnexion('db');
@@ -96,11 +106,11 @@ function updateContentByMachineName($machine_name, array $datas) {
    WHERE machine_name = :machine_name";
   $query  = $db->prepare($query);
 
-  $query->bindParam(':content', $content, PDO::PARAM_STR);
-  $query->bindParam(':title', $title, PDO::PARAM_STR);
+  $query->bindParam(':content', $content);
+  $query->bindParam(':title', $title);
   $query->bindParam(':changed', $changed, PDO::PARAM_INT);
-  $query->bindParam(':state', $state, PDO::PARAM_STR);
-  $query->bindParam(':machine_name', $machine_name, PDO::PARAM_STR);
+  $query->bindParam(':state', $state);
+  $query->bindParam(':machine_name', $machine_name);
 
   return $query->execute();
 
@@ -108,31 +118,41 @@ function updateContentByMachineName($machine_name, array $datas) {
 
 /**
  * Insert a new content in database
+ * @param $machine_name.
  * @param $datas
  * @return bool
  */
-function saveNewContent($datas) {
+function saveNewContent($machine_name, $datas) {
 
   $db      = getDbConnexion('db');
-  $sql   = 'INSERT INTO content (type, machine_name, title, content, created, changed, state)
+  $sql   = 'INSERT INTO content
+  (type, machine_name, title, content, created, changed, state)
   VALUES (:type, :machine_name, :title, :content, :created, :changed, :state)';
   $query  = $db->prepare($sql);
 
   $content = $datas['content'];
   $title   = $datas['title'];
-  $machine_name = $datas['machine_name'];
   $state   = $datas['state'];
   $type    = $datas['type'];
   $created = time();
   $changed = time();
 
-  $query->bindParam(':content', $content, PDO::PARAM_STR);
-  $query->bindParam(':machine_name', $machine_name, PDO::PARAM_STR);
-  $query->bindParam(':type', $type, PDO::PARAM_STR);
-  $query->bindParam(':title', $title, PDO::PARAM_STR);
+  $query->bindParam(':content', $content);
+  $query->bindParam(':machine_name', $machine_name);
+  $query->bindParam(':type', $type);
+  $query->bindParam(':title', $title);
   $query->bindParam(':created', $created, PDO::PARAM_INT);
   $query->bindParam(':changed', $changed, PDO::PARAM_INT);
-  $query->bindParam(':state', $state, PDO::PARAM_STR);
+  $query->bindParam(':state', $state);
 
+  return $query->execute();
+}
+
+function deleteContent($machine_name) {
+  $db      = getDbConnexion('db');
+  $sql = "DELETE FROM content
+  WHERE machine_name=:machine_name;";
+  $query  = $db->prepare($sql);
+  $query->bindParam(':machine_name', $machine_name);
   return $query->execute();
 }

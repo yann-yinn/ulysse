@@ -9,11 +9,11 @@ require_once 'ulysse/content/datasValidators/contentDatasValidators.php';
 function contentListPage() {
   $datas = getContentList(CONTENT_STATE_ONLINE);
   $out = '';
-  $out.= template('ulysse/content/templates/contentList.php', ['state' => 'Online', 'datas' => $datas]);
+  $out.= template('ulysse/content/templates/contentList.php', ['state' => CONTENT_STATE_ONLINE, 'state_title' => 'Online', 'datas' => $datas]);
   $datas = getContentList(CONTENT_STATE_DRAFT);
-  $out.= template('ulysse/content/templates/contentList.php', ['state' => 'Draft', 'datas' => $datas]);
+  $out.= template('ulysse/content/templates/contentList.php', ['state' => CONTENT_STATE_DRAFT, 'state_title' => 'Draft', 'datas' => $datas]);
   $datas = getContentList(CONTENT_STATE_TRASH);
-  $out.= template('ulysse/content/templates/contentList.php', ['state' => 'Trash', 'datas' => $datas]);
+  $out.= template('ulysse/content/templates/contentList.php', ['state' => CONTENT_STATE_TRASH, 'state_title' => 'Trash', 'datas' => $datas]);
   return $out;
 }
 
@@ -29,6 +29,40 @@ function contentFormPage() {
     $content = getContentByMachineName($_GET['machine_name']);
   }
   return template('ulysse/content/templates/contentForm.php', ['content' => $content]);
+}
+
+function contentDeleteConfirmPage() {
+  if (empty($_GET['machine_name'])) {
+    setHttpResponseCode(404);
+    return "Machine name is missing.";
+  }
+
+  $content = getContentByMachineName($_GET['machine_name']);
+  if (!$content) {
+    setHttpResponseCode(404);
+    return "Machine name not found : " . sanitizeValue($_GET['machine_name']);
+  }
+
+  return template('ulysse/content/templates/contentDeleteConfirmForm.php', ['content' => $content]);
+}
+
+function contentDeletePage() {
+
+  if (empty($_POST['machine_name'])) {
+    setHttpResponseCode(404);
+    return "Machine name is missing.";
+  }
+
+  $content = getContentByMachineName($_POST['machine_name']);
+  if (!$content) {
+    setHttpResponseCode(404);
+    return "Machine name not found : " . sanitizeValue($_POST['machine_name']);
+  }
+
+  deleteContent($_POST['machine_name']);
+  redirection();
+  return "Your content has been deleted";
+
 }
 
 /**
@@ -52,7 +86,7 @@ function contentFormSavePage() {
     // if machine name does not exist yet, this is a new content.
     if (!getContentByMachineName($datas['machine_name']))
     {
-      saveNewContent($datas);
+      saveNewContent($datas['machine_name'], $datas);
       writeLog(['detail' => "Save new content"]);
     }
     // else, we are updating an existing content.
