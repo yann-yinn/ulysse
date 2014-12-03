@@ -1,4 +1,8 @@
-
+<style>
+  table {
+    width: 100%;
+  }
+</style>
 <div class="row">
   <div class="small-12 columns">
 
@@ -8,9 +12,9 @@
       <caption><?php e($state_title) ?></caption>
 
       <thead>
-      <th>Type</th>
+      <th class="show-for-large-up">Type</th>
       <th>title</th>
-      <th>machine name</th>
+      <th class="show-for-large-up">machine name</th>
       <th>Created</th>
       <th>Edit</th>
       <?php if ($state == CONTENT_STATE_TRASH) : ?>
@@ -22,11 +26,11 @@
       <?php foreach ($datas as $data): ?>
         <tr>
 
-          <td><?php e($data['type']) ?></td>
+          <td class="show-for-large-up"><?php e($data['type']) ?></td>
 
           <td><?php e($data['title']) ?></td>
 
-          <td><?php e($data['machine_name']) ?></td>
+          <td class="show-for-large-up"><?php e($data['machine_name']) ?></td>
 
           <td><?php e($data['created'], 'dateFull') ?></td>
 
