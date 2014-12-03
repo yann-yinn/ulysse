@@ -1,7 +1,7 @@
 <?php
 /**
  * This config files contains ALL configuration of your application :
- * $conf['pages'] : pages of your site
+ * $conf['routes'] : pages of your site
  * $conf['settings'] : settings
  * $conf['listeners'] : Events listeners
  * $conf['translations'] : String translations
@@ -21,7 +21,7 @@ include 'ulysse/content/config/config.php';
 include '_settings.php';
 include '_translations.php';
 include '_listeners.php';
-include '_pages.php';
+include '_routes.php';
 
 
 // import custom module configuration here :

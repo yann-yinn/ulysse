@@ -27,30 +27,30 @@ INSTALLATION
 * Copy "example.application" directory to "application".
 * make sure "application/writable" directory is writable & readable by apache
 
-Edit applications/config/_pages.php file to start create pages on your site.
+Edit applications/config/_routes.php file to start create pages on your site.
 
 
 CREATE PAGES
 --------------
 
-pages.php file map a framework path to a php callable.
+routes.php file map a framework path to a php callable.
 It uses php closures or simple strings.
 A page may return a string or a closure :
-In application/config/_pages.php :
+In application/config/_routes.php :
 
 ```php
-$config['pages']['homepage'] = [
+$config['routes']['homepage'] = [
     'path' => '',
     'callable' => 'hello i am the homepage',
 ];
 // to render a template page.php inside a layout.php template
-$config['pages']['homepage'] = [
+$config['routes']['homepage'] = [
     'path'   => '',
     'template' => 'layout.php',
     'callable' =>  function() {template('homepage.php');}
 ];
 // MVC style :
-$config['pages']['hello'] => [
+$config['routes']['hello'] => [
     'path' => 'hello',
     'callable' => function() {
       $controller = new \myVendor\myModule\myController();

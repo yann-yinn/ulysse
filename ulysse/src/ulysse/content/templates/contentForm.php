@@ -1,4 +1,6 @@
-<form method="POST" action="<?php echo path("ulysse.content.save", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
+<form method="POST" action="<?php echo href("ulysse.content.save", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
+
+  <input type="hidden" name="action" value="<?php echo getCurrentRouteId() == 'ulysse.content.create' ? 'create' : 'update' ?>">
 
   <input type="hidden" name="type" value="<?php print !empty($_GET['type']) ? $_GET['type'] : 'content' ?>" />
   <?php if (!empty($errors['type'])) : ?>

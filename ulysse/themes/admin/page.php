@@ -33,14 +33,14 @@
   <section class="top-bar-section">
     <!-- Right Nav Section -->
     <ul class="right">
-      <li><a class="<?php if(getCurrentPath() == '') echo 'active' ?>" href="<?php echo url('') ?>"> Homepage </a></li>
+      <li><a class="<?php if(getCurrentPath() == '') echo 'active' ?>" href="<?php echo href('ulysse.framework.homepage') ?>"> Homepage </a></li>
     </ul>
 
 
     <!-- Left Nav Section -->
     <ul class="left">
-      <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo path('ulysse.content.create', 'form_redirection=admin') ?>"> Add content </a></li>
-      <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo path('ulysse.content.list') ?>"> Content list </a></li>
+      <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo href('ulysse.content.create', 'form_redirection=admin') ?>"> Add content </a></li>
+      <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo href('ulysse.content.list') ?>"> Content list </a></li>
     </ul>
   </section>
 </nav>

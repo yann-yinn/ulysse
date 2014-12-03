@@ -86,7 +86,7 @@ function contentFormSavePage() {
   if (!$errors)
   {
     // if machine name does not exist yet in database, this is a new content.
-    if (!getContentByMachineName($datas['machine_name']))
+    if (($datas['action'] == 'create'))
     {
       saveNewContent($datas['machine_name'], $datas);
       writeLog(['detail' => "Save new content"]);

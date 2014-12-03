@@ -14,7 +14,7 @@ define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
- * a php controller, looking at config/_pages.php file.
+ * a php controller, looking at config/_routes.php file.
  *
  * @param array $contextVariables : array of values to define site context
  * Use this bootstrap in a script in "www" directory with following example code :
@@ -57,7 +57,7 @@ function startFramework($contextVariables = [])
   fireEvent('ulysse.framework.afterBootstrap');
 
   // executing controller and returning output to the browser
-  echo renderPageByPath(getCurrentPath());
+  echo renderRouteByPath(getCurrentPath());
 
   // display developper informations.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
@@ -98,8 +98,8 @@ function getBasePath()
  * For "http://ulysse.local/index.php/hello/world" returns "hello/world"
  * For "http://ulysse.local/index.php/hello/world?test=value" returns "hello/world".
  *
- * This path is then fetched in $config['pages'] array. If a matching page is found,
- * page controller will be executed.
+ * This path is then fetched in $config['routes'] array. If a matching route is found,
+ * route controller will be executed.
  */
 function getCurrentPath()
 {
@@ -128,6 +128,16 @@ function getCurrentPath()
   $path = _removeTrailingSlashFromPath($path);
 
   return $path;
+}
+
+function getCurrentRouteId() {
+  $routes = getConfig('routes');
+  $path = getCurrentPath();
+  foreach ($routes as $id => $route) {
+    if ($route['path'] == $path) {
+      return $id;
+    }
+  }
 }
 
 /**
@@ -181,52 +191,52 @@ function getCurrentLanguage()
 
 /**
  * If there is several routes, last found route will be used.
- * @see config/_pages.php
+ * @see config/_routes.php
  * @param $path
- * @param $pages
+ * @param $routes
  * @return array : page declaration
  */
-function getPageDeclarationByPath($path, $pages)
+function getRouteDeclarationByPath($path, $routes)
 {
-  $page = [];
-  foreach ($pages as $id => $datas)
+  $route = [];
+  foreach ($routes as $id => $datas)
   {
-    if (isset($pages[$id]['path']) && $pages[$id]['path'] == $path)
+    if (isset($routes[$id]['path']) && $routes[$id]['path'] == $path)
     {
-      $page = $pages[$id];
-      $page['id'] = $id;
+      $route = $routes[$id];
+      $route['id'] = $id;
     }
   }
-  return $page;
+  return $route;
 }
 
 /**
  * Return a page by its key
- * @see config/_pages.php file.
+ * @see config/_routes.php file.
  * @param string $key
  * @return array : the page definition as an array
  */
-function getPageDeclarationByKey($key)
+function getRouteDeclarationByKey($key)
 {
-  $pages = getConfig('pages');
-  return $pages[$key];
+  $routes = getConfig('routes');
+  return $routes[$key];
 }
 
 /**
  * Render a page using its path.
- * @see $config['pages']
+ * @see $config['routes']
  * @param string $path
  * @return string (html, json, xml or whatever the controller return to us.)
  */
-function renderPageByPath($path)
+function renderRouteByPath($path)
 {
-  $pages = getConfig('pages');
-  $page = getPageDeclarationByPath($path, $pages);
-  if (!$page)
+  $routes = getConfig('routes');
+  $route = getRouteDeclarationByPath($path, $routes);
+  if (!$route)
   {
-    $page = getPageDeclarationByKey('__HTTP_404__', $pages);
+    $route = getRouteDeclarationByKey('__HTTP_404__', $routes);
   }
-  $output = renderPage($page);
+  $output = renderRoute($route);
   return $output;
 }
 
@@ -370,14 +380,14 @@ function url($path, $queryString = '')
 /**
  * Build an url suitable for href, but using a pageId to retrieve
  * the requested path. This way, you may change paths without breaking html links.
- * @param $pageId
+ * @param $routeId
  * @param string $queryString
  * @return string
  */
-function path($pageId, $queryString = '') {
-  $pages = getConfig('pages');
-  $page = $pages[$pageId];
-  return url($page['path'], $queryString);
+function href($routeId, $queryString = '') {
+  $routes = getConfig('routes');
+  $route = $routes[$routeId];
+  return url($route['path'], $queryString);
 }
 
 /**
@@ -394,27 +404,27 @@ function isCurrentPath($path)
 
 /**
  * Render a page, parsing a page definition
- * @see $config['pages']
- * @param array $page : page array declaration as returned by getPageByPath() or getPageByKey()
+ * @see $config['routes']
+ * @param array $route : page array declaration as returned by getPageByPath() or getPageByKey()
  * @return bool
  */
-function renderPage(array $page)
+function renderRoute(array $route)
 {
-  $output = getPagePropertyValue($page['callable']);
-  if (!empty($page['layout'])) {
+  $output = getRoutePropertyValue($route['callable']);
+  if (!empty($route['layout'])) {
     $layoutVariables = [];
 
-    if (!empty($page['layout_variables'])) {
-      $layoutVariables = $page['layout_variables'];
+    if (!empty($route['layout_variables'])) {
+      $layoutVariables = $route['layout_variables'];
     }
     $layoutVariables['content'] = $output;
-    if (!empty($page['theme'])) {
-      $themePath = getThemePath($page['theme']);
+    if (!empty($route['theme'])) {
+      $themePath = getThemePath($route['theme']);
     }
     else {
       $themePath = getThemePath(getSetting('theme'));
     }
-    $output = template($page['layout'], $layoutVariables, $themePath);
+    $output = template($route['layout'], $layoutVariables, $themePath);
   }
   return $output;
 }
@@ -442,7 +452,7 @@ function getThemePath($theme)
  * @param $property
  * @return string
  */
-function getPagePropertyValue($property) {
+function getRoutePropertyValue($property) {
   return is_string($property) ? $property : $property();
 }
 
@@ -602,9 +612,9 @@ function getFullDomainName()
   return _getUrlScheme() . '://' . _getServerName();
 }
 
-function setHttpRedirection($pageId)
+function setHttpRedirection($routeId)
 {
-  $url = sanitizeValue(path($pageId));
+  $url = sanitizeValue(href($routeId));
   _setHttpRedirection(getFullDomainName() . $url);
 }
 
@@ -618,15 +628,15 @@ function getFormRedirectionFromUrl()
  * If path is not specified, function will look
  * into the url for a GET "redirection" query param, and will use
  * it as the redirection path.
- * @param string $pageId : pageId identifier
+ * @param string $routeId : pageId identifier
  *
  */
-function redirection($pageId = NULL) {
-  if (is_null($pageId))
+function redirection($routeId = NULL) {
+  if (is_null($routeId))
   {
-    $pageId = _getFormRedirectionFromUrl();
+    $routeId = _getFormRedirectionFromUrl();
   }
-  setHttpRedirection($pageId);
+  setHttpRedirection($routeId);
   exit;
 }
 

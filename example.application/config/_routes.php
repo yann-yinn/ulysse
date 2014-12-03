@@ -8,7 +8,7 @@
  */
 /*
 // customize page for 404 not found error
-$config['pages']['__HTTP_404__'] = [
+$config['routes']['__HTTP_404__'] = [
   'layout' => 'page.php',
   'callable' => function() {
       setHttpResponseCode(404);
@@ -16,14 +16,14 @@ $config['pages']['__HTTP_404__'] = [
     }
 ];
 // customize page for 403 not found error
-$config['pages']['__HTTP_403__'] = [
+$config['routes']['__HTTP_403__'] = [
   'layout' => 'page.php',
   'callable' => function() {
       setHttpResponseCode(403);
       return "Access denied";
     }
 ];
-$config['pages']['ulysse.framework.homepage'] = [
+$config['routes']['ulysse.framework.homepage'] = [
   'path'     => '',
   'layout' => 'page.php',
   'callable'  =>  function() {
