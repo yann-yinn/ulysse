@@ -368,6 +368,19 @@ function url($path, $queryString = '')
 }
 
 /**
+ * Build an url suitable for href, but using a pageId to retrieve
+ * the requested path. This way, you may change paths without breaking html links.
+ * @param $pageId
+ * @param string $queryString
+ * @return string
+ */
+function path($pageId, $queryString = '') {
+  $pages = getConfig('pages');
+  $page = $pages[$pageId];
+  return url($page['path'], $queryString);
+}
+
+/**
  * Return TRUE if $path is the current http requested path, FALSE otherwise.
  * Usefull to set "active" classes in html, for example for menus.
  * @param string $path
@@ -589,9 +602,9 @@ function getFullDomainName()
   return _getUrlScheme() . '://' . _getServerName();
 }
 
-function setHttpRedirection($path)
+function setHttpRedirection($pageId)
 {
-  $url = sanitizeValue(url($path));
+  $url = sanitizeValue(path($pageId));
   _setHttpRedirection(getFullDomainName() . $url);
 }
 
@@ -605,15 +618,15 @@ function getFormRedirectionFromUrl()
  * If path is not specified, function will look
  * into the url for a GET "redirection" query param, and will use
  * it as the redirection path.
- * @param string $path
+ * @param string $pageId : pageId identifier
  *
  */
-function redirection($path = NULL) {
-  if (is_null($path))
+function redirection($pageId = NULL) {
+  if (is_null($pageId))
   {
-    $path = _getFormRedirectionFromUrl();
+    $pageId = _getFormRedirectionFromUrl();
   }
-  setHttpRedirection($path);
+  setHttpRedirection($pageId);
   exit;
 }
 

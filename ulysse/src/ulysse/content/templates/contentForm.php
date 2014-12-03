@@ -1,9 +1,4 @@
-<form method="POST" action="<?php echo url("admin/content/form/save", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
-
-  <!-- ID FIELD -->
-  <?php if(!empty($content['machine_name'])) : ?>
-    <input type="hidden" name="machine_name" value="<?php echo $content['machine_name'] ?>" />
-  <?php endif ?>
+<form method="POST" action="<?php echo path("ulysse.content.save", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
 
   <input type="hidden" name="type" value="<?php print !empty($_GET['type']) ? $_GET['type'] : 'content' ?>" />
   <?php if (!empty($errors['type'])) : ?>

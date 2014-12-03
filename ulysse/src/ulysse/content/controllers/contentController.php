@@ -85,7 +85,7 @@ function contentFormSavePage() {
   $errors = validateContentForm($datas);
   if (!$errors)
   {
-    // if machine name does not exist yet, this is a new content.
+    // if machine name does not exist yet in database, this is a new content.
     if (!getContentByMachineName($datas['machine_name']))
     {
       saveNewContent($datas['machine_name'], $datas);
@@ -95,7 +95,7 @@ function contentFormSavePage() {
     else
     {
       updateContentByMachineName($datas['machine_name'], $datas);
-      writeLog(['detail' => "Update existing content ." . sanitizeValue($datas['id'])]);
+      writeLog(['detail' => "Update existing content ." . sanitizeValue($datas['machine_name'])]);
     }
     // redirect to "redirection" param passed in the url
     redirection();

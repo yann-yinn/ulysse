@@ -7,7 +7,7 @@
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
-  <?php echo fireDomEvent('ulysse.framework.javascripts') ?>
+  <?php echo fireDomEvent('template.addingJavascripts') ?>
   <link rel="stylesheet" href="<?php echo getBasePath() ?>assets/foundation-5.4.6/css/foundation.css" />
   <?php if (isset($head)) : ?>
     <?php echo $head(); ?>
@@ -39,8 +39,8 @@
 
     <!-- Left Nav Section -->
     <ul class="left">
-      <li><a class="<?php if(getCurrentPath() == 'admin/content/form') echo 'active' ?>" href="<?php echo url('admin/content/form') ?>"> Add content </a></li>
-      <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo url('admin') ?>"> Content list </a></li>
+      <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo path('ulysse.content.create', 'form_redirection=admin') ?>"> Add content </a></li>
+      <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo path('ulysse.content.list') ?>"> Content list </a></li>
     </ul>
   </section>
 </nav>

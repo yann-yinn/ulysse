@@ -53,8 +53,12 @@ function getContentById($id) {
  * @param $machineName
  * @return array
  */
-function getContent($machineName) {
-  return getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE);
+function getContent($machineName, $field = []) {
+  $datas = getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE);
+  if ($field) {
+    return $datas[$field];
+  }
+  return $datas;
 }
 
 

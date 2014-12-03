@@ -11,8 +11,18 @@ $config['pages']['ulysse.content.list'] = [
 ];
 
 // display an add / edit content form
-$config['pages']['ulysse.content.form'] = [
-  'path' => 'admin/content/form',
+$config['pages']['ulysse.content.create'] = [
+  'path' => 'admin/content/create',
+  'theme' => 'admin',
+  'layout' => 'page.php',
+  'callable' => function() {
+      return contentFormPage();
+    }
+];
+
+// display an add / edit content form
+$config['pages']['ulysse.content.edit'] = [
+  'path' => 'admin/content/edit',
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function() {
@@ -21,8 +31,8 @@ $config['pages']['ulysse.content.form'] = [
 ];
 
 // save content to database
-$config['pages']['ulysse.content.form.save'] = [
-  'path' => 'admin/content/form/save',
+$config['pages']['ulysse.content.save'] = [
+  'path' => 'admin/content/save',
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function () {
@@ -31,7 +41,7 @@ $config['pages']['ulysse.content.form.save'] = [
 ];
 
 // confirm deletion
-$config['pages']['ulysse.content.form.deleteConfirm'] = [
+$config['pages']['ulysse.content.confirmDeletion'] = [
   'path' => 'admin/content/delete/confirm',
   'theme' => 'admin',
   'layout' => 'page.php',
@@ -41,7 +51,7 @@ $config['pages']['ulysse.content.form.deleteConfirm'] = [
 ];
 
 // confirm deletion
-$config['pages']['ulysse.content.form.delete'] = [
+$config['pages']['ulysse.content.delete'] = [
   'path' => 'admin/content/delete',
   'theme' => 'admin',
   'layout' => 'page.php',

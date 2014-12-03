@@ -7,9 +7,9 @@
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
-  <?php echo fireDomEvent('ulysse.framework.javascripts') ?>
+  <?php echo fireDomEvent('template.addingJavascripts') ?>
   <link rel="stylesheet" href="<?php echo getBasePath() ?>assets/foundation-5.4.6/css/foundation.css" />
-  <?php echo fireDomEvent('ulysse.framework.stylesheets') ?>
+  <?php echo fireDomEvent('template.addingCss') ?>
 </head>
 <style>
   .content-editable-link {
