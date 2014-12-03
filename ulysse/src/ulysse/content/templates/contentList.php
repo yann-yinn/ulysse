@@ -1,10 +1,3 @@
-<?php
-
-?>
-
-<div id="actions">
-  <a href="<?php e(url('admin/content/form', 'form_redirection=admin')) ?>">+ Add content</a>
-</div>
 
 <div class="row">
   <div class="small-12 columns">

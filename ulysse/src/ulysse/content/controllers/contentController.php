@@ -7,14 +7,7 @@ require_once 'ulysse/content/datasValidators/contentDatasValidators.php';
  * @return string
  */
 function contentListPage() {
-  $datas = getContentList(CONTENT_STATE_ONLINE);
-  $out = '';
-  $out.= template('ulysse/content/templates/contentList.php', ['state' => CONTENT_STATE_ONLINE, 'state_title' => 'Online', 'datas' => $datas]);
-  $datas = getContentList(CONTENT_STATE_DRAFT);
-  $out.= template('ulysse/content/templates/contentList.php', ['state' => CONTENT_STATE_DRAFT, 'state_title' => 'Draft', 'datas' => $datas]);
-  $datas = getContentList(CONTENT_STATE_TRASH);
-  $out.= template('ulysse/content/templates/contentList.php', ['state' => CONTENT_STATE_TRASH, 'state_title' => 'Trash', 'datas' => $datas]);
-  return $out;
+  return template('ulysse/content/templates/contentDashboard.php');
 }
 
 /**
