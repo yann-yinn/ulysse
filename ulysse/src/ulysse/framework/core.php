@@ -2,22 +2,19 @@
 /**
  * PHP Ulysse framework core files.
  */
-
-
-// filepaths considering /application/www/public/index.php file.
-
-define('ROOT', '../../..');
-
-if (!defined('FRAMEWORK_DIRECTORY_PATH'))
+if (!defined('ULYSSE_ROOT'))
 {
-  define('FRAMEWORK_DIRECTORY_PATH', ROOT . '/ulysse');
+  define('ULYSSE_ROOT', '../../../ulysse');
 }
 
-define('APPLICATION_DIRECTORY_PATH', ROOT . '/application');
-define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/config');
+define('FRAMEWORK_DIRECTORY_PATH', ULYSSE_ROOT . '/ulysse');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('FRAMEWORK_THEMES_DIRECTORY_PATH', FRAMEWORK_DIRECTORY_PATH . '/themes');
+
+// filepaths considering "siteDirectory/www/public/index.php file."
+define('APPLICATION_DIRECTORY_PATH', '../..');
 define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/themes');
+define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/config');
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
