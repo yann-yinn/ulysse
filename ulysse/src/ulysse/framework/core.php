@@ -5,12 +5,19 @@
 
 
 // filepaths considering /application/www/public/index.php file.
-define('FRAMEWORK_ROOT', '../../../ulysse');
-define('APPLICATION_ROOT', '../../../application');
-define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
+
+define('ROOT', '../../..');
+
+if (!defined('FRAMEWORK_DIRECTORY_PATH'))
+{
+  define('FRAMEWORK_DIRECTORY_PATH', ROOT . '/ulysse');
+}
+
+define('APPLICATION_DIRECTORY_PATH', ROOT . '/application');
+define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/config');
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
-define('FRAMEWORK_THEMES_DIRECTORY_PATH', FRAMEWORK_ROOT . '/themes');
-define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
+define('FRAMEWORK_THEMES_DIRECTORY_PATH', FRAMEWORK_DIRECTORY_PATH . '/themes');
+define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/themes');
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
@@ -27,10 +34,10 @@ function startFramework($contextVariables = [])
 {
 
   _addPhpIncludePaths([
-      FRAMEWORK_ROOT . '/src',
-      FRAMEWORK_ROOT . '/vendors',
-      APPLICATION_ROOT . '/src',
-      APPLICATION_ROOT . '/vendors',
+      FRAMEWORK_DIRECTORY_PATH . '/src',
+      FRAMEWORK_DIRECTORY_PATH . '/vendors',
+      APPLICATION_DIRECTORY_PATH . '/src',
+      APPLICATION_DIRECTORY_PATH . '/vendors',
     ]);
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();

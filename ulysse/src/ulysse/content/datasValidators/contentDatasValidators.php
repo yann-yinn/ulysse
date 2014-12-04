@@ -26,7 +26,7 @@ function validateContentForm($datas) {
     $errors['machine_name'][] = "Invalid machine name ! ";
   }
 
-  if (contentMachineAlreadyExists($datas['machine_name'] && empty($datas['id'])))
+  if (contentMachineAlreadyExists($datas['machine_name']) && $datas['action'] == 'create')
   {
     $errors['machine_name'][] = "Machine name already exist ! ";
   }
