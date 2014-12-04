@@ -22,11 +22,18 @@ function getContentTypes() {
  * @param string $state
  * @return array
  */
-function getContentList($state) {
-  $db      = getDbConnexion('db');
-  $sql =  'SELECT * FROM content WHERE state = :state ORDER BY created DESC';
-  $query  = $db->prepare($sql);
-  $query->bindParam(':state', $state, PDO::PARAM_STR);
+function getContentList($state = null) {
+  $db = getDbConnexion('db');
+  $sql = [];
+  $sql[] =  'SELECT * FROM content';
+  if ($state) {
+    $sql[] = 'WHERE state = :state';
+  }
+  $sql[] = 'ORDER BY created DESC';
+  $query  = $db->prepare(implode(' ', $sql));
+  if ($state) {
+    $query->bindParam(':state', $state, PDO::PARAM_STR);
+  }
   $query->execute();
   $datas = $query->fetchAll();
   return $datas;
@@ -38,15 +45,15 @@ function getContentList($state) {
  * @return array of content datas
  * @deprecated, we use machine name each time now, for deployment reasons
 function getContentById($id) {
-  $db = getDbConnexion('db');
-  $sql =  'SELECT * FROM content WHERE id = :id';
-  $query = $db->prepare($sql);
-  $query->bindParam(':id', $id, PDO::PARAM_INT);
-  $query->execute();
-  $datas = $query->fetch();
-  return $datas;
+$db = getDbConnexion('db');
+$sql =  'SELECT * FROM content WHERE id = :id';
+$query = $db->prepare($sql);
+$query->bindParam(':id', $id, PDO::PARAM_INT);
+$query->execute();
+$datas = $query->fetch();
+return $datas;
 }
-*/
+ */
 
 /**
  * Shortcut to get a published content.

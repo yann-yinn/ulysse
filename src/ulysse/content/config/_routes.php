@@ -12,6 +12,21 @@ $config['routes']['ulysse.content.list'] = [
 ];
 
 // list all site contents
+$config['routes']['ulysse.content.list.all'] = [
+  'parent' => 'ulysse.content.list',
+  'path' => 'admin/content/list/all',
+  'theme' => getSetting('theme_admin'),
+  'layout' => 'page.php',
+  'callable' => function() {
+      return template('ulysse/content/template/contentList.php', [
+          'state' => null,
+          'state_title' => 'All',
+          'datas' => getContentList()
+        ]);
+    }
+];
+
+// list all site contents
 $config['routes']['ulysse.content.list.online'] = [
   'parent' => 'ulysse.content.list',
   'path' => 'admin/content/list/online',
@@ -19,6 +34,8 @@ $config['routes']['ulysse.content.list.online'] = [
   'layout' => 'page.php',
   'callable' => function() {
       return template('ulysse/content/template/contentList.php', [
+          'state' => CONTENT_STATE_ONLINE,
+          'state_title' => 'Online',
           'datas' => getContentList(CONTENT_STATE_ONLINE)
         ]);
     }
@@ -32,6 +49,8 @@ $config['routes']['ulysse.content.list.draft'] = [
   'layout' => 'page.php',
   'callable' => function() {
       return template('ulysse/content/template/contentList.php', [
+          'state' => CONTENT_STATE_DRAFT,
+          'state_title' => 'Draft',
           'datas' => getContentList(CONTENT_STATE_DRAFT)
         ]);
     }
@@ -45,6 +64,8 @@ $config['routes']['ulysse.content.list.trash'] = [
   'layout' => 'page.php',
   'callable' => function() {
       return template('ulysse/content/template/contentList.php', [
+          'state' => CONTENT_STATE_TRASH,
+          'state_title' => 'Trash',
           'datas' => getContentList(CONTENT_STATE_TRASH)
         ]);
     }

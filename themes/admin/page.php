@@ -48,7 +48,7 @@
       </li>
 
       <li class="<?php if(getCurrentRouteId() == 'ulysse.content.create') echo 'active' ?>">
-        <a href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a>
+        <a href="<?php echo href('ulysse.content.create', buildAutoRedirectionQueryString()) ?>"> Add content </a>
       </li>
 
     </ul>

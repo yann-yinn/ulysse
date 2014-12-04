@@ -38,7 +38,7 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse-01">
           <ul class="nav navbar-nav navbar-left">
-            <li class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>"><a href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a></li>
+            <li class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>"><a href="<?php echo href('ulysse.content.create', 'redirection=ulysse.content.list') ?>"> Add content </a></li>
             <li class="<?php if(currentRouteIsParentOf('ulysse.content.list')) echo 'active' ?>"><a  href="<?php echo href('ulysse.content.list.online') ?>"> Content </a></li>
           </ul>
           <form class="navbar-form navbar-right" action="#" role="search">

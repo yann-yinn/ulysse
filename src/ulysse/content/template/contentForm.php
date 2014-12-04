@@ -1,4 +1,4 @@
-<form method="POST" action="<?php echo href("ulysse.content.save", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
+<form method="POST" action="<?php echo href("ulysse.content.save", 'redirection=' . getFormRedirectionFromUrl()) ?>">
 
   <input type="hidden" name="action" value="<?php e($content['action']) ?>" >
 

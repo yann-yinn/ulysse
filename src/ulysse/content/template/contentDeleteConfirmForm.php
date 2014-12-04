@@ -1,5 +1,5 @@
 <div class="panel radius">
-  <form method="POST" action="<?php echo href("ulysse.content.delete", 'form_redirection=' . getFormRedirectionFromUrl()) ?>">
+  <form method="POST" action="<?php echo href("ulysse.content.delete", 'redirection=' . getFormRedirectionFromUrl()) ?>">
 
     <p class="text-center">Are you <em>sure</em> you want to delete content <strong><?php e($content['title']) ?> </strong> ?</p>
     <!-- ID FIELD -->
@@ -9,7 +9,7 @@
 
 
     <div class="text-center">
-      <a class="button radius success" href="<?php e(href($_GET['form_redirection'])) ?>">
+      <a class="button radius success" href="<?php e(href($_GET['redirection'])) ?>">
         Holy shit no ! that's a mistake ! i want to go back, I WANT TO GO BACK NOW !
       </a>
 

@@ -35,9 +35,9 @@
           <td><?php e($data['created'], 'dateFull') ?></td>
 
 
-          <td><a href="<?php e(href('ulysse.content.update', 'machine_name=' . $data['machine_name'] . '&form_redirection=ulysse.content.list')) ?>">Edit</a></td>
+          <td><a href="<?php e(href('ulysse.content.update', 'machine_name=' . $data['machine_name'] . '&redirection=ulysse.content.list')) ?>">Edit</a></td>
           <?php if ($state == CONTENT_STATE_TRASH) : ?>
-            <td><a href="<?php e(href('ulysse.content.confirmDeletion', 'machine_name=' . $data['machine_name'] . '&form_redirection=ulysse.content.list')) ?>">Delete</a></td>
+            <td><a href="<?php e(href('ulysse.content.confirmDeletion', 'machine_name=' . $data['machine_name'] . '&redirection=ulysse.content.list')) ?>">Delete</a></td>
           <?php endif ?>
 
         </tr>
