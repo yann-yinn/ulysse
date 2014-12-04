@@ -7,14 +7,17 @@ if (!defined('ULYSSE_ROOT'))
   define('ULYSSE_ROOT', '../../../ulysse');
 }
 
-define('FRAMEWORK_DIRECTORY_PATH', ULYSSE_ROOT . '/ulysse');
+if (!defined('APPLICATION_ROOT'))
+{
+  define('APPLICATION_ROOT', '../..');
+}
+
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
-define('FRAMEWORK_THEMES_DIRECTORY_PATH', FRAMEWORK_DIRECTORY_PATH . '/themes');
+define('ULYSSE_THEMES_DIRECTORY_PATH', ULYSSE_ROOT . '/themes');
 
 // filepaths considering "siteDirectory/www/public/index.php file."
-define('APPLICATION_DIRECTORY_PATH', '../..');
-define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/themes');
-define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_DIRECTORY_PATH . '/config');
+define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
+define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
@@ -31,10 +34,10 @@ function startFramework($contextVariables = [])
 {
 
   _addPhpIncludePaths([
-      FRAMEWORK_DIRECTORY_PATH . '/src',
-      FRAMEWORK_DIRECTORY_PATH . '/vendors',
-      APPLICATION_DIRECTORY_PATH . '/src',
-      APPLICATION_DIRECTORY_PATH . '/vendors',
+      ULYSSE_ROOT . '/src',
+      ULYSSE_ROOT . '/vendors',
+      APPLICATION_ROOT . '/src',
+      APPLICATION_ROOT . '/vendors',
     ]);
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
@@ -414,7 +417,9 @@ function isCurrentPath($path)
  */
 function renderRoute(array $route)
 {
+
   $output = getRoutePropertyValue($route['callable']);
+
   if (!empty($route['layout'])) {
     $layoutVariables = [];
 
@@ -434,6 +439,7 @@ function renderRoute(array $route)
 }
 
 /**
+ * Return full relative path to a theme inside themes directory.
  * @param string $theme
  * @return bool|string
  */
@@ -444,9 +450,9 @@ function getThemePath($theme)
   {
     $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
   }
-  elseif(file_exists(FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme))
+  elseif(file_exists(ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme))
   {
-    $themePath = FRAMEWORK_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
+    $themePath = ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
   }
   return $themePath;
 }
@@ -535,18 +541,17 @@ function sanitizeValue($value)
  *
  * @param string $templatePath : file path. e.g : ock/content/templates/mytemplate.php
  * @param array $variables
- * @param string $themePath : force theme to use.
+ * @param string $inDirectory : search first template file in this directory.
  * may be defined. A theme is a collection of templates.
  * @return string
  */
-function template($templatePath, $variables = [], $themePath = null)
+function template($templatePath, $variables = [], $inDirectory = null)
 {
   // content.php
   $output = FALSE;
-  $searchPaths = [
-    // first check for this path in the theme directory
-    getThemePath(getSetting('theme')) . DIRECTORY_SEPARATOR . $templatePath,
-    $themePath ? $themePath . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme') . DIRECTORY_SEPARATOR . $templatePath,
+  $searchPaths =
+  [
+    $inDirectory ? $inDirectory . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme') . DIRECTORY_SEPARATOR . $templatePath,
     $templatePath,
   ];
   foreach ($searchPaths as $path)

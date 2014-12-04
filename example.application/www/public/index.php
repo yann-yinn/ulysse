@@ -1,6 +1,7 @@
 <?php
 
-require_once FRAMEWORK_DIRECTORY_PATH . "/src/ulysse/framework/core.php";
+define('ULYSSE_ROOT', '../../..');
+require_once ULYSSE_ROOT . "/src/ulysse/framework/core.php";
 startFramework();
 
 
