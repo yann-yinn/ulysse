@@ -61,5 +61,11 @@
 
 </div>
 
+<script src="<?php echo getBasePath() ?>libraries/foundation/foundation-5.4.6/js/vendor/jquery.js"></script>
+<script src="<?php echo getBasePath() ?>libraries/foundation/foundation-5.4.6/js/foundation.min.js"></script>
+<script>
+  $(document).foundation();
+</script>
+
 </body>
 </html>
