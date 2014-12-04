@@ -31,7 +31,7 @@ $config['routes']['ulysse.framework.homepage'] = [
       $out .= getTranslation('ulysse.framework.welcome');
       $datas = getContentByMachineName('homepage_bloc_1');
       if ($datas) {
-        $out .= template('ulysse/content/templates/contentView.php', $datas);
+        $out .= template('ulysse/content/template/contentView.php', $datas);
       }
       return $out;
     }

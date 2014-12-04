@@ -6,7 +6,7 @@ $config['routes']['ulysse.content.list'] = [
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function() {
-      return contentListPage();
+      return contentListController();
     }
 ];
 
@@ -16,17 +16,17 @@ $config['routes']['ulysse.content.create'] = [
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function() {
-      return contentFormPage();
+      return contentCreateController();
     }
 ];
 
 // display an add / edit content form
-$config['routes']['ulysse.content.edit'] = [
+$config['routes']['ulysse.content.update'] = [
   'path' => 'admin/content/edit',
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function() {
-      return contentFormPage();
+      return contentUpdateController();
     }
 ];
 
@@ -36,7 +36,7 @@ $config['routes']['ulysse.content.save'] = [
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function () {
-      return contentFormSavePage();
+      return contentFormSaveController();
     }
 ];
 
@@ -46,7 +46,7 @@ $config['routes']['ulysse.content.confirmDeletion'] = [
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function () {
-      return contentDeleteConfirmPage();
+      return contentDeleteConfirmController();
     }
 ];
 
@@ -56,7 +56,7 @@ $config['routes']['ulysse.content.delete'] = [
   'theme' => 'admin',
   'layout' => 'page.php',
   'callable' => function () {
-      return contentDeletePage();
+      return contentDeleteController();
     }
 ];
 

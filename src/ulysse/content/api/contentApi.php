@@ -94,7 +94,7 @@ function getContentByMachineName($machineName, $state = CONTENT_STATE_ONLINE) {
  * @param array $datas
  * @return bool
  */
-function updateContentByMachineName($machine_name, array $datas) {
+function updateContent($machine_name, array $datas) {
 
   $content = $datas['content'];
   $title   = $datas['title'];
@@ -126,7 +126,7 @@ function updateContentByMachineName($machine_name, array $datas) {
  * @param $datas
  * @return bool
  */
-function saveNewContent($machine_name, $datas) {
+function createContent($machine_name, $datas) {
 
   $db      = getDbConnexion('db');
   $sql   = 'INSERT INTO content
@@ -159,4 +159,17 @@ function deleteContent($machine_name) {
   $query  = $db->prepare($sql);
   $query->bindParam(':machine_name', $machine_name);
   return $query->execute();
+}
+
+function contentMachineAlreadyExists($machine_name) {
+  $db = getDbConnexion();
+  $sql = "SELECT machine_name FROM content WHERE machine_name = :machine_name";
+  $query = $db->prepare($sql);
+  $query->bindParam(':machine_name', $machine_name);
+  $query->execute();
+  $datas = $query->fetch();
+  if ($datas) {
+    return TRUE;
+  }
+  return FALSE;
 }

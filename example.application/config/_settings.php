@@ -17,7 +17,7 @@ $config['settings']['database'] = [
 ];
 */
 
-// theme to use to fetch requested templates.
+// theme to use to fetch requested template.
 /*
 $config['settings']['theme'] = ULYSSE_ROOT . '/themes/ulysse';
 $config['settings']['admin_theme_path'] = ULYSSE_ROOT . '/themes/admin';

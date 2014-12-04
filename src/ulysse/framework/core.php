@@ -347,6 +347,15 @@ function getConfig($type = null)
   return $config;
 }
 
+/**
+ * Get a translation for a specific string_id
+ * @param $string_id
+ * @param string $language
+ * @return string : localized string
+ */
+function t($string_id, $language = NULL) {
+  return getTranslation($string_id, $language = NULL);
+}
 
 /**
  * Get a translation for a specific string_id
@@ -539,10 +548,10 @@ function sanitizeValue($value)
  *
  * First look for a file inside the currently active theme.
  *
- * @param string $templatePath : file path. e.g : ock/content/templates/mytemplate.php
+ * @param string $templatePath : file path. e.g : ock/content/template/mytemplate.php
  * @param array $variables
  * @param string $inDirectory : search first template file in this directory.
- * may be defined. A theme is a collection of templates.
+ * may be defined. A theme is a collection of template.
  * @return string
  */
 function template($templatePath, $variables = [], $inDirectory = null)
@@ -584,7 +593,7 @@ function _template($path, $variables = []) {
 
 /**
  * Echo a value in a secured /escaped way.
- * Do not use "print" or "echo" in templates when possible, as
+ * Do not use "print" or "echo" in template when possible, as
  * this function take care of encoding malicious entities.
  *
  * @param string $value : a single string value to print.
@@ -679,7 +688,7 @@ function _setHtmlAttributes(array $attributes = array())
 }
 
 /**
- * get path to build links, href, src etc .... in templates.
+ * get path to build links, href, src etc .... in template.
  * @param string $serverScriptName
  * @param string $serverScriptNamePath
  * @return string

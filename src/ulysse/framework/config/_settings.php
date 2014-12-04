@@ -12,7 +12,7 @@ $config['settings']['database'] = [
   ]
 ];
 
-// theme to use to fetch requested templates.
+// theme to use to fetch requested template.
 $config['settings']['theme'] = 'ulysse';
 $config['settings']['theme_admin'] = 'admin';
 
