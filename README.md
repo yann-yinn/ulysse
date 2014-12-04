@@ -24,11 +24,15 @@ REQUIREMENTS
 INSTALLATION
 -------------
 
-* Copy "example.application" directory to "application".
-* make sure "application/writable" directory is writable & readable by apache
+By default, Ulysse must be in a separate folder than application using it : example
+- yoursite.local
+- ulysse
 
-Edit applications/config/_routes.php file to start create pages on your site.
+* clone ulysse directory.
+* copy example.application to yoursite
+* make sure "yoursite/writable" directory is writable & readable by apache
 
+Edit yoursite/config/_routes.php file to start create pages on your site.
 
 CREATE PAGES
 --------------
