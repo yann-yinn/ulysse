@@ -8,7 +8,7 @@
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
   <?php echo fireDomEvent('template.addingJavascripts') ?>
-  <link rel="stylesheet" href="<?php echo getBasePath() ?>assets/foundation-5.4.6/css/foundation.css" />
+  <link rel="stylesheet" href="<?php echo getBasePath() ?>libraries/foundation/foundation-5.4.6/css/foundation.css" />
   <?php if (isset($head)) : ?>
     <?php echo $head(); ?>
   <?php endif ?>
