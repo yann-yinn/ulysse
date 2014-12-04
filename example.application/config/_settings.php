@@ -20,7 +20,7 @@ $config['settings']['database'] = [
 // theme to use to fetch requested template.
 /*
 $config['settings']['theme'] = ULYSSE_ROOT . '/themes/ulysse';
-$config['settings']['admin_theme_path'] = ULYSSE_ROOT . '/themes/admin';
+$config['settings']['admin_theme'] = ULYSSE_ROOT . '/themes/admin';
 */
 
 // language used by default by the framework if no language are specified

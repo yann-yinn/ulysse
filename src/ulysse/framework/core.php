@@ -550,19 +550,24 @@ function sanitizeValue($value)
  *
  * @param string $templatePath : file path. e.g : ock/content/template/mytemplate.php
  * @param array $variables
- * @param string $inDirectory : search first template file in this directory.
+ * @param string $themePath : search first template file in this directory.
  * may be defined. A theme is a collection of template.
  * @return string
  */
-function template($templatePath, $variables = [], $inDirectory = null)
+function template($templatePath, $variables = [], $themePath = null)
 {
   // content.php
   $output = FALSE;
-  $searchPaths =
-  [
-    $inDirectory ? $inDirectory . DIRECTORY_SEPARATOR . $templatePath : getSetting('theme') . DIRECTORY_SEPARATOR . $templatePath,
-    $templatePath,
-  ];
+  $searchPaths = [];
+  if ($themePath)
+  {
+    $searchPaths[] = $themePath . DIRECTORY_SEPARATOR . $templatePath;
+  }
+  // @FIXME template should be fetched from currently active theme.
+  // we should not search first in active theme adn then in admin theme
+  $searchPaths[] = getThemePath(getSetting('theme')) . DIRECTORY_SEPARATOR . $templatePath;
+  $searchPaths[] = getThemePath(getSetting('theme_admin')) . DIRECTORY_SEPARATOR . $templatePath;
+  $searchPaths[] = $templatePath;
   foreach ($searchPaths as $path)
   {
      $output = @_template($path, $variables);

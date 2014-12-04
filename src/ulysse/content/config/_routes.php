@@ -3,7 +3,7 @@
 // list all site contents
 $config['routes']['ulysse.content.list'] = [
   'path' => 'admin',
-  'theme' => 'admin',
+  'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function() {
       return contentListController();
@@ -13,7 +13,7 @@ $config['routes']['ulysse.content.list'] = [
 // display an add / edit content form
 $config['routes']['ulysse.content.create'] = [
   'path' => 'admin/content/create',
-  'theme' => 'admin',
+  'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function() {
       return contentCreateController();
@@ -23,7 +23,7 @@ $config['routes']['ulysse.content.create'] = [
 // display an add / edit content form
 $config['routes']['ulysse.content.update'] = [
   'path' => 'admin/content/edit',
-  'theme' => 'admin',
+  'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function() {
       return contentUpdateController();
@@ -33,7 +33,7 @@ $config['routes']['ulysse.content.update'] = [
 // save content to database
 $config['routes']['ulysse.content.save'] = [
   'path' => 'admin/content/save',
-  'theme' => 'admin',
+  'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function () {
       return contentFormSaveController();
@@ -43,7 +43,7 @@ $config['routes']['ulysse.content.save'] = [
 // confirm deletion
 $config['routes']['ulysse.content.confirmDeletion'] = [
   'path' => 'admin/content/delete/confirm',
-  'theme' => 'admin',
+  'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function () {
       return contentDeleteConfirmController();
@@ -53,7 +53,7 @@ $config['routes']['ulysse.content.confirmDeletion'] = [
 // confirm deletion
 $config['routes']['ulysse.content.delete'] = [
   'path' => 'admin/content/delete',
-  'theme' => 'admin',
+  'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function () {
       return contentDeleteController();
