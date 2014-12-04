@@ -1,16 +1,3 @@
-<ul class="nav nav-tabs">
-  <li role="presentation" class="<?php if(getCurrentRouteId() == 'ulysse.content.list.online') echo 'active' ?>">
-    <a href="<?php echo href('ulysse.content.list.online') ?>">Online</a>
-  </li>
-  <li role="presentation" class="<?php if(getCurrentRouteId() == 'ulysse.content.list.draft') echo 'active' ?>">
-    <a href="<?php echo href('ulysse.content.list.draft') ?>">Draft</a>
-  </li>
-  <li role="presentation" class="<?php if(getCurrentRouteId() == 'ulysse.content.list.trash') echo 'active' ?>">
-    <a href="<?php echo href('ulysse.content.list.trash') ?>">Trash</a>
-  </li>
-</ul>
-
-
 <?php if (!$datas) : ?>
   There is currently no content in <?php echo $state_title ?> state.
 <?php else : ?>

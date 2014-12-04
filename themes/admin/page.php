@@ -14,6 +14,9 @@
   <?php endif ?>
 </head>
 <style>
+  table {
+    width: 100%;
+  }
   a.active {
     font-weight: bold;
   }
@@ -24,7 +27,7 @@
 <nav class="top-bar" data-topbar role="navigation">
   <ul class="title-area">
     <li class="name">
-      <h1><a href="#"> Administration </a></h1>
+      <h1><a href="<?php echo href('ulysse.content.list') ?>"> Administration </a></h1>
     </li>
     <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
     <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
@@ -39,8 +42,15 @@
 
     <!-- Left Nav Section -->
     <ul class="left">
-      <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a></li>
-      <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo href('ulysse.content.list') ?>"> Content list </a></li>
+
+      <li class="<?php if(currentRouteIsParentOf('ulysse.content.list') || isCurrentRoute('ulysse.content.list')) echo 'active' ?>">
+        <a href="<?php echo href('ulysse.content.list') ?>"> Content </a>
+      </li>
+
+      <li class="<?php if(getCurrentRouteId() == 'ulysse.content.create') echo 'active' ?>">
+        <a href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a>
+      </li>
+
     </ul>
   </section>
 </nav>

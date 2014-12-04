@@ -1,7 +1,8 @@
 <div class="row">
   <div class="col-xs-12">
 
-    <!--<img src="<?php //echo getBasePath() ?>libraries/designmodo/flat-ui/img/icons/svg/pencils.svg" />-->
+
+    <img src="<?php echo getBasePath() ?>libraries/designmodo/flat-ui/img/icons/svg/pencils.svg" />
 
 
     <div class="panel panel-success">

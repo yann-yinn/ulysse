@@ -141,10 +141,34 @@ function getCurrentRouteId() {
   $routes = getConfig('routes');
   $path = getCurrentPath();
   foreach ($routes as $id => $route) {
-    if ($route['path'] == $path) {
+    if (isset($route['path']) && $route['path'] == $path) {
       return $id;
     }
   }
+}
+
+function isCurrentRoute($routeId) {
+  return $routeId == getCurrentRouteId();
+}
+
+function currentRouteIsParentOf($parentRouteId) {
+  return routeIsParentOf($parentRouteId, getCurrentRouteId());
+}
+
+function routeIsParentOf($supposedParentRouteId, $routeId) {
+  $route = getRouteById($routeId);
+  if (isset($route['parent']))
+  {
+    if ($route['parent'] == $supposedParentRouteId)
+    {
+      return TRUE;
+    }
+    else
+    {
+      return routeIsParentOf($supposedParentRouteId, $route['parent']);
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -220,13 +244,15 @@ function getRouteDeclarationByPath($path, $routes)
 /**
  * Return a page by its key
  * @see config/_routes.php file.
- * @param string $key
+ * @param string $routeId
  * @return array : the page definition as an array
  */
-function getRouteDeclarationByKey($key)
+function getRouteById($routeId)
 {
   $routes = getConfig('routes');
-  return $routes[$key];
+  $route = $routes[$routeId];
+  $route['id'] = $routeId;
+  return $route;
 }
 
 /**
@@ -241,7 +267,7 @@ function renderRouteByPath($path)
   $route = getRouteDeclarationByPath($path, $routes);
   if (!$route)
   {
-    $route = getRouteDeclarationByKey('__HTTP_404__', $routes);
+    $route = getRouteById('__HTTP_404__', $routes);
   }
   $output = renderRoute($route);
   return $output;
@@ -570,8 +596,8 @@ function template($templatePath, $variables = [], $themePath = null)
   $searchPaths[] = $templatePath;
   foreach ($searchPaths as $path)
   {
-     $output = @_template($path, $variables);
-     if ($output) break;
+    $output = @_template($path, $variables);
+    if ($output) break;
   }
   if (!$output)
   {
@@ -911,6 +937,15 @@ function vde($value)
 {
   var_dump($value);exit;
 }
+
+function pr($array)
+{
+  echo '<pre>';
+  print_r($array);
+  echo '</pre>';
+}
+
+
 
 function pre($array)
 {

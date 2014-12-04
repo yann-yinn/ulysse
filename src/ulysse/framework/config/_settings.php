@@ -14,6 +14,7 @@ $config['settings']['database'] = [
 
 // theme to use to fetch requested template.
 $config['settings']['theme'] = 'ulysse';
+//$config['settings']['theme_admin'] = 'admin-flat-ui';
 $config['settings']['theme_admin'] = 'admin';
 
 // language used by default by the framework if no language are specified

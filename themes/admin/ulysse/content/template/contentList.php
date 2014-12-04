@@ -1,14 +1,15 @@
-<ul class="nav nav-tabs">
-  <li role="presentation" class="<?php if(getCurrentRouteId() == 'ulysse.content.list.online') echo 'active' ?>">
+
+<dl class="sub-nav">
+  <dd class="<?php if(getCurrentRouteId() == 'ulysse.content.list.online' || getCurrentRouteId() == 'ulysse.content.list') echo 'active' ?>">
     <a href="<?php echo href('ulysse.content.list.online') ?>">Online</a>
-  </li>
-  <li role="presentation" class="<?php if(getCurrentRouteId() == 'ulysse.content.list.draft') echo 'active' ?>">
+  </dd>
+  <dd class="<?php if(getCurrentRouteId() == 'ulysse.content.list.draft') echo 'active' ?>">
     <a href="<?php echo href('ulysse.content.list.draft') ?>">Draft</a>
-  </li>
-  <li role="presentation" class="<?php if(getCurrentRouteId() == 'ulysse.content.list.trash') echo 'active' ?>">
+  </dd>
+  <dd class="<?php if(getCurrentRouteId() == 'ulysse.content.list.trash') echo 'active' ?>">
     <a href="<?php echo href('ulysse.content.list.trash') ?>">Trash</a>
-  </li>
-</ul>
+  </dd>
+</dl>
 
 
 <?php if (!$datas) : ?>

@@ -29,7 +29,7 @@
 
   <div class="row">
     <div class="col-xs-12">
-      <nav class="navbar navbar-lg navbar-default navbar-inverse" role="navigation">
+      <nav class="navbar navbar-lg navbar-default navbar-embossed navbar-inverse" role="navigation">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-01">
             <span class="sr-only">Toggle navigation</span>
@@ -38,8 +38,8 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse-01">
           <ul class="nav navbar-nav navbar-left">
-            <li><a class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>" href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a></li>
-            <li><a class="<?php if(getCurrentPath() == 'admin') echo 'active' ?>" href="<?php echo href('ulysse.content.list') ?>"> Content list </a></li>
+            <li class="<?php if(getCurrentPath() == 'admin/content/create') echo 'active' ?>"><a href="<?php echo href('ulysse.content.create', 'form_redirection=ulysse.content.list') ?>"> Add content </a></li>
+            <li class="<?php if(currentRouteIsParentOf('ulysse.content.list')) echo 'active' ?>"><a  href="<?php echo href('ulysse.content.list.online') ?>"> Content </a></li>
           </ul>
           <form class="navbar-form navbar-right" action="#" role="search">
             <div class="form-group">

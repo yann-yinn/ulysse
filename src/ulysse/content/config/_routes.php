@@ -6,7 +6,47 @@ $config['routes']['ulysse.content.list'] = [
   'theme' => getSetting('theme_admin'),
   'layout' => 'page.php',
   'callable' => function() {
-      return contentListController();
+      $route = getRouteById('ulysse.content.list.online');
+      return $route['callable']();
+    }
+];
+
+// list all site contents
+$config['routes']['ulysse.content.list.online'] = [
+  'parent' => 'ulysse.content.list',
+  'path' => 'admin/content/list/online',
+  'theme' => getSetting('theme_admin'),
+  'layout' => 'page.php',
+  'callable' => function() {
+      return template('ulysse/content/template/contentList.php', [
+          'datas' => getContentList(CONTENT_STATE_ONLINE)
+        ]);
+    }
+];
+
+// list all site contents
+$config['routes']['ulysse.content.list.draft'] = [
+  'parent' => 'ulysse.content.list',
+  'path' => 'admin/content/list/draft',
+  'theme' => getSetting('theme_admin'),
+  'layout' => 'page.php',
+  'callable' => function() {
+      return template('ulysse/content/template/contentList.php', [
+          'datas' => getContentList(CONTENT_STATE_DRAFT)
+        ]);
+    }
+];
+
+// list all site contents
+$config['routes']['ulysse.content.list.trash'] = [
+  'parent' => 'ulysse.content.list',
+  'path' => 'admin/content/list/trash',
+  'theme' => getSetting('theme_admin'),
+  'layout' => 'page.php',
+  'callable' => function() {
+      return template('ulysse/content/template/contentList.php', [
+          'datas' => getContentList(CONTENT_STATE_TRASH)
+        ]);
     }
 ];
 

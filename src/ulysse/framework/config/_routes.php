@@ -12,7 +12,6 @@ $config['routes']['__HTTP_404__'] = [
     }
 ];
 $config['routes']['__HTTP_403__'] = [
-  'path'     => '',
   'layout' => 'page.php',
   'callable' => function() {
       setHttpResponseCode(403);
