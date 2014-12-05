@@ -533,9 +533,9 @@ function setHttpRedirection($routeId)
   _setHttpRedirection(getFullDomainName() . $url);
 }
 
-function getFormRedirectionFromUrl()
+function getRedirectionFromUrl()
 {
-  return _getFormRedirectionFromUrl();
+  return _getRedirectionFromUrl();
 }
 
 /**
@@ -549,7 +549,7 @@ function getFormRedirectionFromUrl()
 function redirection($routeId = NULL) {
   if (is_null($routeId))
   {
-    $routeId = _getFormRedirectionFromUrl();
+    $routeId = _getRedirectionFromUrl();
   }
   setHttpRedirection($routeId);
   exit;
@@ -774,7 +774,7 @@ function _addPhpIncludePaths($include_paths)
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
 
-function _getFormRedirectionFromUrl() {
+function _getRedirectionFromUrl() {
   $path = null;
   if (isset($_GET['redirection']))
   {
@@ -790,6 +790,17 @@ function _getFormRedirectionFromUrl() {
 function _validateMachineName($machine_name)
 {
   return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
+}
+
+function generateRandomId()
+{
+  $data = openssl_random_pseudo_bytes(16);
+  assert(strlen($data) == 16);
+
+  $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+  $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+  return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
 function vd($value)
