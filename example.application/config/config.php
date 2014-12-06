@@ -19,7 +19,7 @@ include 'ulysse/framework/config/config.php';
 include 'ulysse/content/config/config.php';
 
 // enable user module.
-include 'ulysse/user/config/config.php';
+// include 'ulysse/user/config/config.php';
 
 // include global config files for the site.
 include '_settings.php';
