@@ -4,10 +4,30 @@
  */
 
 /**
- * You may redefined as you wish those existings pages.
+ * Example route.
+ * visit localhost/{yoursite}/www/public/index.php/hello to view it.
  */
+$config['routes']['hello'] = [
+  'path' => 'hello',
+  'layout' => 'page.php',
+  'callable' => function() {
+      return "Hello world";
+    }
+];
+
+// override default homepage.
 /*
-// customize page for 404 not found error
+$config['routes']['ulysse.framework.homepage'] = [
+  'path'     => '',
+  'layout' => 'page.php',
+  'callable'  =>  function() {
+      return getTranslation('ulysse.framework.welcome');
+    }
+];
+*/
+
+// override default 404 page.
+/*
 $config['routes']['__HTTP_404__'] = [
   'layout' => 'page.php',
   'callable' => function() {
@@ -15,7 +35,10 @@ $config['routes']['__HTTP_404__'] = [
       return "Oooops page not found";
     }
 ];
-// customize page for 403 not found error
+*/
+
+// override default 403 page.
+/*
 $config['routes']['__HTTP_403__'] = [
   'layout' => 'page.php',
   'callable' => function() {
@@ -23,17 +46,7 @@ $config['routes']['__HTTP_403__'] = [
       return "Access denied";
     }
 ];
-$config['routes']['ulysse.framework.homepage'] = [
-  'path'     => '',
-  'layout' => 'page.php',
-  'callable'  =>  function() {
-      $out = '';
-      $out .= getTranslation('ulysse.framework.welcome');
-      $datas = getContentByMachineName('homepage_bloc_1');
-      if ($datas) {
-        $out .= template('ulysse/content/template/contentView.php', $datas);
-      }
-      return $out;
-    }
-];
 */
+
+
+

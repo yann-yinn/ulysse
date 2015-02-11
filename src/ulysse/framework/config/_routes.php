@@ -3,7 +3,16 @@
  * Define pages url and content.
  */
 
+// default homepage
+$config['routes']['ulysse.framework.homepage'] = [
+  'path'     => '',
+  'layout' => 'page.php',
+  'callable'  =>  function() {
+      return getTranslation('ulysse.framework.welcome');
+    }
+];
 
+// default 404 page
 $config['routes']['__HTTP_404__'] = [
   'layout' => 'page.php',
   'callable' => function() {
@@ -11,6 +20,8 @@ $config['routes']['__HTTP_404__'] = [
       return "Oooops page not found";
     }
 ];
+
+// default 403 page.
 $config['routes']['__HTTP_403__'] = [
   'layout' => 'page.php',
   'callable' => function() {
@@ -18,12 +29,4 @@ $config['routes']['__HTTP_403__'] = [
       return "Access denied";
     }
 ];
-$config['routes']['ulysse.framework.homepage'] = [
-  'path'     => '',
-  'layout' => 'page.php',
-  'callable'  =>  function() {
-      $out = '';
-      $out .= getTranslation('ulysse.framework.welcome');
-      return $out;
-    }
-];
+

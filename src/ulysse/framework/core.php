@@ -7,17 +7,17 @@ if (!defined('ULYSSE_ROOT'))
   define('ULYSSE_ROOT', '../../../ulysse');
 }
 
-if (!defined('APPLICATION_ROOT'))
+if (!defined('SITE_ROOT'))
 {
-  define('APPLICATION_ROOT', '../..');
+  define('SITE_ROOT', '../..');
 }
 
 define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('ULYSSE_THEMES_DIRECTORY_PATH', ULYSSE_ROOT . '/themes');
 
 // filepaths considering "siteDirectory/www/public/index.php file."
-define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
-define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
+define('APPLICATION_THEMES_DIRECTORY_PATH', SITE_ROOT . '/themes');
+define('APPLICATION_CONFIG_DIRECTORY_PATH', SITE_ROOT . '/config');
 
 /**
  * Bootstrap the ulysse framework : listen http request and map it to
@@ -36,8 +36,8 @@ function startFramework($contextVariables = [])
   _addPhpIncludePaths([
       ULYSSE_ROOT . '/src',
       ULYSSE_ROOT . '/vendors',
-      APPLICATION_ROOT . '/src',
-      APPLICATION_ROOT . '/vendors',
+      SITE_ROOT . '/src',
+      SITE_ROOT . '/vendors',
     ]);
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
