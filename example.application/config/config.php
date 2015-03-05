@@ -15,9 +15,6 @@
 // enable framework module.
 include 'ulysse/framework/config/config.php';
 
-// enable content module.
-include 'ulysse/content/config/config.php';
-
 // enable user module.
 // include 'ulysse/user/config/config.php';
 

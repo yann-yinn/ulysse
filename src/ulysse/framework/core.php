@@ -2,26 +2,17 @@
 /**
  * PHP Ulysse framework core files.
  */
-if (!defined('ULYSSE_ROOT'))
-{
-  define('ULYSSE_ROOT', '../../../ulysse');
-}
 
-if (!defined('SITE_ROOT'))
-{
-  define('SITE_ROOT', '../..');
-}
+define('APP_ROOT', '../..');
 
-define('TEMPLATE_FORMATTERS_FILEPATH', 'templateFormatters.php');
 define('ULYSSE_THEMES_DIRECTORY_PATH', ULYSSE_ROOT . '/themes');
 
 // filepaths considering "siteDirectory/www/public/index.php file."
-define('APPLICATION_THEMES_DIRECTORY_PATH', SITE_ROOT . '/themes');
-define('APPLICATION_CONFIG_DIRECTORY_PATH', SITE_ROOT . '/config');
+define('APPLICATION_THEMES_DIRECTORY_PATH', APP_ROOT . '/themes');
+define('APPLICATION_CONFIG_DIRECTORY_PATH', APP_ROOT . '/config');
 
 /**
- * Bootstrap the ulysse framework : listen http request and map it to
- * a php controller, looking at config/_routes.php file.
+ * Run ulysse framework : map an url to a php controller.
  *
  * @param array $contextVariables : array of values to define site context
  * Use this bootstrap in a script in "www" directory with following example code :
@@ -30,42 +21,29 @@ define('APPLICATION_CONFIG_DIRECTORY_PATH', SITE_ROOT . '/config');
  * startFramework();
  * @endocde
  */
-function startFramework($contextVariables = [])
-{
+function startFramework($contextVariables = []) {
 
   _addPhpIncludePaths([
       ULYSSE_ROOT . '/src',
       ULYSSE_ROOT . '/vendors',
-      SITE_ROOT . '/src',
-      SITE_ROOT . '/vendors',
+      APP_ROOT . '/src',
+      APP_ROOT . '/vendors',
     ]);
+
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
 
-  // for user connexion.
-  session_start();
-
-  // connect to database and register its connexion in the context, so
-  // that we can access db connexion from anywhere in the code.
-  // @see getDbConnexion();
-  $contextVariables['db'] = connectToDatabase();
+  fireEvent('ulysse.framework.beforeBootstrap');
 
   // register context variables in the application context
   setContextVariable('time_start', microtime(TRUE));
-  foreach ($contextVariables as $key => $contextVariable)
-  {
+  foreach ($contextVariables as $key => $contextVariable) {
     setContextVariable($key, $contextVariable);
   }
 
-  require 'routes.php';
-
-  // include template formatters file, for template() function.
-  // @FIXME find a better place for formatters ? is this needed at all ?
-  require TEMPLATE_FORMATTERS_FILEPATH;
-
   fireEvent('ulysse.framework.afterBootstrap');
 
-  // executing controller and returning output to the browser
+  // executing our controller and return output to the browser
   echo renderRouteByPath(getCurrentPath());
 
   // display developper informations.
@@ -73,17 +51,8 @@ function startFramework($contextVariables = [])
     require_once "ulysse/framework/developperToolbar.php";
   }
 
-}
+  exit;
 
-/**
- * connect to database with PDO
- * @return PDO connexion
- */
-function connectToDatabase()
-{
-  $databaseDatas = getSetting("database");
-  $db = _connectToDatabase($databaseDatas);
-  return $db;
 }
 
 /**
@@ -110,30 +79,33 @@ function getBasePath()
  * This path is then fetched in $config['routes'] array. If a matching route is found,
  * route controller will be executed.
  */
-function getCurrentPath()
-{
-  static $path = null;
-  if ($path) return $path;
+function getCurrentPath() {
 
-  // "/ulysse/www/public/index.php" < "http://localhost/ulysse/www/public/index.php/admin/content/form"
+  static $path = null;
+
+  if ($path) {
+    return $path;
+  }
+
+  // "http://localhost/ulysse/www/public/index.php/admin/content/form" > "/ulysse/www/public/index.php"
   $scriptNamePath = _getServerScriptNamePath();
 
-  // "index.php" <  "/ulysse/www/public/index.php"
+  // "/ulysse/www/public/index.php" >  "index.php"
   $scriptName = _getServerScriptName($scriptNamePath);
 
-  // "/ulysse/www/public/" < "/ulysse/www/public/index.php"
+  // "/ulysse/www/public/index.php" > "/ulysse/www/public/"
   $basePath = _getBasePath($scriptName, $scriptNamePath);
 
-  // "/ulysse/www/public/index.php/admin/content/form" < "http://localhost/ulysse/www/public/index.php/admin/content/form"
+  //  "http://localhost/ulysse/www/public/index.php/admin/content/form" > "/ulysse/www/public/index.php/admin/content/form"
   $serverRequestUri = _getServerRequestUri();
 
-  // "index.php/admin/content/form" < "/ulysse/www/public/index.php/admin/content/form"
+  // "/ulysse/www/public/index.php/admin/content/form" > "index.php/admin/content/form"
   $serverRequestUriWihoutBasePath = _removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
 
-  // "/admin/content/form" < "index.php/admin/content/form"
+  // "index.php/admin/content/form" >  "/admin/content/form"
   $path = _removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
 
-  // "admin/content/form" < "/admin/content/form"
+  // "/admin/content/form" > "admin/content/form"
   $path = _removeTrailingSlashFromPath($path);
 
   return $path;
@@ -143,8 +115,7 @@ function getCurrentPath()
  * Get framework script entry point, usually "index.php"
  * @return string
  */
-function getServerScriptName()
-{
+function getServerScriptName() {
   return _getServerScriptName(_getServerScriptNamePath());
 }
 
@@ -152,35 +123,21 @@ function getServerScriptName()
  * Get all site Logs
  * @return array : all site logs
  */
-function getAllLogs()
-{
+function getAllLogs() {
   return $GLOBALS['_LOGS'];
-}
-
-/**
- * Get database connexion to perform queries.
- * @return PDO connexion object
- */
-function getDbConnexion()
-{
-  return getContextVariable('db');
 }
 
 /**
  * Get current language used on the site by the visitor
  * @return string : langcode (fr, en etc...)
  */
-function getCurrentLanguage()
-{
+function getCurrentLanguage() {
   $currentLanguage = getSetting('language_default');
-  if (isset($_REQUEST['language']))
-  {
+  if (isset($_REQUEST['language'])) {
     $requestedLanguage = (string)sanitizeValue($_REQUEST['language']);
     $definedLanguages = getSetting('languages');
-    foreach ($definedLanguages as $id => $datas)
-    {
-      if ($definedLanguages[$id]['query'] == $requestedLanguage)
-      {
+    foreach ($definedLanguages as $id => $datas) {
+      if ($definedLanguages[$id]['query'] == $requestedLanguage) {
         $currentLanguage = $requestedLanguage;
       }
     }
@@ -194,22 +151,19 @@ function getCurrentLanguage()
  * @param string $key = settings identifier
  * @return mixed
  */
-function getSetting($key)
-{
+function getSetting($key) {
   $settings = getConfig('settings');
-  if (isset($settings[$key]))
-  {
+  if (isset($settings[$key])) {
     return $settings[$key];
   }
 }
 
 /**
- * Fire a Dom Event
+ * Fire a html Dom Event
  * @param string $event_id
  * @return string
  */
-function fireDomEvent($event_id)
-{
+function fireDomEvent($event_id) {
   $returns = fireEvent($event_id);
   return implode("\r\n", $returns);
 }
@@ -218,22 +172,18 @@ function fireDomEvent($event_id)
  * @param string $event_id : event id
  * @return array all returns by all executed listeners
  */
-function fireEvent($event_id)
-{
+function fireEvent($event_id) {
   $listeners = getConfig('listeners');
   $returns = [];
-  if (isset($listeners[$event_id]))
-  {
-    foreach($listeners[$event_id] as $listener_id => $listener)
-    {
+  if (isset($listeners[$event_id])) {
+    foreach($listeners[$event_id] as $listener_id => $listener) {
       $return = executeListener($listener);
       $returns[] = $return;
       writeLog(['detail' => "Executing '$listener_id' listener for event '$event_id' : listener returned : " . var_export($return, TRUE)]);
     }
     return $returns;
   }
-  else
-  {
+  else {
     writeLog(['detail' => 'No listeners found for ' . $event_id . ' event']);
     return FALSE;
   }
@@ -243,8 +193,7 @@ function fireEvent($event_id)
  * @param array $listener with a "callable" key which is a closure.
  * @return mixed
  */
-function executeListener($listener)
-{
+function executeListener($listener) {
   return $listener['callable']();
 }
 
@@ -252,8 +201,7 @@ function executeListener($listener)
  * Return full context for the current framework response to the http request.
  * @return array
  */
-function getContext()
-{
+function getContext() {
   return $GLOBALS['_CONTEXT'];
 }
 
@@ -262,29 +210,26 @@ function getContext()
  * @param string $key
  * @return mixed
  */
-function getContextVariable($key)
-{
+function getContextVariable($key) {
   return $GLOBALS['_CONTEXT'][$key];
 }
 
-function getConfig($type = null)
-{
+/**
+ * @param string $type : 'routes', 'listeners' etc ...
+ * @return mixed
+ */
+function getConfig($type = null) {
   static $config = [];
-  if (!$config)
-  {
+  if (!$config) {
     include APPLICATION_CONFIG_DIRECTORY_PATH . '/config.php';
     // special local config file.
-    if (is_readable(APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php'))
-    {
+    if (is_readable(APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php')) {
       include APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php';
     }
-
   }
-  if ($type && isset($config[$type]))
-  {
+  if ($type && isset($config[$type])) {
     return $config[$type];
   }
-
   return $config;
 }
 
@@ -304,8 +249,7 @@ function t($string_id, $language = NULL) {
  * @param string $language
  * @return string : localized string
  */
-function getTranslation($string_id, $language = NULL)
-{
+function getTranslation($string_id, $language = NULL) {
   $translations = getConfig('translations');
   if (!$language) $language = getCurrentLanguage();
   return $translations[$string_id][$language];
@@ -317,17 +261,14 @@ function getTranslation($string_id, $language = NULL)
  * @param string $queryString : e.g "value=4&test=true&redirection=contact"
  * @return string : full url suitable to build an html link.
  */
-function url($path, $queryString = '')
-{
+function url($path, $queryString = '') {
   $queryArray = [];
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
-  if (getSetting('cleanUrls') == FALSE)
-  {
+  if (getSetting('cleanUrls') == FALSE) {
     $url = sanitizeValue(getBasePath() . getServerScriptName() . '/' . $path);
   }
-  else
-  {
+  else {
     $url = sanitizeValue(getBasePath() . $path);
   }
   if ($queryString) $url .= '?' . sanitizeValue($queryString);
@@ -340,28 +281,22 @@ function url($path, $queryString = '')
  * @param string $path
  * @return bool
  */
-function isCurrentPath($path)
-{
+function isCurrentPath($path) {
   $urlPath = getCurrentPath();
   return $path == $urlPath ? TRUE : FALSE;
 }
-
-
 
 /**
  * Return full relative path to a theme inside themes directory.
  * @param string $theme
  * @return bool|string
  */
-function getThemePath($theme)
-{
+function getThemePath($theme) {
   $themePath = FALSE;
-  if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme))
-  {
+  if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme)) {
     $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
   }
-  elseif(file_exists(ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme))
-  {
+  elseif(file_exists(ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme)) {
     $themePath = ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
   }
   return $themePath;
@@ -375,8 +310,7 @@ function getThemePath($theme)
  * - level : notice, warning, error
  * - detail : detail of the log
  */
-function writeLog($log)
-{
+function writeLog($log) {
   $GLOBALS['_LOGS'][] = $log;
 }
 
@@ -386,8 +320,7 @@ function writeLog($log)
  * @param $message : message associated to the http response code
  * @param $protocol (
  */
-function setHttpResponseCode($code, $message = null, $protocol = null)
-{
+function setHttpResponseCode($code, $message = null, $protocol = null) {
   // most common response code and their associated messages.
   $codesMessages =
     [
@@ -412,16 +345,14 @@ function setHttpResponseCode($code, $message = null, $protocol = null)
  * @param string $key
  * @param mixed $value
  */
-function setContextVariable($key, $value)
-{
+function setContextVariable($key, $value) {
   $GLOBALS['_CONTEXT'][$key] = $value;
 }
 
 /**
  * Register a basic psr0 class autoloader.
  */
-function registerPsr0ClassAutoloader()
-{
+function registerPsr0ClassAutoloader() {
   spl_autoload_register(function($class){require_once str_replace('\\','/', $class).'.php';});
 }
 
@@ -430,8 +361,7 @@ function registerPsr0ClassAutoloader()
  * @param string $value
  * @return string html encoded value
  */
-function sanitizeValue($value)
-{
+function sanitizeValue($value) {
   return _sanitizeValue($value);
 }
 
@@ -446,8 +376,7 @@ function sanitizeValue($value)
  * may be defined. A theme is a collection of template.
  * @return string
  */
-function template($templatePath, $variables = [], $themePath = null)
-{
+function template($templatePath, $variables = [], $themePath = null) {
   // content.php
   $output = FALSE;
   $searchPaths = [];
@@ -498,23 +427,18 @@ function _template($path, $variables = []) {
  * Special formatter "raw" may be used to disabled default escaping of the value.
  * @return string
  */
-function e($value, $formatters = [])
-{
+function e($value, $formatters = []) {
   // sanitize value string by default unless "raw" special formatter name is requested
   $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : sanitizeValue($value);
 
-  if ($formatters)
-  {
+  if ($formatters) {
     // if formatters is a string, apply it directly and echo string :
-    if (is_string($formatters))
-    {
+    if (is_string($formatters)) {
       $output = $formatters($output);
     }
     // if formatters is an array, apply each formatter to the string :
-    else
-    {
-      foreach ($formatters as $function)
-      {
+    else {
+      foreach ($formatters as $function) {
         if ($function != "raw") $output = $function($output);
       }
     }
@@ -522,19 +446,16 @@ function e($value, $formatters = [])
   echo $output;
 }
 
-function getFullDomainName()
-{
+function getFullDomainName() {
   return _getUrlScheme() . '://' . _getServerName();
 }
 
-function setHttpRedirection($routeId)
-{
+function setHttpRedirection($routeId) {
   $url = sanitizeValue(href($routeId));
   _setHttpRedirection(getFullDomainName() . $url);
 }
 
-function getRedirectionFromUrl()
-{
+function getRedirectionFromUrl() {
   return _getRedirectionFromUrl();
 }
 
@@ -547,8 +468,7 @@ function getRedirectionFromUrl()
  *
  */
 function redirection($routeId = NULL) {
-  if (is_null($routeId))
-  {
+  if (is_null($routeId)) {
     $routeId = _getRedirectionFromUrl();
   }
   setHttpRedirection($routeId);
@@ -559,8 +479,7 @@ function redirection($routeId = NULL) {
  * One day, this function will check for user permissions. Maybe.
  * @return bool
  */
-function userHasPermission()
-{
+function userHasPermission() {
   return TRUE;
 }
 
@@ -574,10 +493,8 @@ function userHasPermission()
  * @return string
  */
 
-function _setHtmlAttributes(array $attributes = array())
-{
-  foreach ($attributes as $attribute => &$data)
-  {
+function _setHtmlAttributes(array $attributes = array()) {
+  foreach ($attributes as $attribute => &$data) {
     $data = implode(' ', (array) $data);
     $data = $attribute . '="' . htmlspecialchars($data, ENT_QUOTES, 'utf-8') . '"';
   }
@@ -593,8 +510,7 @@ function _setHtmlAttributes(array $attributes = array())
  *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/"
  *   For "mysite.local" it will returns "/"
  */
-function _getBasePath($serverScriptName, $serverScriptNamePath)
-{
+function _getBasePath($serverScriptName, $serverScriptNamePath) {
   return str_replace($serverScriptName, '', $serverScriptNamePath);
 }
 
@@ -605,8 +521,7 @@ function _getBasePath($serverScriptName, $serverScriptNamePath)
  *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/index.php"
  *   For "mysite.local" it will returns "/index.php"
  */
-function _getServerScriptNamePath()
-{
+function _getServerScriptNamePath() {
   return $_SERVER['SCRIPT_NAME'];
 }
 
@@ -617,8 +532,7 @@ function _getServerScriptNamePath()
  *   For "/ulysse/www/public/index.php" it will returns "index.php"
  *   For "mysite.local/index.php" it will returns "index.php"
  */
-function _getServerScriptName($serverScriptName)
-{
+function _getServerScriptName($serverScriptName) {
   return basename($serverScriptName);
 }
 
@@ -632,10 +546,8 @@ function _getServerScriptName($serverScriptName)
  *   it will return "/index.php/azertyuiop789456123"
  *   Idem for "http://ulysse.local/index.php/azertyuiop789456123"
  */
-function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName)
-{
-  if (strpos($serverRequestUriWithoutBasePath, $scriptName) === 0)
-  {
+function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName) {
+  if (strpos($serverRequestUriWithoutBasePath, $scriptName) === 0) {
     return str_replace($scriptName, '', $serverRequestUriWithoutBasePath);
   }
   return $serverRequestUriWithoutBasePath;
@@ -650,8 +562,7 @@ function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName
  * For "localhost/ulysse/www/public/index.php/azertyuiop789456123"
  * it return also "index.php/azertyuiop789456123".
  */
-function _removeBasePathFromServerRequestUri($serverRequestUri, $basePath)
-{
+function _removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
   return substr_replace($serverRequestUri, '', 0, strlen($basePath));
 }
 
@@ -661,8 +572,7 @@ function _removeBasePathFromServerRequestUri($serverRequestUri, $basePath)
  * for "/hello", returns "hello".
  * for "/hello/", returns "hello".
  */
-function _removeTrailingSlashFromPath($path)
-{
+function _removeTrailingSlashFromPath($path) {
   return trim(parse_url($path, PHP_URL_PATH), '/');
 }
 
@@ -678,8 +588,7 @@ function _setHttpRedirection($fullUrl) {
  * @param $value
  * @return string
  */
-function _sanitizeValue($value)
-{
+function _sanitizeValue($value) {
   return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
 }
 
@@ -687,8 +596,7 @@ function _sanitizeValue($value)
  * Return le scheme d'une url (http ou https)
  * @return string
  */
-function _getUrlScheme()
-{
+function _getUrlScheme() {
   return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
 }
 
@@ -696,8 +604,7 @@ function _getUrlScheme()
  * FIXME : https & http detection here
  * @return string
  */
-function _getServerProtocol()
-{
+function _getServerProtocol() {
   return $_SERVER["SERVER_PROTOCOL"];
 }
 
@@ -709,127 +616,194 @@ function _getServerProtocol()
  * For "http://eurl.local/ulysse/www/public/index.php/azertyuiop789456123"
  * it will return "/ulysse/www/public/index.php/azertyuiop789456123".
  */
-function _getServerRequestUri()
-{
+function _getServerRequestUri() {
   return $_SERVER['REQUEST_URI'];
 }
 
-function _getServerName()
-{
+function _getServerName() {
   return $_SERVER['SERVER_NAME'];
-}
-
-/**
- * @TODO : databases whould be passed without the id for
- * this atomic function.
- * Connect to a database with PDO
- * @param array $databaseDatas = [
- *   'default' => [
- *     'driver' => 'sqlite',
- *     'sqlite_file' => 'writable/database.sqlite',
- *     // for mysql :
- *     //'host' => '127.0.0.1',
- *     //'name' => 'framework',
- *     //'user' => 'root',
- *     //'password' => '',
- * ]
- * @param string $id
- * @return bool|PDO
- */
-function _connectToDatabase($databaseDatas, $id = 'default')
-{
-  // Connect to database specified in database settings if any, using PDO
-  $db = FALSE;
-  if (!empty($databaseDatas[$id]))
-  {
-    try
-    {
-      if ($databaseDatas[$id]['driver'] == 'mysql')
-      {
-        $db = new PDO("{$databaseDatas[$id]['driver']}:host={$databaseDatas[$id]['host']};dbname={$databaseDatas[$id]['name']}", $databaseDatas[$id]['user'], $databaseDatas[$id]['password']);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      }
-      if ($databaseDatas[$id]['driver'] == 'sqlite')
-      {
-        $sqliteFile = $databaseDatas[$id]['sqlite_file'];
-        $db = new PDO("{$databaseDatas[$id]['driver']}:$sqliteFile");
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      }
-    }
-    catch (PDOException $e)
-    {
-      echo $e->getMessage();
-      die();
-    }
-  }
-  return $db;
 }
 
 /**
  * @param array $include_paths
  *   a list of php paths that will be added to php include path variable.
  */
-function _addPhpIncludePaths($include_paths)
-{
+function _addPhpIncludePaths($include_paths) {
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
 
 function _getRedirectionFromUrl() {
   $path = null;
-  if (isset($_GET['redirection']))
-  {
+  if (isset($_GET['redirection'])) {
     $path = urldecode($_GET['redirection']);
   }
   return $path;
 }
 
+function getCurrentRouteId() {
+  $routes = getConfig('routes');
+  $path = getCurrentPath();
+  foreach ($routes as $id => $route) {
+    if (isset($route['path']) && $route['path'] == $path) {
+      return $id;
+    }
+  }
+}
+
+function isCurrentRoute($routeId) {
+  return $routeId == getCurrentRouteId();
+}
+
+function currentRouteIsParentOf($parentRouteId) {
+  return routeIsParentOf($parentRouteId, getCurrentRouteId());
+}
+
+function getRouteIdFromPath($path) {
+  $routes = getConfig('routes');
+  foreach ($routes as $id => $route) {
+    if (isset($route['path']) && $route['path'] == $path) {
+      return $id;
+    }
+  }
+}
+
+function routeIsParentOf($supposedParentRouteId, $routeId) {
+  $route = getRouteById($routeId);
+  if (isset($route['parent']))
+  {
+    if ($route['parent'] == $supposedParentRouteId)
+    {
+      return TRUE;
+    }
+    else
+    {
+      return routeIsParentOf($supposedParentRouteId, $route['parent']);
+    }
+  }
+  return FALSE;
+}
+
 /**
- * @param string $machine_name : a string containing only alphanumeric and underscore characters
- * @return boolean : TRUE if machine_name is valid, FALSE otherwise
+ * Return a page by its key
+ * @see config/_routes.php file.
+ * @param string $routeId
+ * @return array : the page definition as an array
  */
-function _validateMachineName($machine_name)
-{
-  return (bool)preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $machine_name);
+function getRouteById($routeId) {
+  $routes = getConfig('routes');
+  $route = $routes[$routeId];
+  $route['id'] = $routeId;
+  return $route;
 }
 
-function generateRandomId()
-{
-  $data = openssl_random_pseudo_bytes(16);
-  assert(strlen($data) == 16);
-
-  $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
-  $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
-
-  return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+/**
+ * Render a page using its path.
+ * @see $config['routes']
+ * @param string $path
+ * @return string (html, json, xml or whatever the controller return to us.)
+ */
+function renderRouteByPath($path) {
+  $routes = getConfig('routes');
+  $route = getRouteDeclarationByPath($path, $routes);
+  if (!$route) {
+    $route = getRouteById('__HTTP_404__', $routes);
+  }
+  $output = renderRoute($route);
+  return $output;
 }
 
-function vd($value)
-{
+/**
+ * If there is several routes, last found route will be used.
+ * @see config/_routes.php
+ * @param $path
+ * @param $routes
+ * @return array : page declaration
+ */
+function getRouteDeclarationByPath($path, $routes) {
+  $route = [];
+  foreach ($routes as $id => $datas) {
+    if (isset($routes[$id]['path']) && $routes[$id]['path'] == $path) {
+      $route = $routes[$id];
+      $route['id'] = $id;
+    }
+  }
+  return $route;
+}
+
+/**
+ * Build an url suitable for href, but using a pageId to retrieve
+ * the requested path. This way, you may change paths without breaking html links.
+ * @param $routeId
+ * @param string $queryString
+ * @return string
+ */
+function href($routeId, $queryString = '') {
+  $routes = getConfig('routes');
+  $route = $routes[$routeId];
+  return url($route['path'], $queryString);
+}
+
+/**
+ * Render a route, parsing a route definition
+ *
+ * @see $config['routes']
+ * @param array $route : page array declaration as returned by getPageByPath() or getPageByKey()
+ * @return bool
+ */
+function renderRoute(array $route) {
+
+  $output = getRoutePropertyValue($route['callable']);
+
+  if (!empty($route['layout'])) {
+    $layoutVariables = [];
+
+    if (!empty($route['layout_variables'])) {
+      $layoutVariables = $route['layout_variables'];
+    }
+    $layoutVariables['content'] = $output;
+    if (!empty($route['theme'])) {
+      $themePath = getThemePath($route['theme']);
+    }
+    else {
+      $themePath = getThemePath(getSetting('theme'));
+    }
+    $output = template($route['layout'], $layoutVariables, $themePath);
+  }
+  return $output;
+}
+
+/**
+ * Route properties might be strings or closure.
+ * @param $property
+ * @return string
+ */
+function getRoutePropertyValue($property) {
+  return is_string($property) ? $property : $property();
+}
+
+function buildAutoRedirectionQueryString() {
+  return 'redirection=' . getRouteIdFromPath(getCurrentPath());
+}
+
+function vd($value) {
   echo '<pre>';
   var_dump($value);
   echo '</pre>';
 }
 
-function vde($value)
-{
+function vde($value) {
   var_dump($value);exit;
 }
 
-function pr($array)
-{
+function pr($array) {
   echo '<pre>';
   print_r($array);
   echo '</pre>';
 }
 
-
-
-function pre($array)
-{
+function pre($array) {
   echo '<pre>';
   print_r($array);
   echo '</pre>';
   exit;
 }
-
-

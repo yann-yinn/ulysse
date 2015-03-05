@@ -12,6 +12,15 @@ $config['routes']['ulysse.framework.homepage'] = [
     }
 ];
 
+// hello world test page.
+$config['routes']['helloWorld'] = [
+  'path' => 'hello-world',
+  'layout' => 'page.php',
+  'callable' => function() {
+      return "Hello World";
+    }
+];
+
 // default 404 page
 $config['routes']['__HTTP_404__'] = [
   'layout' => 'page.php',
@@ -29,4 +38,6 @@ $config['routes']['__HTTP_403__'] = [
       return "Access denied";
     }
 ];
+
+
 

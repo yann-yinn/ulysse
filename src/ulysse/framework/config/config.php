@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This config files contains ALL configuration of your application :
  * $conf['routes'] : pages of your site
@@ -19,11 +20,9 @@ include "_settings.php";
 include "_translations.php";
 include "_listeners.php";
 include "_routes.php";
+include "_templateFormatters.php";
 
-// include content module configuration here
-include 'ulysse/content/config/config.php';
-
-// import custom module configuration here :
+// you may import custom module configuration here :
 // include 'myname/mymodule/config/config.php';
 
 
