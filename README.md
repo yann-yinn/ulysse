@@ -1,8 +1,7 @@
 ULYSSE
 ------------
 
-PHP Procedural Framework & Content Managment Framework, with 0% OOP shit.
-Because unless you're Platon, you know that real word is not about abstract objects.
+PHP Procedural MVC Framework.
 
 FEATURES
 ------------
@@ -10,33 +9,32 @@ FEATURES
 * MVC : routes -> controllers -> template
 * template system, with overridable templates and switchable themes.
 * Config files
-* organize code in module, config files by module.
-* Events listeners, events are also used in templates to let modules include dynamically html or js / css, blocks etc ...
+* organize code by features in module
+* Create or listen events.
 * String translations
-* PSR0 autoloader for vendors library or your own code.
+* PSR0 autoloader
 
 REQUIREMENTS
 -------------
 
-* php >= 5.4 with sqlite drive module enabled.
+* php >= 5.4
 * Apache
 
 INSTALLATION
 -------------
 
 * clone ulysse directory.
-* copy example.application to {yoursite}
-* make sure "{yoursite}/writable" directory is writable & readable by apache
-* go to "localhost/ulysse/{yoursite}/www/public/
+* copy example.application to {yourapp}
+* go to "localhost/ulysse/{yourapp}/www/default/
 
 Edit yoursite/config/_routes.php file to start create pages on your site.
 
-CREATE PAGES
+CREATE ROUTES
 --------------
 
-routes.php file map a framework path to a php callable.
+"config/_routes.php" files maps an url to a php controller.
 It uses php closures or simple strings.
-A page may return a string or a closure :
+A route may return a string or a closure :
 In application/config/_routes.php :
 
 ```php
@@ -50,7 +48,7 @@ $config['routes']['homepage'] = [
     'template' => 'layout.php',
     'callable' =>  function() {template('homepage.php');}
 ];
-// MVC style :
+// you may uses classes :
 $config['routes']['hello'] => [
     'path' => 'hello',
     'callable' => function() {
@@ -58,7 +56,6 @@ $config['routes']['hello'] => [
       $controller->hello();
     }
   ]
-return $pages;
 ```
 
 TEMPLATES
@@ -89,4 +86,4 @@ But Ulysse will first look for an existing "application/themes/mytheme/path/to/t
 and will use it if found.
 
 "mytheme" is the default enabled theme, unless you specify theme to use in the template function
-or in your pages declaration.
+or in your routes declaration.
