@@ -482,7 +482,7 @@ function setHttpRedirection($routeId) {
 }
 
 /**
- * Redirect to specified path.
+ * Http Redirection to specified path.
  * If path is not specified, function will look
  * into the url for a GET "redirection" query param, and will use
  * it as the redirection path.
@@ -497,14 +497,6 @@ function redirection($routeId = NULL) {
   exit;
 }
 
-/**
- * One day, this function will check for user permissions. Maybe.
- * @return bool
- */
-function userHasPermission() {
-  return TRUE;
-}
-
 /* ====================
    HELPERS
    ==================== */
@@ -514,8 +506,7 @@ function userHasPermission() {
  * @param array $attributes
  * @return string
  */
-
-function _setHtmlAttributes(array $attributes = array()) {
+function setHtmlAttributes(array $attributes = array()) {
   foreach ($attributes as $attribute => &$data) {
     $data = implode(' ', (array) $data);
     $data = $attribute . '="' . htmlspecialchars($data, ENT_QUOTES, 'utf-8') . '"';
