@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This config files contains ALL configuration of your application :
  * $conf['routes'] : pages of your site

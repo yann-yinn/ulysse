@@ -11,15 +11,6 @@ $config['routes']['ulysse.framework.homepage'] = [
     }
 ];
 
-// hello world test page.
-$config['routes']['helloWorld'] = [
-  'path' => 'hello-world',
-  'template' => 'page.php',
-  'datas' => function() {
-      return ['content' => "Hello World"];
-    }
-];
-
 // default 404 page
 $config['routes']['__HTTP_404__'] = [
   'template' => 'page.php',

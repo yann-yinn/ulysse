@@ -25,13 +25,23 @@ define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
  * @endocde
  */
 function startFramework() {
-  fireEvent('ulysse.framework.bootstrap');
-  addPhpIncludePaths([ULYSSE_ROOT . '/src', APPLICATION_ROOT . '/src', APPLICATION_ROOT . '/vendors']);
+
+  // include paths and autoloading :
+  addPhpIncludePaths([
+      ULYSSE_ROOT . '/src',
+      APPLICATION_ROOT . '/src',
+      APPLICATION_ROOT . '/vendors'
+    ]);
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
+
+  // inform modules.
+  fireEvent('ulysse.framework.bootstrap');
+
   setContextVariable('time_start', microtime(TRUE));
   // executing our controller and return output to the browser
   echo renderRouteByPath(getCurrentPath());
+
   // display developper informations.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
     require_once "ulysse/framework/developperToolbar.php";

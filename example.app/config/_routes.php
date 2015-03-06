@@ -8,13 +8,14 @@
  * visit localhost/{yoursite}/www/public/index.php/hello to view it.
  */
 $config['routes']['helloWorld'] = [
-  'path' => 'hello',
+  'path' => 'hello-world',
   'template' => 'page.php',
   'format' => 'html',
   'datas' => function() {
-    return ['content' => "Hello world"];
-  },
+      return ['content' => "Hello world"];
+    },
 ];
+
 
 
 // override default homepage.
