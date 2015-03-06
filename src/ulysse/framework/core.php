@@ -3,9 +3,15 @@
  * PHP Ulysse framework core files.
  */
 
-define('APPLICATION_ROOT', '../..');
-
-// filepaths considering "siteDirectory/www/public/index.php file."
+// relative paths from main index.php file (yourapp/www/index.php)
+// to find application directory path and ulysse directory path.
+// Those constants are first defined in index.php file.
+if (!defined('APPLICATION_ROOT')) {
+  define('APPLICATION_ROOT', '..');
+}
+if (!defined('ULYSSE_ROOT')) {
+  define('ULYSSE_ROOT', '../..');
+}
 define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
 define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 
@@ -21,7 +27,7 @@ define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
  */
 function startFramework($contextVariables = []) {
 
-  _addPhpIncludePaths([
+  addPhpIncludePaths([
       ULYSSE_ROOT . '/src',
       APPLICATION_ROOT . '/src',
       APPLICATION_ROOT . '/vendors',
@@ -57,10 +63,9 @@ function startFramework($contextVariables = []) {
  *
  * @return string
  */
-function getBasePath()
-{
-  $scriptNamePath = _getServerScriptNamePath();
-  $scriptName = _getServerScriptName($scriptNamePath);
+function getBasePath() {
+  $scriptNamePath = getServerScriptNamePath();
+  $scriptName = getServerScriptName($scriptNamePath);
   return _getBasePath($scriptName, $scriptNamePath);
 }
 
@@ -85,16 +90,16 @@ function getCurrentPath() {
   }
 
   // "http://localhost/ulysse/www/public/index.php/admin/content/form" > "/ulysse/www/public/index.php"
-  $scriptNamePath = _getServerScriptNamePath();
+  $scriptNamePath = getServerScriptNamePath();
 
   // "/ulysse/www/public/index.php" >  "index.php"
-  $scriptName = _getServerScriptName($scriptNamePath);
+  $scriptName = getServerScriptName($scriptNamePath);
 
   // "/ulysse/www/public/index.php" > "/ulysse/www/public/"
   $basePath = _getBasePath($scriptName, $scriptNamePath);
 
   //  "http://localhost/ulysse/www/public/index.php/admin/content/form" > "/ulysse/www/public/index.php/admin/content/form"
-  $serverRequestUri = _getServerRequestUri();
+  $serverRequestUri = getServerRequestUri();
 
   // "/ulysse/www/public/index.php/admin/content/form" > "index.php/admin/content/form"
   $serverRequestUriWihoutBasePath = _removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
@@ -112,8 +117,8 @@ function getCurrentPath() {
  * Get framework script entry point, usually "index.php"
  * @return string
  */
-function getServerScriptName() {
-  return _getServerScriptName(_getServerScriptNamePath());
+function getServerEntryPoint() {
+  return getServerScriptName(getServerScriptNamePath());
 }
 
 /**
@@ -279,7 +284,7 @@ function buildUrlFromPath($path, $queryString = '') {
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
   if (getSetting('cleanUrls') == FALSE) {
-    $url = sanitizeValue(getBasePath() . getServerScriptName() . '/' . $path);
+    $url = sanitizeValue(getBasePath() . getServerEntryPoint() . '/' . $path);
   }
   else {
     $url = sanitizeValue(getBasePath() . $path);
@@ -356,7 +361,7 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
       500 => 'Internal Server Error',
       503 => 'Service Unavailable',
     ];
-  $protocol = $protocol ? $protocol : _getServerProtocol();
+  $protocol = $protocol ? $protocol : getServerProtocol();
   $message  = $message ? $message : $codesMessages[$code];
   header(sprintf("%s %s %s", $protocol, sanitizeValue($code), sanitizeValue($message)));
 }
@@ -468,16 +473,12 @@ function e($value, $formatters = []) {
 }
 
 function getFullDomainName() {
-  return _getUrlScheme() . '://' . _getServerName();
+  return _getUrlScheme() . '://' . getServerName();
 }
 
 function setHttpRedirection($routeId) {
   $url = sanitizeValue(buildUrl($routeId));
   _setHttpRedirection(getFullDomainName() . $url);
-}
-
-function getRedirectionFromUrl() {
-  return _getRedirectionFromUrl();
 }
 
 /**
@@ -490,7 +491,7 @@ function getRedirectionFromUrl() {
  */
 function redirection($routeId = NULL) {
   if (is_null($routeId)) {
-    $routeId = _getRedirectionFromUrl();
+    $routeId = getRedirectionFromUrl();
   }
   setHttpRedirection($routeId);
   exit;
@@ -542,7 +543,7 @@ function _getBasePath($serverScriptName, $serverScriptNamePath) {
  *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/index.php"
  *   For "mysite.local" it will returns "/index.php"
  */
-function _getServerScriptNamePath() {
+function getServerScriptNamePath() {
   return $_SERVER['SCRIPT_NAME'];
 }
 
@@ -553,7 +554,7 @@ function _getServerScriptNamePath() {
  *   For "/ulysse/www/public/index.php" it will returns "index.php"
  *   For "mysite.local/index.php" it will returns "index.php"
  */
-function _getServerScriptName($serverScriptName) {
+function getServerScriptName($serverScriptName) {
   return basename($serverScriptName);
 }
 
@@ -561,7 +562,7 @@ function _getServerScriptName($serverScriptName) {
  * @param string $serverRequestUriWithoutBasePath
  *   @see _getServerRequestUriWithoutBasePath()
  * @param string $scriptName
- *   @see _getServerScriptName()
+ *   @see getServerScriptName()
  * @return string :
  *   For "http://localhost/ulysse/www/public/index.php/azertyuiop789456123"
  *   it will return "/index.php/azertyuiop789456123"
@@ -625,7 +626,7 @@ function _getUrlScheme() {
  * FIXME : https & http detection here
  * @return string
  */
-function _getServerProtocol() {
+function getServerProtocol() {
   return $_SERVER["SERVER_PROTOCOL"];
 }
 
@@ -637,11 +638,11 @@ function _getServerProtocol() {
  * For "http://eurl.local/ulysse/www/public/index.php/azertyuiop789456123"
  * it will return "/ulysse/www/public/index.php/azertyuiop789456123".
  */
-function _getServerRequestUri() {
+function getServerRequestUri() {
   return $_SERVER['REQUEST_URI'];
 }
 
-function _getServerName() {
+function getServerName() {
   return $_SERVER['SERVER_NAME'];
 }
 
@@ -649,11 +650,11 @@ function _getServerName() {
  * @param array $include_paths
  *   a list of php paths that will be added to php include path variable.
  */
-function _addPhpIncludePaths($include_paths) {
+function addPhpIncludePaths($include_paths) {
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
 
-function _getRedirectionFromUrl() {
+function getRedirectionFromUrl() {
   $path = null;
   if (isset($_GET['redirection'])) {
     $path = urldecode($_GET['redirection']);
@@ -690,14 +691,11 @@ function getRouteIdFromPath($path) {
 
 function routeIsParentOf($supposedParentRouteId, $routeId) {
   $route = getRouteById($routeId);
-  if (isset($route['parent']))
-  {
-    if ($route['parent'] == $supposedParentRouteId)
-    {
+  if (isset($route['parent'])) {
+    if ($route['parent'] == $supposedParentRouteId) {
       return TRUE;
     }
-    else
-    {
+    else {
       return routeIsParentOf($supposedParentRouteId, $route['parent']);
     }
   }
@@ -751,8 +749,6 @@ function getRouteDeclarationByPath($path, $routes) {
   return $route;
 }
 
-
-
 /**
  * Render a route, parsing a route definition
  *
@@ -783,7 +779,8 @@ function renderRoute(array $route) {
 }
 
 /**
- * Route properties might be strings or closures.
+ * Route properties might be strings or closures, this
+ * function returns a value whatever the property is.
  *
  * @param $property
  * @return string
