@@ -9,17 +9,19 @@
  */
 $config['routes']['helloWorld'] = [
   'path' => 'hello',
-  'controller' => function() {
-      return template('page.php', ['content' => "Hello world"]);
-    }
+  'template' => 'page.php',
+  'format' => 'html',
+  'datas' => function() {
+    return ['content' => "Hello world"];
+  },
 ];
+
 
 // override default homepage.
 /*
 $config['routes']['ulysse.framework.homepage'] = [
   'path'     => '',
-  'layout' => 'page.php',
-  'callable'  =>  function() {
+  'controller'  =>  function() {
       return getTranslation('ulysse.framework.welcome');
     }
 ];
@@ -28,8 +30,7 @@ $config['routes']['ulysse.framework.homepage'] = [
 // override default 404 page.
 /*
 $config['routes']['__HTTP_404__'] = [
-  'layout' => 'page.php',
-  'callable' => function() {
+  'controller' => function() {
       setHttpResponseCode(404);
       return "Oooops page not found";
     }
@@ -39,8 +40,7 @@ $config['routes']['__HTTP_404__'] = [
 // override default 403 page.
 /*
 $config['routes']['__HTTP_403__'] = [
-  'layout' => 'page.php',
-  'callable' => function() {
+  'controller' => function() {
       setHttpResponseCode(403);
       return "Access denied";
     }

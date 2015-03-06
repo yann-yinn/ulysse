@@ -5,7 +5,8 @@
 
 // relative paths from main index.php file (yourapp/www/index.php)
 // to find application directory path and ulysse directory path.
-// Those constants are first defined in index.php file.
+
+// Those constants may be defined in index.php file.
 if (!defined('APPLICATION_ROOT')) {
   define('APPLICATION_ROOT', '..');
 }
@@ -18,44 +19,24 @@ define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 /**
  * Run ulysse framework : map an url to a php controller.
  *
- * @param array $contextVariables : array of values to define site context
- * Use this bootstrap in a script in "www" directory with following example code :
  * @code
  * require_once "../src/ulysse/framework/core.php";
  * startFramework();
  * @endocde
  */
-function startFramework($contextVariables = []) {
-
-  addPhpIncludePaths([
-      ULYSSE_ROOT . '/src',
-      APPLICATION_ROOT . '/src',
-      APPLICATION_ROOT . '/vendors',
-    ]);
-
+function startFramework() {
+  fireEvent('ulysse.framework.bootstrap');
+  addPhpIncludePaths([ULYSSE_ROOT . '/src', APPLICATION_ROOT . '/src', APPLICATION_ROOT . '/vendors']);
   // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
-
-  fireEvent('ulysse.framework.beforeBootstrap');
-
-  // register context variables in the application context
   setContextVariable('time_start', microtime(TRUE));
-  foreach ($contextVariables as $key => $contextVariable) {
-    setContextVariable($key, $contextVariable);
-  }
-
-  fireEvent('ulysse.framework.afterBootstrap');
-
   // executing our controller and return output to the browser
   echo renderRouteByPath(getCurrentPath());
-
   // display developper informations.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
     require_once "ulysse/framework/developperToolbar.php";
   }
-
   exit;
-
 }
 
 /**
@@ -102,13 +83,13 @@ function getCurrentPath() {
   $serverRequestUri = getServerRequestUri();
 
   // "/ulysse/www/public/index.php/admin/content/form" > "index.php/admin/content/form"
-  $serverRequestUriWihoutBasePath = _removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
+  $serverRequestUriWihoutBasePath = removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
 
   // "index.php/admin/content/form" >  "/admin/content/form"
-  $path = _removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
+  $path = removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
 
   // "/admin/content/form" > "admin/content/form"
-  $path = _removeTrailingSlashFromPath($path);
+  $path = removeTrailingSlashFromPath($path);
 
   return $path;
 }
@@ -126,7 +107,7 @@ function getServerEntryPoint() {
  * @return array : all site logs
  */
 function getAllLogs() {
-  return $GLOBALS['_LOGS'];
+  return getContextVariable('logs');
 }
 
 /**
@@ -204,7 +185,9 @@ function executeListener($listener) {
  * @return array
  */
 function getContext() {
-  return $GLOBALS['_CONTEXT'];
+  if (isset($GLOBALS['ULYSSE'])) {
+    return $GLOBALS['ULYSSE'];
+  }
 }
 
 /**
@@ -213,7 +196,9 @@ function getContext() {
  * @return mixed
  */
 function getContextVariable($key) {
-  return $GLOBALS['_CONTEXT'][$key];
+  if (isset($GLOBALS['ULYSSE'][$key])) {
+    return $GLOBALS['ULYSSE'][$key];
+  }
 }
 
 /**
@@ -337,7 +322,9 @@ function getThemePath($theme) {
  * - detail : detail of the log
  */
 function writeLog($log) {
-  $GLOBALS['_LOGS'][] = $log;
+  $logs = getContextVariable('logs');
+  $logs[] = $log;
+  setContextVariable('logs', $logs);
 }
 
 /**
@@ -367,12 +354,13 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
 }
 
 /**
- * Set or add a value to the context
+ * Set or add a value to the context.
+ * That's in fact just a wrapper around globals ...
  * @param string $key
  * @param mixed $value
  */
 function setContextVariable($key, $value) {
-  $GLOBALS['_CONTEXT'][$key] = $value;
+  $GLOBALS['ULYSSE'][$key] = $value;
 }
 
 /**
@@ -383,49 +371,38 @@ function registerPsr0ClassAutoloader() {
 }
 
 /**
- * Sanitize a variable, to display it, encoding html.
- * @param string $value
- * @return string html encoded value
- */
-function sanitizeValue($value) {
-  return _sanitizeValue($value);
-}
-
-/**
- * Render a specific template file
+ * Render a specific template html file.
+ * This function first looks for a file inside the currently active theme
  *
- * First look for a file inside the currently active theme.
- *
- * @param string $templatePath : file path. e.g : ock/content/template/mytemplate.php
+ * @param string $templatePath : file path. e.g : vendorname/modulename/templates/mytemplate.php
  * @param array $variables
  * @param string $themePath : search first template file in this directory.
  * may be defined. A theme is a collection of template.
- * @return string
+ * @return string / html
  */
 function template($templatePath, $variables = [], $themePath = null) {
   // content.php
-  $output = FALSE;
+  $output = '';
   $searchPaths = [];
-  if ($themePath)
-  {
+  // user may force theme for this template, in this case we search first
+  // for the requested theme.
+  if ($themePath) {
     $searchPaths[] = $themePath . DIRECTORY_SEPARATOR . $templatePath;
   }
-  // @FIXME template should be fetched from currently active theme.
-  // we should not search first in active theme adn then in admin theme
+  // if no specific theme are request, use default active theme.
   $searchPaths[] = getThemePath(getSetting('theme')) . DIRECTORY_SEPARATOR . $templatePath;
-  $searchPaths[] = getThemePath(getSetting('theme_admin')) . DIRECTORY_SEPARATOR . $templatePath;
+  // lastly, just search for raw path in filesystem.
   $searchPaths[] = $templatePath;
-  foreach ($searchPaths as $path)
-  {
-    $output = @_template($path, $variables);
+
+  // loop through all possible paths and see if we find a template.
+  foreach ($searchPaths as $path) {
+    $output = @renderTemplate($path, $variables);
     if ($output) break;
   }
-  if (!$output)
-  {
+  if (!$output) {
     writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeValue($path))]);
   }
-  else
-  {
+  else {
     writeLog(['level' => 'notification', 'detail' => sprintf('Template "%s" rendered. ', sanitizeValue($path))]);
   }
   return $output;
@@ -436,7 +413,7 @@ function template($templatePath, $variables = [], $themePath = null) {
  * @param array $variables
  * @return string : template parsed with variables, ready to be printed
  */
-function _template($path, $variables = []) {
+function renderTemplate($path, $variables = []) {
   if ($variables) extract($variables);
   ob_start();
   include $path;
@@ -444,41 +421,41 @@ function _template($path, $variables = []) {
 }
 
 /**
- * Echo a value in a secured /escaped way.
- * Do not use "print" or "echo" in template when possible, as
- * this function take care of encoding malicious entities.
- *
- * @param string $value : a single string value to print.
- * @param array | string  $formatters : array of function names to format the value.
- * Special formatter "raw" may be used to disabled default escaping of the value.
+ * echo with xss protection.
+ * @param $value
+ */
+function e($value) {
+  echo sanitizeValue($value);
+}
+
+/**
+ * Execute Template formatter
+ * @param int $formatterId
  * @return string
  */
-function e($value, $formatters = []) {
-  // sanitize value string by default unless "raw" special formatter name is requested
-  $output = ($formatters != "raw" || !in_array('raw', $formatters)) ? $value : sanitizeValue($value);
-
-  if ($formatters) {
-    // if formatters is a string, apply it directly and echo string :
-    if (is_string($formatters)) {
-      $output = $formatters($output);
-    }
-    // if formatters is an array, apply each formatter to the string :
-    else {
-      foreach ($formatters as $function) {
-        if ($function != "raw") $output = $function($output);
-      }
-    }
-  }
-  echo $output;
+function formatAs($formatterId) {
+  $args = func_get_args();
+  if ($args) unset($args[0]);
+  $templateFormatters = getConfig('templateFormatters');
+  return call_user_func_array($templateFormatters[$formatterId], $args);
 }
 
+/**
+ * Get full domain name, with http or https according to
+ * the currently used protocol.
+ * @return string
+ */
 function getFullDomainName() {
-  return _getUrlScheme() . '://' . getServerName();
+  return getUrlScheme() . '://' . getServerName();
 }
 
-function setHttpRedirection($routeId) {
+/**
+ * Create an http redirection to the given routeId
+ * @param int $routeId
+ */
+function redirectToRoute($routeId) {
   $url = sanitizeValue(buildUrl($routeId));
-  _setHttpRedirection(getFullDomainName() . $url);
+  setHttpRedirection(getFullDomainName() . $url);
 }
 
 /**
@@ -487,22 +464,17 @@ function setHttpRedirection($routeId) {
  * into the url for a GET "redirection" query param, and will use
  * it as the redirection path.
  * @param string $routeId : pageId identifier
- *
  */
-function redirection($routeId = NULL) {
+function routeAutoRedirection($routeId = NULL) {
   if (is_null($routeId)) {
     $routeId = getRedirectionFromUrl();
   }
-  setHttpRedirection($routeId);
+  redirectToRoute($routeId);
   exit;
 }
 
-/* ====================
-   HELPERS
-   ==================== */
-
 /**
- * Core atoms
+ * parse an array of attributes to html attributes.
  * @param array $attributes
  * @return string
  */
@@ -528,7 +500,7 @@ function _getBasePath($serverScriptName, $serverScriptNamePath) {
 }
 
 /**
- * Return framework entry point.
+ * Return server script name path.
  * @return string
  *   If entry point is an "index.php" file :
  *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/index.php"
@@ -559,7 +531,7 @@ function getServerScriptName($serverScriptName) {
  *   it will return "/index.php/azertyuiop789456123"
  *   Idem for "http://ulysse.local/index.php/azertyuiop789456123"
  */
-function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName) {
+function removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName) {
   if (strpos($serverRequestUriWithoutBasePath, $scriptName) === 0) {
     return str_replace($scriptName, '', $serverRequestUriWithoutBasePath);
   }
@@ -575,7 +547,7 @@ function _removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName
  * For "localhost/ulysse/www/public/index.php/azertyuiop789456123"
  * it return also "index.php/azertyuiop789456123".
  */
-function _removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
+function removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
   return substr_replace($serverRequestUri, '', 0, strlen($basePath));
 }
 
@@ -585,14 +557,14 @@ function _removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
  * for "/hello", returns "hello".
  * for "/hello/", returns "hello".
  */
-function _removeTrailingSlashFromPath($path) {
+function removeTrailingSlashFromPath($path) {
   return trim(parse_url($path, PHP_URL_PATH), '/');
 }
 
 /**
  * @param string $fullUrl
  */
-function _setHttpRedirection($fullUrl) {
+function setHttpRedirection($fullUrl) {
   header("Location: $fullUrl");
 }
 
@@ -601,7 +573,7 @@ function _setHttpRedirection($fullUrl) {
  * @param $value
  * @return string
  */
-function _sanitizeValue($value) {
+function sanitizeValue($value) {
   return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
 }
 
@@ -609,7 +581,7 @@ function _sanitizeValue($value) {
  * Return le scheme d'une url (http ou https)
  * @return string
  */
-function _getUrlScheme() {
+function getUrlScheme() {
   return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
 }
 
@@ -748,26 +720,32 @@ function getRouteDeclarationByPath($path, $routes) {
  * @return bool
  */
 function renderRoute(array $route) {
-
-  $output = getRoutePropertyValue($route['controller']);
-
-  if (!empty($route['layout'])) {
-    $layoutVariables = [];
-
-    if (!empty($route['layout_variables'])) {
-      $layoutVariables = $route['layout_variables'];
-    }
-    $layoutVariables['content'] = $output;
-    if (!empty($route['theme'])) {
-      $themePath = getThemePath($route['theme']);
-    }
-    else {
-      $themePath = getThemePath(getSetting('theme'));
-    }
-    $output = template($route['layout'], $layoutVariables, $themePath);
-  }
+  $routeFormatters = getConfig('routesFormatters');
+  if (!isset($route['format'])) $route['format'] = 'html';
+  $output = $routeFormatters[$route['format']]($route);
   return $output;
 }
+
+/**
+ * route formatter
+ * defined following keys :
+ * - template : path of template to use.
+ * @param $route
+ * @return string
+ */
+function htmlFormatter($route) {
+  return template($route['template'], $route['datas']);
+}
+
+/**
+ * Json formatter
+ * @param $route
+ * @return string
+ */
+function jsonFormatter($route) {
+  return json_encode(getRoutePropertyValue($route['datas']));
+}
+
 
 /**
  * Route properties might be strings or closures, this

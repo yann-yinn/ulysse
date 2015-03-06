@@ -32,13 +32,6 @@ print '<li> Memory usage : ' . round($memory_usage/1048576,2) . 'Mo </li>';
 print '</ul>';
 print '</div>';
 
-print '<h2>Context </h2>';
-
-echo '<pre>';
-print_r(getContext());
-echo '</pre>';
-
-
 print '<h2> Logs </h2>';
 print '<ul>';
 

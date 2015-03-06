@@ -2,40 +2,39 @@
 /**
  * Define pages url and content.
  */
-
 // default homepage
 $config['routes']['ulysse.framework.homepage'] = [
   'path'     => '',
-  'layout' => 'page.php',
-  'controller'  =>  function() {
-      return getTranslation('ulysse.framework.welcome');
+  'template' => 'page.php',
+  'datas'  =>  function() {
+      return ['content' => getTranslation('ulysse.framework.welcome')];
     }
 ];
 
 // hello world test page.
 $config['routes']['helloWorld'] = [
   'path' => 'hello-world',
-  'layout' => 'page.php',
-  'controller' => function() {
-      return "Hello World";
+  'template' => 'page.php',
+  'datas' => function() {
+      return ['content' => "Hello World"];
     }
 ];
 
 // default 404 page
 $config['routes']['__HTTP_404__'] = [
-  'layout' => 'page.php',
-  'controller' => function() {
+  'template' => 'page.php',
+  'datas' => function() {
       setHttpResponseCode(404);
-      return "Oooops page not found";
+      return ['content' => "Oooops page not found"];
     }
 ];
 
 // default 403 page.
 $config['routes']['__HTTP_403__'] = [
-  'layout' => 'page.php',
-  'controller' => function() {
+  'template' => 'page.php',
+  'datas' => function() {
       setHttpResponseCode(403);
-      return "Access denied";
+      return ['content' => "Access denied"];
     }
 ];
 

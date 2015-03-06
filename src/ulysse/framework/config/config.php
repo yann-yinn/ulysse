@@ -17,6 +17,7 @@ $config = [];
 
 // include framework settings
 include "_settings.php";
+include "_routeFormatters.php";
 include "_translations.php";
 include "_listeners.php";
 include "_routes.php";
