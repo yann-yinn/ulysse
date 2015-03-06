@@ -3,13 +3,11 @@
  * PHP Ulysse framework core files.
  */
 
-define('APP_ROOT', '../..');
-
-define('ULYSSE_THEMES_DIRECTORY_PATH', ULYSSE_ROOT . '/themes');
+define('APPLICATION_ROOT', '../..');
 
 // filepaths considering "siteDirectory/www/public/index.php file."
-define('APPLICATION_THEMES_DIRECTORY_PATH', APP_ROOT . '/themes');
-define('APPLICATION_CONFIG_DIRECTORY_PATH', APP_ROOT . '/config');
+define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
+define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 
 /**
  * Run ulysse framework : map an url to a php controller.
@@ -25,9 +23,8 @@ function startFramework($contextVariables = []) {
 
   _addPhpIncludePaths([
       ULYSSE_ROOT . '/src',
-      ULYSSE_ROOT . '/vendors',
-      APP_ROOT . '/src',
-      APP_ROOT . '/vendors',
+      APPLICATION_ROOT . '/src',
+      APPLICATION_ROOT . '/vendors',
     ]);
 
   // register a PSR0 class to allow autoloading for vendors and custom code.
@@ -256,12 +253,28 @@ function getTranslation($string_id, $language = NULL) {
 }
 
 /**
- * Build a full url from a framework path.
+ * Build an url from a routeId, suitable for an href html attribute.
+ *
+ * @param string $routeId : routeId. e.g: "helloWorld"
+ * @param string $queryString
+ * @return string
+ * e.g : "/ulysse/example.app/www/default/index.php/hello-world"
+ */
+function buildUrl($routeId, $queryString = '') {
+  $routes = getConfig('routes');
+  // get the route definition by its key identifier.
+  $route = $routes[$routeId];
+  return buildUrlFromPath($route['path'], $queryString);
+}
+
+/**
+ * Build a full url from an ulysse path.
  * @param string $path : e.g "hello/world"
  * @param string $queryString : e.g "value=4&test=true&redirection=contact"
- * @return string : full url suitable to build an html link.
+ * @return string : full relative url suitable to build an href html attribute.
+ * e.g : "/ulysse/example.app/www/default/index.php/hello-world"
  */
-function url($path, $queryString = '') {
+function buildUrlFromPath($path, $queryString = '') {
   $queryArray = [];
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
@@ -281,9 +294,20 @@ function url($path, $queryString = '') {
  * @param string $path
  * @return bool
  */
-function isCurrentPath($path) {
-  $urlPath = getCurrentPath();
-  return $path == $urlPath ? TRUE : FALSE;
+function pathIsActive($path) {
+  return $path ==  getCurrentPath() ? TRUE : FALSE;
+}
+
+/**
+ * Return true if the route is the currently active route.
+ *
+ * @param $routeId
+ * @return bool
+ */
+function routeIsActive($routeId) {
+  $routes = getConfig('routes');
+  $route = $routes[$routeId];
+  return pathIsActive($route['path']);
 }
 
 /**
@@ -295,9 +319,6 @@ function getThemePath($theme) {
   $themePath = FALSE;
   if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme)) {
     $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
-  }
-  elseif(file_exists(ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme)) {
-    $themePath = ULYSSE_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
   }
   return $themePath;
 }
@@ -451,7 +472,7 @@ function getFullDomainName() {
 }
 
 function setHttpRedirection($routeId) {
-  $url = sanitizeValue(href($routeId));
+  $url = sanitizeValue(buildUrl($routeId));
   _setHttpRedirection(getFullDomainName() . $url);
 }
 
@@ -730,18 +751,7 @@ function getRouteDeclarationByPath($path, $routes) {
   return $route;
 }
 
-/**
- * Build an url suitable for href, but using a pageId to retrieve
- * the requested path. This way, you may change paths without breaking html links.
- * @param $routeId
- * @param string $queryString
- * @return string
- */
-function href($routeId, $queryString = '') {
-  $routes = getConfig('routes');
-  $route = $routes[$routeId];
-  return url($route['path'], $queryString);
-}
+
 
 /**
  * Render a route, parsing a route definition
@@ -752,7 +762,7 @@ function href($routeId, $queryString = '') {
  */
 function renderRoute(array $route) {
 
-  $output = getRoutePropertyValue($route['callable']);
+  $output = getRoutePropertyValue($route['controller']);
 
   if (!empty($route['layout'])) {
     $layoutVariables = [];
@@ -773,7 +783,8 @@ function renderRoute(array $route) {
 }
 
 /**
- * Route properties might be strings or closure.
+ * Route properties might be strings or closures.
+ *
  * @param $property
  * @return string
  */

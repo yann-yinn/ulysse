@@ -17,8 +17,8 @@ function euros($number, $sigle = ' €', $decimals = 2, $decPoint = ',', $thousa
 }
 
 function l($text, $path, $queryString = '') {
-  $href = url($path, $queryString);
-  $classes = isCurrentPath($path) ? 'active' : '';
+  $href = buildUrlFromPath($path, $queryString);
+  $classes = pathIsActive($path) ? 'active' : '';
   return sprintf('<a class="%s" href="%s">%s</a>', $classes, $href, $text);
 }
 
