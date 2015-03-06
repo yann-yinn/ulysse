@@ -744,7 +744,7 @@ function renderRoute(array $route) {
  * @return string
  */
 function htmlFormatter($route) {
-  return template($route['template'], $route['datas']);
+  return template($route['template'], $route['controller']);
 }
 
 /**
@@ -753,7 +753,7 @@ function htmlFormatter($route) {
  * @return string
  */
 function jsonFormatter($route) {
-  return json_encode(getRoutePropertyValue($route['datas']));
+  return json_encode(getRoutePropertyValue($route['controller']));
 }
 
 

@@ -3,17 +3,6 @@ ULYSSE
 
 PHP Procedural MVC Framework.
 
-FEATURES
-------------
-
-* MVC : routes -> controllers -> template
-* template system, with overridable templates and switchable themes.
-* Config files
-* organize code by features in module
-* Create or listen events.
-* String translations
-* PSR0 autoloader
-
 REQUIREMENTS
 -------------
 
@@ -24,38 +13,45 @@ INSTALLATION
 -------------
 
 * clone ulysse directory.
-* copy example.application to {yourapp}
-* go to "localhost/ulysse/{yourapp}/www/default/
+* copy "example.app" to "app"
+* go to "localhost/ulysse/app/www/ (or create a virtualhost pointing to this directory)
 
-Edit yoursite/config/_routes.php file to start create pages on your site.
+Edit app/config/_routes.php file to start create new pages.
 
 CREATE ROUTES
 --------------
 
-"config/_routes.php" files maps an url to a php controller.
-It uses php closures or simple strings.
-A route may return a string or a closure :
+"config/_routes.php" files maps an url to a controller.
+In Ulysse, a controller always return an *array* .
+This array will be used to replace variables in a html template
+or to be converted to a json.
 In application/config/_routes.php :
 
 ```php
-$config['routes']['homepage'] = [
-    'path' => '',
-    'callable' => 'hello i am the homepage',
-];
 // to render a template page.php inside a layout.php template
-$config['routes']['homepage'] = [
-    'path'   => '',
-    'template' => 'layout.php',
-    'callable' =>  function() {template('homepage.php');}
-];
-// you may uses classes :
-$config['routes']['hello'] => [
-    'path' => 'hello',
-    'callable' => function() {
-      $controller = new \myVendor\myModule\myController();
-      $controller->hello();
+$config['routes']['hello'] = [
+    'path'   => 'hello',
+    'template' => 'page.php', // a template containing a $content variable.
+    'controller' =>  function() {
+       return ['content' => 'hello world']
     }
-  ]
+];
+// output as json
+$config['routes']['homepage'] = [
+    'path'   => 'hello',
+    'format' => 'json',
+    'controller' =>  function() {
+       return ['content' => 'hello world']
+    }
+];
+// Templates imbrication :
+$config['routes']['hello'] = [
+    'path'   => 'hello',
+    'template' => 'page.php', // a template containing a $content variable.
+    'controller' =>  function() {
+       return ['content' => template('hello.php', ['name' => 'John'])];
+    }
+];
 ```
 
 TEMPLATES
@@ -74,16 +70,6 @@ Never use print or echo to avoid code injection.
 
 Use a function to format a value
 ```php
-<?php e($prix, 'euros') ?>
+<?php formatAs('euros', $prix) ?>
 ```
 
-TEMPLATES OVERRIDABLE AND THEMES
----------------------------------
-
-By default, templates will use simply path passed as an argument :
-For "path/to/template.php", "'path/to/template.php', will be used to render the template.
-But Ulysse will first look for an existing "application/themes/mytheme/path/to/template.php"
-and will use it if found.
-
-"mytheme" is the default enabled theme, unless you specify theme to use in the template function
-or in your routes declaration.

@@ -5,18 +5,24 @@
 
 /**
  * Example route.
- * visit localhost/{yoursite}/www/public/index.php/hello to view it.
+ *
+ * visit localhost/{yoursite}/www/index.php/hello to view it.
  */
 $config['routes']['helloWorld'] = [
-  'path' => 'hello-world',
+  'path' => 'hello',
   'template' => 'page.php',
-  'format' => 'html',
-  'datas' => function() {
+  'controller' => function() {
       return ['content' => "Hello world"];
     },
 ];
 
-
+$config['routes']['contact'] = [
+  'path' => 'contact',
+  'template' => 'page.php',
+  'controller' => function() {
+      return ['content' => "Je suis la page de contact"];
+    },
+];
 
 // override default homepage.
 /*

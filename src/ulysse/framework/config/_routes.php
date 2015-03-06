@@ -6,7 +6,7 @@
 $config['routes']['ulysse.framework.homepage'] = [
   'path'     => '',
   'template' => 'page.php',
-  'datas'  =>  function() {
+  'controller'  =>  function() {
       return ['content' => getTranslation('ulysse.framework.welcome')];
     }
 ];
@@ -14,7 +14,7 @@ $config['routes']['ulysse.framework.homepage'] = [
 // default 404 page
 $config['routes']['__HTTP_404__'] = [
   'template' => 'page.php',
-  'datas' => function() {
+  'controller' => function() {
       setHttpResponseCode(404);
       return ['content' => "Oooops page not found"];
     }
@@ -23,7 +23,7 @@ $config['routes']['__HTTP_404__'] = [
 // default 403 page.
 $config['routes']['__HTTP_403__'] = [
   'template' => 'page.php',
-  'datas' => function() {
+  'controller' => function() {
       setHttpResponseCode(403);
       return ['content' => "Access denied"];
     }

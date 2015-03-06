@@ -1,7 +1,5 @@
 .idea
-# for local configuration only.
-application/config/config.local.php
-# for ulysse dev
-application/themes/dev
-application
+# for local configuration only, do not commit.
+app/config/config.local.php
+
 
