@@ -37,7 +37,7 @@ function startFramework() {
     ]);
   registerPsr0ClassAutoloader();
 
-  fireEvent('ulysse.framework.bootstrap');
+  fireEvent('ulysse.bootstrap');
 
   setContextVariable('time_start', microtime(TRUE));
 
@@ -45,9 +45,9 @@ function startFramework() {
   // for the currentl path
   echo renderRouteByPath(getCurrentPath(), getServerHttpRequestMethod());
 
-  // display developper informations.
+  // display developper informations below the html page.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
-    require_once "ulysse/framework/developperToolbar.php";
+    //require_once "ulysse/framework/developperToolbar.php";
   }
   exit;
 }
@@ -84,19 +84,19 @@ function getCurrentPath() {
     return $path;
   }
 
-  // "http://localhost/ulysse/www/public/index.php/admin/content/form" > "/ulysse/www/public/index.php"
+  // "http://localhost/ulysse/www/index.php/admin/content/form" > "/ulysse/www/index.php"
   $scriptNamePath = getServerScriptNamePath();
 
-  // "/ulysse/www/public/index.php" >  "index.php"
+  // "/ulysse/www/index.php" >  "index.php"
   $scriptName = getServerScriptName($scriptNamePath);
 
-  // "/ulysse/www/public/index.php" > "/ulysse/www/public/"
+  // "/ulysse/www/index.php" > "/ulysse/www/public/"
   $basePath = _getBasePath($scriptName, $scriptNamePath);
 
-  //  "http://localhost/ulysse/www/public/index.php/admin/content/form" > "/ulysse/www/public/index.php/admin/content/form"
+  //  "http://localhost/ulysse/www/index.php/admin/content/form" > "/ulysse/www/index.php/admin/content/form"
   $serverRequestUri = getServerRequestUri();
 
-  // "/ulysse/www/public/index.php/admin/content/form" > "index.php/admin/content/form"
+  // "/ulysse/www/index.php/admin/content/form" > "index.php/admin/content/form"
   $serverRequestUriWihoutBasePath = removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
 
   // "index.php/admin/content/form" >  "/admin/content/form"
@@ -223,7 +223,6 @@ function getConfig($type = null) {
   }
   return $config;
 }
-
 
 /**
  * Get a translation for a specific string_id
@@ -398,12 +397,12 @@ function redirectToRoute($routeId) {
 }
 
 /**
- * get path to build links, href, src etc .... in template.
+ * get base path to build relative links.
  * @param string $serverScriptName
  * @param string $serverScriptNamePath
  * @return string
  *   If entry point is an "index.php" file :
- *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/"
+ *   For "localhost/ulysse/www/index.php" it will returns "/ulysse/www/"
  *   For "mysite.local" it will returns "/"
  */
 function _getBasePath($serverScriptName, $serverScriptNamePath) {
@@ -414,7 +413,7 @@ function _getBasePath($serverScriptName, $serverScriptNamePath) {
  * Return server script name path.
  * @return string
  *   If entry point is an "index.php" file :
- *   For "localhost/ulysse/www/public/index.php" it will returns "/ulysse/www/public/index.php"
+ *   For "localhost/ulysse/www/index.php" it will returns "/ulysse/www/index.php"
  *   For "mysite.local" it will returns "/index.php"
  */
 function getServerScriptNamePath() {
@@ -425,7 +424,7 @@ function getServerScriptNamePath() {
  * @param string $serverScriptName
  *   server script name as return by $_SERVER['script_name'] or _getServerScriptNamePath().
  * @return string
- *   For "/ulysse/www/public/index.php" it will returns "index.php"
+ *   For "/ulysse/www/index.php" it will returns "index.php"
  *   For "mysite.local/index.php" it will returns "index.php"
  */
 function getServerScriptName($serverScriptName) {
@@ -438,7 +437,7 @@ function getServerScriptName($serverScriptName) {
  * @param string $scriptName
  *   @see getServerScriptName()
  * @return string :
- *   For "http://localhost/ulysse/www/public/index.php/azertyuiop789456123"
+ *   For "http://localhost/ulysse/www/index.php/azertyuiop789456123"
  *   it will return "/index.php/azertyuiop789456123"
  *   Idem for "http://ulysse.local/index.php/azertyuiop789456123"
  */
@@ -455,7 +454,7 @@ function removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName)
  * @return string
  * For "http://ulysse.local/index.php/azertyuiop789456123"
  * it returns "index.php/azertyuiop789456123".
- * For "localhost/ulysse/www/public/index.php/azertyuiop789456123"
+ * For "localhost/ulysse/www/index.php/azertyuiop789456123"
  * it return also "index.php/azertyuiop789456123".
  */
 function removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
@@ -480,7 +479,7 @@ function setHttpRedirection($fullUrl) {
 }
 
 /**
- * Désactiver du code malicieux
+ * Disable malicous code.
  * @param $value
  * @return string
  */
@@ -508,9 +507,9 @@ function getServerProtocol() {
  * Return requested uri.
  * @return string
  * For "http://ulysse.local/index.php/azertyuiop789456123"
- * it will return "/index.php/azertyuiop789456123".
- * For "http://eurl.local/ulysse/www/public/index.php/azertyuiop789456123"
- * it will return "/ulysse/www/public/index.php/azertyuiop789456123".
+ *   it will return "/index.php/azertyuiop789456123".
+ * For "http://eurl.local/ulysse/www/index.php/azertyuiop789456123"
+ *   it will return "/ulysse/www/index.php/azertyuiop789456123".
  */
 function getServerRequestUri() {
   return $_SERVER['REQUEST_URI'];
@@ -531,7 +530,6 @@ function getServerHttpRequestMethod() {
 function addPhpIncludePaths($include_paths) {
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
-
 
 function getCurrentRouteId() {
   $routes = getConfig('routes');
@@ -632,6 +630,18 @@ function renderRoute(array $route) {
   return $output;
 }
 
+/**
+ * Execute Template formatter
+ * @param int $formatterId
+ * @return string
+ */
+function formatAs($formatterId) {
+  $args = func_get_args();
+  if ($args) unset($args[0]);
+  $templateFormatters = getConfig('templateFormatters');
+  return call_user_func_array($templateFormatters[$formatterId], $args);
+}
+
 function vd($value) {
   echo '<pre>';
   var_dump($value);
@@ -653,16 +663,4 @@ function pre($array) {
   print_r($array);
   echo '</pre>';
   exit;
-}
-
-/**
- * Execute Template formatter
- * @param int $formatterId
- * @return string
- */
-function formatAs($formatterId) {
-  $args = func_get_args();
-  if ($args) unset($args[0]);
-  $templateFormatters = getConfig('templateFormatters');
-  return call_user_func_array($templateFormatters[$formatterId], $args);
 }
