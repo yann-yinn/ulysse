@@ -1,7 +1,7 @@
 ULYSSE
 ------------
 
-PHP Procedural MVC Framework.
+PHP Procedural Routes / Controller micro-framework.
 
 REQUIREMENTS
 -------------
@@ -28,28 +28,23 @@ or to be converted to a json.
 In application/config/_routes.php :
 
 ```php
-// to render a template page.php inside a layout.php template
-$config['routes']['hello'] = [
+// to render variables in a template page.php
+$config['routes']['hello.get.html'] = [
     'path'   => 'hello',
-    'template' => 'page.php', // a template containing a $content variable.
+    'http method' => 'GET', // allowed http methods for
+    'format' => 'html'
+    'template' => 'path/to/page.php', // a template containing a $content variable.
     'controller' =>  function() {
        return ['content' => 'hello world']
     }
 ];
 // output as json
-$config['routes']['homepage'] = [
+$config['routes']['hello.get.json'] = [
     'path'   => 'hello',
+    'http method' => 'GET',
     'format' => 'json',
     'controller' =>  function() {
        return ['content' => 'hello world']
-    }
-];
-// Templates imbrication :
-$config['routes']['hello'] = [
-    'path'   => 'hello',
-    'template' => 'page.php', // a template containing a $content variable.
-    'controller' =>  function() {
-       return ['content' => template('hello.php', ['name' => 'John'])];
     }
 ];
 ```

@@ -654,3 +654,15 @@ function pre($array) {
   echo '</pre>';
   exit;
 }
+
+/**
+ * Execute Template formatter
+ * @param int $formatterId
+ * @return string
+ */
+function formatAs($formatterId) {
+  $args = func_get_args();
+  if ($args) unset($args[0]);
+  $templateFormatters = getConfig('templateFormatters');
+  return call_user_func_array($templateFormatters[$formatterId], $args);
+}
