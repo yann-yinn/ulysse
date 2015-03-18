@@ -16,7 +16,7 @@ $config['routes']['homepage'] = [
 
 // default html 404 page
 $config['routes']['__HTTP_404__'] = [
-  'template' => 'page.php',
+  'template' => 'ulysse/framework/templates/page.php',
   'format'  => 'html',
   'http method' => 'GET',
   'controller' => function() {
@@ -27,7 +27,7 @@ $config['routes']['__HTTP_404__'] = [
 
 // default html 403 page.
 $config['routes']['__HTTP_403__'] = [
-  'format'  => 'html',
+  'template' => 'ulysse/framework/templates/page.php',
   'template' => 'page.php',
   'http method' => 'GET',
   'controller' => function() {

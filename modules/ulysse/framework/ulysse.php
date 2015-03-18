@@ -53,14 +53,47 @@ function startFramework() {
 }
 
 /**
+ * Render a route to json, html etc... parsing route definition
+ *
+ * Heart function of the router.
+ *
+ * @see $config['routes']
+ * @param array $route : page array declaration as returned by getPageByPath() or getPageByKey()
+ * @return bool
+ */
+function renderRoute(array $route) {
+  $routeFormatters = getConfig('routesFormatters');
+
+  if (empty($route['format'])) {
+    return $route['id'] . " route has no defined output format";
+  }
+
+  if ($route['format'] == 'html' && empty($route['template'])) {
+    return $route['id'] . " route has not defined a template";
+  }
+
+  if (empty($routeFormatters[$route['format']])) {
+    return $route['id'] . " has not defined a known route formatter.";
+  }
+
+  // call route formatter for this route, which will execute
+  // and wrap controller in its own way.
+  $output = $routeFormatters[$route['format']]($route);
+
+  // we should have a string at this point.
+  return $output;
+}
+
+/**
  * Return base path, if framework is installed in a subfolder of the host
  *
  * @return string
  */
-function getBasePath() {
+function getInstallationPath() {
   $scriptNamePath = getServerScriptNamePath();
   $scriptName = getServerScriptName($scriptNamePath);
-  return _getBasePath($scriptName, $scriptNamePath);
+  $test =  _getBasePath($scriptName, $scriptNamePath);
+  return $test;
 }
 
 /**
@@ -90,7 +123,7 @@ function getCurrentPath() {
   // "/ulysse/www/index.php" >  "index.php"
   $scriptName = getServerScriptName($scriptNamePath);
 
-  // "/ulysse/www/index.php" > "/ulysse/www/public/"
+  // "/ulysse/www/index.php" > "/ulysse/www/"
   $basePath = _getBasePath($scriptName, $scriptNamePath);
 
   //  "http://localhost/ulysse/www/index.php/admin/content/form" > "/ulysse/www/index.php/admin/content/form"
@@ -265,10 +298,10 @@ function buildUrlFromPath($path, $queryString = '') {
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
   if (getSetting('cleanUrls') == FALSE) {
-    $url = sanitizeValue(getBasePath() . getServerEntryPoint() . '/' . $path);
+    $url = sanitizeValue(getInstallationPath() . getServerEntryPoint() . '/' . $path);
   }
   else {
-    $url = sanitizeValue(getBasePath() . $path);
+    $url = sanitizeValue(getInstallationPath() . $path);
   }
   if ($queryString) $url .= '?' . sanitizeValue($queryString);
   return $url;
@@ -453,9 +486,9 @@ function removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName)
  * @param string $basePath
  * @return string
  * For "http://ulysse.local/index.php/azertyuiop789456123"
- * it returns "index.php/azertyuiop789456123".
+ *   it returns "index.php/azertyuiop789456123".
  * For "localhost/ulysse/www/index.php/azertyuiop789456123"
- * it return also "index.php/azertyuiop789456123".
+ *   it return also "index.php/azertyuiop789456123".
  */
 function removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
   return substr_replace($serverRequestUri, '', 0, strlen($basePath));
@@ -602,33 +635,17 @@ function renderRouteByPath($path, $method = 'GET') {
  */
 function getRouteByPath($path, $routes, $method) {
   $route = [];
+
   foreach ($routes as $id => $datas) {
     if (isset($routes[$id]['path']) && $routes[$id]['path'] == $path && $routes[$id]['method'] = $method) {
       $route = $routes[$id];
       $route['id'] = $id;
     }
   }
+
   return $route;
 }
 
-/**
- * Render a route to json, html etc... parsing route definition
- *
- * @see $config['routes']
- * @param array $route : page array declaration as returned by getPageByPath() or getPageByKey()
- * @return bool
- */
-function renderRoute(array $route) {
-  $routeFormatters = getConfig('routesFormatters');
-  if (empty($route['format'])) {
-    return $route['id'] . " route has no defined output format";
-  }
-  if (empty($routeFormatters[$route['format']])) {
-    return "Unknown route formatter.";
-  }
-  $output = $routeFormatters[$route['format']]($route);
-  return $output;
-}
 
 /**
  * Execute Template formatter

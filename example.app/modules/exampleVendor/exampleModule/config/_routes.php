@@ -31,5 +31,18 @@ $config['routes']['helloWorld'] = [
     },
 ];
 
+/**
+ * Example route.
+ *
+ * visit localhost/{yoursite}/www/index.php/hello to view it.
+ */
+$config['routes']['json.get'] = [
+  'path' => 'json',
+  'http method' => 'GET',
+  'format' => 'json',
+  'controller' => function() {
+      return ['content' => "Hello world"];
+    },
+];
 
 
