@@ -1,17 +1,40 @@
 ULYSSE
 ------------
 
-PHP Procedural View / Controller micro-framework.
+PHP View / Controller light micro-framework.
+This is dedicated to small projects who needs a few routes to
+respond very fast.
 
-FEATURES
--------------
+CREATE ROUTES
+--------------
 
-* Http routing (with request method detection support)
-* Translations
-* Config files by environment
-* Modules
-* Events / Listeners
-* Templating
+"config/_routes.php" files maps an url to a controller.
+In Ulysse, a controller always return an *array* .
+This array will be used to replace variables in a html template
+or to be converted to a json.
+In application/config/_routes.php :
+
+```php
+// to render variables in a template page.php
+// GET is the http method, you may use any valid http methods instead.
+$config['routes']['hello']['GET'] = [
+    'path'   => 'hello',
+    'format' => 'html'
+    'template' => 'path/to/page.php', // a template containing a $content variable.
+    'controller' =>  function() {
+       return ['content' => 'hello world']
+    }
+];
+
+// output as json, where name is variable sent to the controller
+$config['routes']['hello/name']['GET'] = [
+    'arguments'   => ['name'],
+    'format' => 'json',
+    'controller' =>  function($name) {
+       return ['content' => 'hello ' . sanitizeValue($name)]
+    }
+];
+```
 
 REQUIREMENTS
 -------------
@@ -28,37 +51,19 @@ INSTALLATION
 
 Edit app/config/_routes.php file to start create new pages.
 
-CREATE ROUTES
---------------
+FEATURES OVERVIEW
+-----------------
 
-"config/_routes.php" files maps an url to a controller.
-In Ulysse, a controller always return an *array* .
-This array will be used to replace variables in a html template
-or to be converted to a json.
-In application/config/_routes.php :
+* Http routing (with request method detection support)
+* Translations
+* Config files and config overrides by environment
+* Code organized by modules
+* Events / Listeners
+* Templating
 
-```php
-// to render variables in a template page.php
-$config['routes']['hello']['GET'] = [
-    'path'   => 'hello',
-    'format' => 'html'
-    'template' => 'path/to/page.php', // a template containing a $content variable.
-    'controller' =>  function() {
-       return ['content' => 'hello world']
-    }
-];
-// output as json
-$config['routes']['hello/name']['GET'] = [
-    'argument'   => ['name'],
-    'format' => 'json',
-    'controller' =>  function($name) {
-       return ['content' => 'hello world']
-    }
-];
-```
 
-TEMPLATES
----------------
+TEMPLATES EXAMPLE
+-----------------
 
 Ulysse contains some basic helpers to display html templates.
 

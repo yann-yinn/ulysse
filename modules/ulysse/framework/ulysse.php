@@ -49,7 +49,7 @@ function startFramework() {
 
   // display developper informations below the html page.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
-    require_once "ulysse/framework/developperToolbar.php";
+    //require_once "ulysse/framework/developperToolbar.php";
   }
   exit;
 }
@@ -395,8 +395,10 @@ function addPhpIncludePaths($include_paths) {
  * @return string (html, json, xml or whatever the controller return to us.)
  */
 function renderRouteByPath($path, $httpMethod = 'GET') {
+
   $routes = getConfig('routes');
   $route = getRouteByPath($path, $routes, $httpMethod);
+
   // route not found, render a 404
   if (!$route) {
     $route = getRouteByPath('__HTTP_404__', $routes);
@@ -424,6 +426,7 @@ function getRouteByPath($pathFromUrl, $routes, $httpMethod = 'GET') {
     $matchingRoute = $routes[$pathFromUrl][$httpMethod];
     $matchingRoute['path'] = $pathFromUrl;
     $matchingRoute['controller arguments'] = [];
+    return $matchingRoute;
   }
 
   // no luck with static routes, try to find a corresponding dynamic route.

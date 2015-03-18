@@ -2,6 +2,3 @@
 /**
  * Define pages url and content.
  */
-
-
-

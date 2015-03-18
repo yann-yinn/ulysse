@@ -22,8 +22,6 @@ include "_listeners.php";
 include "_routes.php";
 include "_templateFormatters.php";
 
-// you may import custom module configuration here :
-// include 'myname/mymodule/config/config.php';
 
 
 
