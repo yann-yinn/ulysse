@@ -22,7 +22,7 @@ include '_listeners.php';
 include '_routes.php';
 
 // import your custom module configuration here :
-// include 'myname/mymodule/config/config.php';
+include 'exampleVendor/exampleModule/config/config.php';
 
 
 

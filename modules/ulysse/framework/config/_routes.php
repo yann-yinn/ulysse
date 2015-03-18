@@ -1,28 +1,35 @@
 <?php
+
 /**
  * Define pages url and content.
  */
 // default homepage
-$config['routes']['ulysse.framework.homepage'] = [
+$config['routes']['homepage'] = [
   'path'     => '',
+  'format'  => 'html',
   'template' => 'page.php',
+  'http method' => 'GET',
   'controller'  =>  function() {
       return ['content' => getTranslation('ulysse.framework.welcome')];
     }
 ];
 
-// default 404 page
+// default html 404 page
 $config['routes']['__HTTP_404__'] = [
   'template' => 'page.php',
+  'format'  => 'html',
+  'http method' => 'GET',
   'controller' => function() {
       setHttpResponseCode(404);
       return ['content' => "Oooops page not found"];
     }
 ];
 
-// default 403 page.
+// default html 403 page.
 $config['routes']['__HTTP_403__'] = [
+  'format'  => 'html',
   'template' => 'page.php',
+  'http method' => 'GET',
   'controller' => function() {
       setHttpResponseCode(403);
       return ['content' => "Access denied"];

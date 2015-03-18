@@ -16,24 +16,24 @@ if (!defined('ULYSSE_ROOT')) {
   define('ULYSSE_ROOT', '../..');
 }
 
-define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
 define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 
 /**
  * Run ulysse framework : map an url to a php controller.
  *
  * @code
- * require_once "../src/ulysse/framework/core.php";
+ * require_once "../src/ulysse/framework/ulysse.php";
  * startFramework();
  * @endocde
  */
 function startFramework() {
 
-  // include paths and PSR0 autoloading :
+  // php include paths and PSR0 autoloading :
   addPhpIncludePaths([
-      ULYSSE_ROOT . '/src',
-      APPLICATION_ROOT . '/src',
-      APPLICATION_ROOT . '/vendors'
+      ULYSSE_ROOT . '/modules',
+      ULYSSE_ROOT . '/vendors',
+      APPLICATION_ROOT . '/modules',
+      APPLICATION_ROOT . '/vendors',
     ]);
   registerPsr0ClassAutoloader();
 
@@ -43,7 +43,7 @@ function startFramework() {
 
   // executing our controller and return output to the browser
   // for the currentl path
-  echo renderRouteByPath(getCurrentPath());
+  echo renderRouteByPath(getCurrentPath(), getServerHttpRequestMethod());
 
   // display developper informations.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
@@ -156,16 +156,6 @@ function getSetting($key) {
 }
 
 /**
- * Fire a html Dom Event
- * @param string $event_id
- * @return string
- */
-function fireDomEvent($event_id) {
-  $returns = fireEvent($event_id);
-  return implode("\r\n", $returns);
-}
-
-/**
  * @param string $event_id : event id
  * @return array all returns by all executed listeners
  */
@@ -234,15 +224,6 @@ function getConfig($type = null) {
   return $config;
 }
 
-/**
- * Get a translation for a specific string_id
- * @param $string_id
- * @param string $language
- * @return string : localized string
- */
-function t($string_id, $language = NULL) {
-  return getTranslation($string_id, $language = NULL);
-}
 
 /**
  * Get a translation for a specific string_id
@@ -265,10 +246,12 @@ function getTranslation($string_id, $language = NULL) {
  * e.g : "/ulysse/example.app/www/default/index.php/hello-world"
  */
 function buildUrl($routeId, $queryString = '') {
-  $routes = getConfig('routes');
   // get the route definition by its key identifier.
-  $route = $routes[$routeId];
-  return buildUrlFromPath($route['path'], $queryString);
+  $route = getRouteById($routeId);
+  if ($route) {
+    return buildUrlFromPath($route['path'], $queryString);
+  }
+  return "";
 }
 
 /**
@@ -309,21 +292,13 @@ function pathIsActive($path) {
  * @return bool
  */
 function routeIsActive($routeId) {
-  $routes = getConfig('routes');
-  $route = $routes[$routeId];
-  return pathIsActive($route['path']);
+  $route = getRouteById($routeId);
+  if ($route) {
+    return pathIsActive($route['path']);
+  }
+  return FALSE;
 }
 
-/**
- * Return full relative path to a theme inside themes directory.
- * @param string $theme
- * @return null | string
- */
-function getThemePath($theme) {
-  if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme)) {
-    return APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
-  }
-}
 
 /**
  * Write a log
@@ -369,7 +344,7 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
 
 /**
  * Set or add a value to the context.
- * That's in fact just a wrapper around globals ...
+ * That's in fact just a wrapper around globals.
  * @param string $key
  * @param mixed $value
  */
@@ -385,49 +360,11 @@ function registerPsr0ClassAutoloader() {
 }
 
 /**
- * Render a specific template html file.
- * This function first looks for a file inside the currently active theme
- *
- * @param string $templatePath : file path. e.g : vendorname/modulename/templates/mytemplate.php
- * @param array $variables
- * @param string $themePath : search first template file in this directory.
- * may be defined. A theme is a collection of template.
- * @return string / html
- */
-function template($templatePath, $variables = [], $themePath = null) {
-  // content.php
-  $output = '';
-  $searchPaths = [];
-  // user may force theme for this template, in this case we search first
-  // for the requested theme.
-  if ($themePath) {
-    $searchPaths[] = $themePath . DIRECTORY_SEPARATOR . $templatePath;
-  }
-  // if no specific theme are request, use default active theme.
-  $searchPaths[] = getThemePath(getSetting('theme')) . DIRECTORY_SEPARATOR . $templatePath;
-  // lastly, just search for raw path in filesystem.
-  $searchPaths[] = $templatePath;
-
-  // loop through all possible paths and see if we find a template.
-  foreach ($searchPaths as $path) {
-    $output = @renderTemplate($path, $variables);
-    if ($output) break;
-  }
-  if (!$output) {
-    writeLog(['level' => 'warning', 'detail' => sprintf("%s template is not readable or does not exist", sanitizeValue($path))]);
-  }
-  else {
-    writeLog(['level' => 'notification', 'detail' => sprintf('Template "%s" rendered. ', sanitizeValue($path))]);
-  }
-  return $output;
-}
-
-/**
  * @param string $path : path to the template file
  * @param array $variables
  * @return string : template parsed with variables, ready to be printed
  */
-function renderTemplate($path, $variables = []) {
+function template($path, $variables = []) {
   if ($variables) extract($variables);
   ob_start();
   include $path;
@@ -440,18 +377,6 @@ function renderTemplate($path, $variables = []) {
  */
 function e($value) {
   echo sanitizeValue($value);
-}
-
-/**
- * Execute Template formatter
- * @param int $formatterId
- * @return string
- */
-function formatAs($formatterId) {
-  $args = func_get_args();
-  if ($args) unset($args[0]);
-  $templateFormatters = getConfig('templateFormatters');
-  return call_user_func_array($templateFormatters[$formatterId], $args);
 }
 
 /**
@@ -470,34 +395,6 @@ function getFullDomainName() {
 function redirectToRoute($routeId) {
   $url = sanitizeValue(buildUrl($routeId));
   setHttpRedirection(getFullDomainName() . $url);
-}
-
-/**
- * Http Redirection to specified path.
- * If path is not specified, function will look
- * into the url for a GET "redirection" query param, and will use
- * it as the redirection path.
- * @param string $routeId : pageId identifier
- */
-function routeAutoRedirection($routeId = NULL) {
-  if (is_null($routeId)) {
-    $routeId = getRedirectionFromUrl();
-  }
-  redirectToRoute($routeId);
-  exit;
-}
-
-/**
- * parse an array of attributes to html attributes.
- * @param array $attributes
- * @return string
- */
-function setHtmlAttributes(array $attributes = array()) {
-  foreach ($attributes as $attribute => &$data) {
-    $data = implode(' ', (array) $data);
-    $data = $attribute . '="' . htmlspecialchars($data, ENT_QUOTES, 'utf-8') . '"';
-  }
-  return $attributes ? ' ' . implode(' ', $attributes) : '';
 }
 
 /**
@@ -635,13 +532,6 @@ function addPhpIncludePaths($include_paths) {
   set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
 }
 
-function getRedirectionFromUrl() {
-  $path = null;
-  if (isset($_GET['redirection'])) {
-    $path = urldecode($_GET['redirection']);
-  }
-  return $path;
-}
 
 function getCurrentRouteId() {
   $routes = getConfig('routes');
@@ -657,10 +547,6 @@ function isCurrentRoute($routeId) {
   return $routeId == getCurrentRouteId();
 }
 
-function currentRouteIsParentOf($parentRouteId) {
-  return routeIsParentOf($parentRouteId, getCurrentRouteId());
-}
-
 function getRouteIdFromPath($path) {
   $routes = getConfig('routes');
   foreach ($routes as $id => $route) {
@@ -670,66 +556,56 @@ function getRouteIdFromPath($path) {
   }
 }
 
-function routeIsParentOf($supposedParentRouteId, $routeId) {
-  $route = getRouteById($routeId);
-  if (isset($route['parent'])) {
-    if ($route['parent'] == $supposedParentRouteId) {
-      return TRUE;
-    }
-    else {
-      return routeIsParentOf($supposedParentRouteId, $route['parent']);
-    }
-  }
-  return FALSE;
-}
-
 /**
- * Return a page by its key
+ * Return a routes by its key
  * @see config/_routes.php file.
  * @param string $routeId
  * @return array : the page definition as an array
  */
 function getRouteById($routeId) {
   $routes = getConfig('routes');
-  $route = $routes[$routeId];
-  $route['id'] = $routeId;
-  return $route;
+  if (isset($routes[$routeId])) {
+    $route = $routes[$routeId];
+    $route['id'] = $routeId;
+    return $route;
+  }
 }
 
 /**
  * Render a page using its path.
  * @see $config['routes']
  * @param string $path
+ * @param string $method : http request method (GET, POST, PUT etc ...)
  * @return string (html, json, xml or whatever the controller return to us.)
  */
-function renderRouteByPath($path) {
+function renderRouteByPath($path, $method = 'GET') {
   $routes = getConfig('routes');
-  $route = getRouteDeclarationByPath($path, $routes);
+  $route = getRouteByPath($path, $routes, $method);
   // route not found, render a 404
   if (!$route) {
     $route = getRouteById('__HTTP_404__', $routes);
   }
-  if (getServerHttpRequestMethod() != $route['http method']) {
+  if ($method != $route['http method']) {
      setHttpResponseCode(401);
-     return '';
+     return 'This http method is not supported';
   }
   $output = renderRoute($route);
   return $output;
 }
 
-
-
 /**
- * If there is several routes, last found route will be used.
+ * If there is several routes declared with the same path,
+ * last found route will be used.
  * @see config/_routes.php
  * @param $path
  * @param $routes
+ * @param string $method : http request method (GET, PUT, POST)
  * @return array : page declaration
  */
-function getRouteDeclarationByPath($path, $routes) {
+function getRouteByPath($path, $routes, $method) {
   $route = [];
   foreach ($routes as $id => $datas) {
-    if (isset($routes[$id]['path']) && $routes[$id]['path'] == $path) {
+    if (isset($routes[$id]['path']) && $routes[$id]['path'] == $path && $routes[$id]['method'] = $method) {
       $route = $routes[$id];
       $route['id'] = $id;
     }
@@ -738,7 +614,7 @@ function getRouteDeclarationByPath($path, $routes) {
 }
 
 /**
- * Render a route, parsing a route definition
+ * Render a route to json, html etc... parsing route definition
  *
  * @see $config['routes']
  * @param array $route : page array declaration as returned by getPageByPath() or getPageByKey()
@@ -746,45 +622,14 @@ function getRouteDeclarationByPath($path, $routes) {
  */
 function renderRoute(array $route) {
   $routeFormatters = getConfig('routesFormatters');
-  if (!isset($route['format'])) $route['format'] = 'html';
+  if (empty($route['format'])) {
+    return $route['id'] . " route has no defined output format";
+  }
+  if (empty($routeFormatters[$route['format']])) {
+    return "Unknown route formatter.";
+  }
   $output = $routeFormatters[$route['format']]($route);
   return $output;
-}
-
-/**
- * route formatter
- * defined following keys :
- * - template : path of template to use.
- * @param $route
- * @return string
- */
-function htmlFormatter($route) {
-  return template($route['template'], $route['controller']);
-}
-
-/**
- * Json formatter
- * @param $route
- * @return string
- */
-function jsonFormatter($route) {
-  return json_encode(getRoutePropertyValue($route['controller']));
-}
-
-
-/**
- * Route properties might be strings or closures, this
- * function returns a value whatever the property is.
- *
- * @param $property
- * @return string
- */
-function getRoutePropertyValue($property) {
-  return is_string($property) ? $property : $property();
-}
-
-function buildAutoRedirectionQueryString() {
-  return 'redirection=' . getRouteIdFromPath(getCurrentPath());
 }
 
 function vd($value) {
