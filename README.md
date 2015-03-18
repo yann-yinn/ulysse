@@ -1,7 +1,17 @@
 ULYSSE
 ------------
 
-PHP Procedural Routes / Controller micro-framework.
+PHP Procedural View / Controller micro-framework.
+
+FEATURES
+-------------
+
+* Http routing (with request method detection support)
+* Translations
+* Config files by environment
+* Modules
+* Events / Listeners
+* Templating
 
 REQUIREMENTS
 -------------
@@ -52,6 +62,8 @@ $config['routes']['hello.get.json'] = [
 TEMPLATES
 ---------------
 
+Ulysse contains some basic helpers to display html templates.
+
 Use a template to render a page with variables :
 ```php
 template('path/to/template.php', ['variable' => 'value'])
@@ -63,8 +75,13 @@ Never use print or echo to avoid code injection.
 <?php e($variable) ?>
 ```
 
-Use a function to format a value
+Use a function to format a value. see _formatters.php files.
 ```php
 <?php formatAs('euros', $prix) ?>
+```
+
+Create a link to a route; with an active class
+```php
+  <a class="<?php if (routeIsActive('homepage')) e('active') ?>" href="<?php e(buildUrl('homepage')) ?>">Homepage </a>
 ```
 
