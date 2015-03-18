@@ -6,13 +6,16 @@
 // relative paths from main index.php file (yourapp/www/index.php)
 // to find application directory path and ulysse directory path.
 
-// Those constants may be defined in index.php file.
+// Those constants are defined in index.php file, put some
+// defaults if this is not the case. (user may rewrite index.php if he wants to)
 if (!defined('APPLICATION_ROOT')) {
   define('APPLICATION_ROOT', '..');
 }
+
 if (!defined('ULYSSE_ROOT')) {
   define('ULYSSE_ROOT', '../..');
 }
+
 define('APPLICATION_THEMES_DIRECTORY_PATH', APPLICATION_ROOT . '/themes');
 define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
 
@@ -26,20 +29,20 @@ define('APPLICATION_CONFIG_DIRECTORY_PATH', APPLICATION_ROOT . '/config');
  */
 function startFramework() {
 
-  // include paths and autoloading :
+  // include paths and PSR0 autoloading :
   addPhpIncludePaths([
       ULYSSE_ROOT . '/src',
       APPLICATION_ROOT . '/src',
       APPLICATION_ROOT . '/vendors'
     ]);
-  // register a PSR0 class to allow autoloading for vendors and custom code.
   registerPsr0ClassAutoloader();
 
-  // inform modules.
   fireEvent('ulysse.framework.bootstrap');
 
   setContextVariable('time_start', microtime(TRUE));
+
   // executing our controller and return output to the browser
+  // for the currentl path
   echo renderRouteByPath(getCurrentPath());
 
   // display developper informations.
@@ -61,7 +64,8 @@ function getBasePath() {
 }
 
 /**
- * Extract a path usable by the framework from an incoming http request.
+ * Extract a path usable by the framework from an incoming http request,
+ * and from apache server informations about this http request.
  * Heart of the framework routing system.
  *
  * @return string :
@@ -313,14 +317,12 @@ function routeIsActive($routeId) {
 /**
  * Return full relative path to a theme inside themes directory.
  * @param string $theme
- * @return bool|string
+ * @return null | string
  */
 function getThemePath($theme) {
-  $themePath = FALSE;
   if(file_exists(APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme)) {
-    $themePath = APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
+    return APPLICATION_THEMES_DIRECTORY_PATH . DIRECTORY_SEPARATOR . $theme;
   }
-  return $themePath;
 }
 
 /**
@@ -351,6 +353,8 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
       201 => 'Created',
       301 => 'Moved Permanently',
       302 => 'Moved Temporarily',
+      304 => 'Not modified',
+      401 => 'Not authorized',
       403 => 'Forbidden',
       404 => 'Not Found',
       405 => 'Method Not Allowed',
@@ -619,6 +623,10 @@ function getServerName() {
   return $_SERVER['SERVER_NAME'];
 }
 
+function getServerHttpRequestMethod() {
+  return $_SERVER['REQUEST_METHOD'];
+}
+
 /**
  * @param array $include_paths
  *   a list of php paths that will be added to php include path variable.
@@ -697,12 +705,19 @@ function getRouteById($routeId) {
 function renderRouteByPath($path) {
   $routes = getConfig('routes');
   $route = getRouteDeclarationByPath($path, $routes);
+  // route not found, render a 404
   if (!$route) {
     $route = getRouteById('__HTTP_404__', $routes);
+  }
+  if (getServerHttpRequestMethod() != $route['http method']) {
+     setHttpResponseCode(401);
+     return '';
   }
   $output = renderRoute($route);
   return $output;
 }
+
+
 
 /**
  * If there is several routes, last found route will be used.

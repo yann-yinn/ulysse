@@ -16,6 +16,15 @@ $config['routes']['helloWorld'] = [
     },
 ];
 
+$config['routes']['test'] = [
+  'path' => 'test',
+  'format' => 'json',
+  'http method' => 'PUT',
+  'controller' => function() {
+      return ['content' => "test service"];
+    },
+];
+
 $config['routes']['contact'] = [
   'path' => 'contact',
   'template' => 'page.php',
