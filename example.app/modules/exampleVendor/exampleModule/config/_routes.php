@@ -44,8 +44,8 @@ $config['routes']['users']['GET'] = [
  *
  * visit localhost/{yoursite}/www/index.php/hello to view it.
  */
-$config['routes']['users/$id']['GET'] = [
-  'arguments' => ['$id'],
+$config['routes']['users/id']['GET'] = [
+  'arguments' => ['id'],
   'format'     => 'json',
   'controller' => function($id) {
       return ['content' => "users $id route ! "];

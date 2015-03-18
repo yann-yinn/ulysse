@@ -39,9 +39,8 @@ In application/config/_routes.php :
 
 ```php
 // to render variables in a template page.php
-$config['routes']['hello.get.html'] = [
+$config['routes']['hello']['GET'] = [
     'path'   => 'hello',
-    'http method' => 'GET', // allowed http methods for
     'format' => 'html'
     'template' => 'path/to/page.php', // a template containing a $content variable.
     'controller' =>  function() {
@@ -49,11 +48,10 @@ $config['routes']['hello.get.html'] = [
     }
 ];
 // output as json
-$config['routes']['hello.get.json'] = [
-    'path'   => 'hello',
-    'http method' => 'GET',
+$config['routes']['hello/name']['GET'] = [
+    'argument'   => ['name'],
     'format' => 'json',
-    'controller' =>  function() {
+    'controller' =>  function($name) {
        return ['content' => 'hello world']
     }
 ];
