@@ -123,7 +123,7 @@ function getCurrentPath() {
   $serverRequestUri = getServerRequestUri();
 
   // "/ulysse/www/index.php/admin/content/form" > "index.php/admin/content/form"
-  $serverRequestUriWihoutBasePath = removeBasePathFromServerRequestUri($serverRequestUri, $basePath);
+  $serverRequestUriWihoutBasePath = removeSubFoldersFromServerRequestUri($serverRequestUri, $basePath);
 
   // "index.php/admin/content/form" >  "/admin/content/form"
   $path = removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
@@ -397,11 +397,11 @@ function addPhpIncludePaths($include_paths) {
 function renderRouteByPath($path, $httpMethod = 'GET') {
 
   $routes = getConfig('routes');
-  $route = getRouteByPath($path, $routes, $httpMethod);
+  $route = getRouteByPath($path, $httpMethod);
 
   // route not found, render a 404
   if (!$route) {
-    $route = getRouteByPath('__HTTP_404__', $routes);
+    $route = getRouteByPath('__HTTP_404__');
   }
 
   $output = renderRoute($route);
@@ -412,25 +412,25 @@ function renderRouteByPath($path, $httpMethod = 'GET') {
  * If there is several routes declared with the same path,
  * last found route will be used.
  * @see config/_routes.php
- * @param $pathFromUrl
- * @param $routes
+ * @param $path
  * @param string $httpMethod : http request method (GET, PUT, POST)
  * @return array : page declaration, null if no route is found.
  */
-function getRouteByPath($pathFromUrl, $routes, $httpMethod = 'GET') {
+function getRouteByPath($path, $httpMethod = 'GET') {
 
+  $routes = getConfig('routes');
   $matchingRoute = null;
 
   // try to find a matching static route.
-  if (!empty($routes[$pathFromUrl][$httpMethod])) {
-    $matchingRoute = $routes[$pathFromUrl][$httpMethod];
-    $matchingRoute['path'] = $pathFromUrl;
+  if (!empty($routes[$path][$httpMethod])) {
+    $matchingRoute = $routes[$path][$httpMethod];
+    $matchingRoute['path'] = $path;
     $matchingRoute['controller arguments'] = [];
     return $matchingRoute;
   }
 
   // no luck with static routes, try to find a corresponding dynamic route.
-  $pathFromUrlParts = array_filter(explode('/', $pathFromUrl));
+  $pathFromUrlParts = array_filter(explode('/', $path));
   foreach ($routes as $routePath => $routeDatas) {
 
     // do not treat static routes. Dynamics routes contain a "arguments" key.
@@ -454,7 +454,7 @@ function getRouteByPath($pathFromUrl, $routes, $httpMethod = 'GET') {
     }
     $searchedRoutePath = implode('/', $searchedRoutePathParts);
 
-    if ($searchedRoutePath == $pathFromUrl) {
+    if ($searchedRoutePath == $path) {
       $controllerArgs = array_diff($pathFromUrlParts, $routePathParts);
       $matchingRoute = $routeDatas[$httpMethod] + array(
           'controller arguments' => $controllerArgs,
@@ -635,7 +635,7 @@ function removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName)
  * For "localhost/ulysse/www/index.php/azertyuiop789456123"
  *   it return also "index.php/azertyuiop789456123".
  */
-function removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
+function removeSubFoldersFromServerRequestUri($serverRequestUri, $basePath) {
   return substr_replace($serverRequestUri, '', 0, strlen($basePath));
 }
 
