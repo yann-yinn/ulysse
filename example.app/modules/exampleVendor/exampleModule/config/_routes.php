@@ -33,7 +33,7 @@ $config['routes']['hello']['GET'] = [
  * visit localhost/{yoursite}/www/index.php/hello to view it.
  */
 $config['routes']['hello/name']['GET'] = [
-  //'arguments' => ['name'],
+  'arguments' => ['name'],
   'format'     => 'json',
   'controller' => function($name) {
       return ['message' => "Hello ! " . sanitizeValue($name)];
