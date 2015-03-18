@@ -157,7 +157,7 @@ function getAllLogs() {
 function getCurrentLanguage() {
   $currentLanguage = getSetting('language_default');
   if (isset($_REQUEST['language'])) {
-    $requestedLanguage = (string)sanitizeValue($_REQUEST['language']);
+    $requestedLanguage = (string)escape($_REQUEST['language']);
     $definedLanguages = getSetting('languages');
     foreach ($definedLanguages as $id => $datas) {
       if ($definedLanguages[$id]['query'] == $requestedLanguage) {
@@ -274,12 +274,12 @@ function getRouteUrl($path, $queryString = '') {
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
   if (getSetting('cleanUrls') == FALSE) {
-    $url = sanitizeValue(getInstallationPath() . getServerEntryPoint() . '/' . $path);
+    $url = escape(getInstallationPath() . getServerEntryPoint() . '/' . $path);
   }
   else {
-    $url = sanitizeValue(getInstallationPath() . $path);
+    $url = escape(getInstallationPath() . $path);
   }
-  if ($queryString) $url .= '?' . sanitizeValue($queryString);
+  if ($queryString) $url .= '?' . escape($queryString);
   return $url;
 }
 
@@ -332,7 +332,7 @@ function setHttpResponseCode($code, $message = null, $protocol = null) {
     ];
   $protocol = $protocol ? $protocol : getServerProtocol();
   $message  = $message ? $message : $codesMessages[$code];
-  header(sprintf("%s %s %s", $protocol, sanitizeValue($code), sanitizeValue($message)));
+  header(sprintf("%s %s %s", $protocol, escape($code), escape($message)));
 }
 
 /**
@@ -369,7 +369,7 @@ function template($path, $variables = []) {
  * @param $value
  */
 function e($value) {
-  echo sanitizeValue($value);
+  echo escape($value);
 }
 
 /**
@@ -509,7 +509,7 @@ function pre($array) {
  * @param $value
  * @return string
  */
-function sanitizeValue($value) {
+function escape($value) {
   return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
 }
 

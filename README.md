@@ -15,25 +15,65 @@ or to be converted to a json.
 In application/config/_routes.php :
 
 ```php
-// to render variables in a template page.php
-// GET is the http method, you may use any valid http methods instead.
-$config['routes']['hello']['GET'] = [
-    'path'   => 'hello',
-    'format' => 'html'
-    'template' => 'path/to/page.php', // a template containing a $content variable.
-    'controller' =>  function() {
-       return ['content' => 'hello world']
+Example routes, where GET is the http request method.
+Any http method may be used instead.
+
+/**
+ * Override default homepage
+ */
+$config['routes']['']['GET'] = [
+  'template'    => 'exampleVendor/exampleModule/templates/page.php',
+  'format'      => 'html',
+  'controller'  =>  function() {
+      return ['content' => "Ulysse works."];
     }
 ];
 
-// output as json, where name is variable sent to the controller
-$config['routes']['hello/name']['GET'] = [
-    'arguments'   => ['name'],
-    'format' => 'json',
-    'controller' =>  function($name) {
-       return ['content' => 'hello ' . sanitizeValue($name)]
-    }
+/**
+ * Example route.
+ *
+ * visit localhost/{yoursite}/www/index.php/hello to view it.
+ */
+$config['routes']['hello']['GET'] = [
+  'template'   => 'exampleVendor/exampleModule/templates/page.php',
+  'format'     => 'html',
+  'controller' => function() {
+      return ['content' => "Hello world"];
+    },
 ];
+
+/**
+ * Example route.
+ *
+ * visit localhost/{yoursite}/www/index.php/hello/{yourname} to view it.
+ */
+$config['routes']['hello/name']['GET'] = [
+  'arguments' => ['name'],
+  'format'     => 'json',
+  'controller' => function($name) {
+      return ['message' => "Hello ! " . escape($name)];
+    },
+];
+
+/**
+ * Example route.
+ *
+ * visit localhost/{yoursite}/www/index.php/hello/{name}/{surname} to view it.
+ */
+$config['routes']['hello/name/surname']['GET'] = [
+  'arguments' => ['name', 'surname'],
+  'format'     => 'json',
+  'controller' =>  'controllers::hello'
+];
+
+class controllers {
+
+  static function hello($name, $surname) {
+    return ['name' => escape($name), 'surname' => escape($surname)];
+  }
+
+}
+
 ```
 
 REQUIREMENTS
