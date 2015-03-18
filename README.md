@@ -82,6 +82,6 @@ Use a function to format a value. see _formatters.php files.
 
 Create a link to a route; with an active class
 ```php
-  <a class="<?php if (routeIsActive('homepage')) e('active') ?>" href="<?php e(buildUrl('homepage')) ?>">Homepage </a>
+  <a class="<?php if (pathIsActive('')) e('active') ?>" href="<?php e(getRouteUrl('')) ?>">Homepage </a>
 ```
 

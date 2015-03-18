@@ -37,7 +37,7 @@ function startFramework() {
     ]);
   registerPsr0ClassAutoloader();
 
-  fireEvent('ulysse.bootstrap');
+  fireEvent('ulysse.start');
 
   setContextVariable('time_start', microtime(TRUE));
 
@@ -45,9 +45,11 @@ function startFramework() {
   // for the currentl path
   echo renderRouteByPath(getCurrentPath(), getServerHttpRequestMethod());
 
+  fireEvent('ulysse.end');
+
   // display developper informations below the html page.
   if (getSetting('ulysse.framework.displayDevelopperToolbar') === TRUE) {
-    //require_once "ulysse/framework/developperToolbar.php";
+    require_once "ulysse/framework/developperToolbar.php";
   }
   exit;
 }
@@ -84,17 +86,7 @@ function renderRoute(array $route) {
   return $output;
 }
 
-/**
- * Return base path, if framework is installed in a subfolder of the host
- *
- * @return string
- */
-function getInstallationPath() {
-  $scriptNamePath = getServerScriptNamePath();
-  $scriptName = getServerScriptName($scriptNamePath);
-  $test =  _getBasePath($scriptName, $scriptNamePath);
-  return $test;
-}
+
 
 /**
  * Extract a path usable by the framework from an incoming http request,
@@ -270,30 +262,13 @@ function getTranslation($string_id, $language = NULL) {
 }
 
 /**
- * Build an url from a routeId, suitable for an href html attribute.
- *
- * @param string $routeId : routeId. e.g: "helloWorld"
- * @param string $queryString
- * @return string
- * e.g : "/ulysse/example.app/www/default/index.php/hello-world"
- */
-function buildUrl($routeId, $queryString = '') {
-  // get the route definition by its key identifier.
-  $route = getRouteById($routeId);
-  if ($route) {
-    return buildUrlFromPath($route['path'], $queryString);
-  }
-  return "";
-}
-
-/**
  * Build a full url from an ulysse path.
  * @param string $path : e.g "hello/world"
  * @param string $queryString : e.g "value=4&test=true&redirection=contact"
  * @return string : full relative url suitable to build an href html attribute.
  * e.g : "/ulysse/example.app/www/default/index.php/hello-world"
  */
-function buildUrlFromPath($path, $queryString = '') {
+function getRouteUrl($path, $queryString = '') {
   $queryArray = [];
   if ($queryString) parse_str($queryString, $queryArray);
   $queryString = http_build_query($queryArray);
@@ -316,21 +291,6 @@ function buildUrlFromPath($path, $queryString = '') {
 function pathIsActive($path) {
   return $path ==  getCurrentPath() ? TRUE : FALSE;
 }
-
-/**
- * Return true if the route is the currently active route.
- *
- * @param $routeId
- * @return bool
- */
-function routeIsActive($routeId) {
-  $route = getRouteById($routeId);
-  if ($route) {
-    return pathIsActive($route['path']);
-  }
-  return FALSE;
-}
-
 
 /**
  * Write a log
@@ -412,21 +372,198 @@ function e($value) {
 }
 
 /**
+ * @param string $fullUrl
+ */
+function setHttpRedirection($fullUrl) {
+  header("Location: $fullUrl");
+}
+
+/**
+ * @param array $include_paths
+ *   a list of php paths that will be added to php include path variable.
+ */
+function addPhpIncludePaths($include_paths) {
+  set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
+}
+
+/**
+ * Render a page using its path.
+ * @see $config['routes']
+ * @param string $path
+ * @param string $httpMethod : http request method (GET, POST, PUT etc ...)
+ * @return string (html, json, xml or whatever the controller return to us.)
+ */
+function renderRouteByPath($path, $httpMethod = 'GET') {
+  $routes = getConfig('routes');
+  $route = getRouteByPath($path, $routes, $httpMethod);
+  // route not found, render a 404
+  if (!$route) {
+    $route = getRouteByPath('__HTTP_404__', $routes);
+  }
+
+  $output = renderRoute($route);
+  return $output;
+}
+
+/**
+ * If there is several routes declared with the same path,
+ * last found route will be used.
+ * @see config/_routes.php
+ * @param $path
+ * @param $routes
+ * @param string $httpMethod : http request method (GET, PUT, POST)
+ * @return array : page declaration, null if no route is found.
+ */
+function getRouteByPath($path, $routes, $httpMethod = 'GET') {
+
+  $matchingRoute = null;
+
+  // try to find a matching static route.
+  if (!empty($routes[$path][$httpMethod])) {
+    $matchingRoute = $routes[$path][$httpMethod];
+  }
+
+  // no luck with static routes, try to find a corresponding dynamic route.
+  $pathParts = array_filter(explode('/', $path));
+  foreach ($routes as $routePath => $routeDatas) {
+
+    // do not treat static routes. Dynamics routes contain a "arguments" key.
+    if (!isset($routeDatas[$httpMethod]['arguments'])) {
+      continue;
+    }
+
+    // first part of the path is not matching, skip this iteration
+    if (strpos($routePath, $pathParts[0]) === FALSE) {
+      continue;
+    }
+
+    // if url parts count does not match this route, skip this iteration.
+    $routePathParts = array_filter(explode('/', $routePath));
+    if ((count($pathParts) != count($routePathParts))) {
+      continue;
+    }
+
+    // from an url like "user/3", try to compose a path like "user/:id"
+    // and see if we can get a route from that.
+    $searchedRoutePath = implode('/', array_replace($pathParts, $routePathParts));
+    if (!empty($routes[$searchedRoutePath][$httpMethod])) {
+      $controllerArgs = array_diff($pathParts, $routePathParts);
+      $matchingRoute = $routes[$searchedRoutePath][$httpMethod] + array('controller arguments' => $controllerArgs);
+      break;
+    }
+
+  }
+
+  // set some default
+  $matchingRoute['controller arguments'] = empty($matchingRoute['controller arguments']) ? array() :   $matchingRoute['controller arguments'];
+
+  return $matchingRoute;
+
+}
+
+/**
+ * Execute Template formatter
+ * @param int $formatterId
+ * @return string
+ */
+function formatAs($formatterId) {
+  $args = func_get_args();
+  if ($args) unset($args[0]);
+  $templateFormatters = getConfig('templateFormatters');
+  return call_user_func_array($templateFormatters[$formatterId], $args);
+}
+
+function vd($value) {
+  echo '<pre>';
+  var_dump($value);
+  echo '</pre>';
+}
+
+function vde($value) {
+  var_dump($value);exit;
+}
+
+function pr($array) {
+  echo '<pre>';
+  print_r($array);
+  echo '</pre>';
+}
+
+function pre($array) {
+  echo '<pre>';
+  print_r($array);
+  echo '</pre>';
+  exit;
+}
+
+/**
+ * Disable malicous code.
+ * @param $value
+ * @return string
+ */
+function sanitizeValue($value) {
+  return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
+}
+
+/* ==========================================
+   Helpers to extract path from http request
+   ========================================= */
+
+/**
+ * Return base path, if framework is installed in a subfolder of the host
+ *
+ * @return string
+ */
+function getInstallationPath() {
+  $scriptNamePath = getServerScriptNamePath();
+  $scriptName = getServerScriptName($scriptNamePath);
+  $test =  _getBasePath($scriptName, $scriptNamePath);
+  return $test;
+}
+
+/**
+ * FIXME : https & http detection here
+ * @return string
+ */
+function getServerProtocol() {
+  return $_SERVER["SERVER_PROTOCOL"];
+}
+
+/**
+ * Return requested uri.
+ * @return string
+ * For "http://ulysse.local/index.php/azertyuiop789456123"
+ *   it will return "/index.php/azertyuiop789456123".
+ * For "http://eurl.local/ulysse/www/index.php/azertyuiop789456123"
+ *   it will return "/ulysse/www/index.php/azertyuiop789456123".
+ */
+function getServerRequestUri() {
+  return $_SERVER['REQUEST_URI'];
+}
+
+function getServerName() {
+  return $_SERVER['SERVER_NAME'];
+}
+
+function getServerHttpRequestMethod() {
+  return $_SERVER['REQUEST_METHOD'];
+}
+
+/**
+ * Return le scheme d'une url (http ou https)
+ * @return string
+ */
+function getUrlScheme() {
+  return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
+}
+
+/**
  * Get full domain name, with http or https according to
  * the currently used protocol.
  * @return string
  */
 function getFullDomainName() {
   return getUrlScheme() . '://' . getServerName();
-}
-
-/**
- * Create an http redirection to the given routeId
- * @param int $routeId
- */
-function redirectToRoute($routeId) {
-  $url = sanitizeValue(buildUrl($routeId));
-  setHttpRedirection(getFullDomainName() . $url);
 }
 
 /**
@@ -502,182 +639,4 @@ function removeBasePathFromServerRequestUri($serverRequestUri, $basePath) {
  */
 function removeTrailingSlashFromPath($path) {
   return trim(parse_url($path, PHP_URL_PATH), '/');
-}
-
-/**
- * @param string $fullUrl
- */
-function setHttpRedirection($fullUrl) {
-  header("Location: $fullUrl");
-}
-
-/**
- * Disable malicous code.
- * @param $value
- * @return string
- */
-function sanitizeValue($value) {
-  return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
-}
-
-/**
- * Return le scheme d'une url (http ou https)
- * @return string
- */
-function getUrlScheme() {
-  return $_SERVER["HTTPS"] == "on" ? 'https' : 'http';
-}
-
-/**
- * FIXME : https & http detection here
- * @return string
- */
-function getServerProtocol() {
-  return $_SERVER["SERVER_PROTOCOL"];
-}
-
-/**
- * Return requested uri.
- * @return string
- * For "http://ulysse.local/index.php/azertyuiop789456123"
- *   it will return "/index.php/azertyuiop789456123".
- * For "http://eurl.local/ulysse/www/index.php/azertyuiop789456123"
- *   it will return "/ulysse/www/index.php/azertyuiop789456123".
- */
-function getServerRequestUri() {
-  return $_SERVER['REQUEST_URI'];
-}
-
-function getServerName() {
-  return $_SERVER['SERVER_NAME'];
-}
-
-function getServerHttpRequestMethod() {
-  return $_SERVER['REQUEST_METHOD'];
-}
-
-/**
- * @param array $include_paths
- *   a list of php paths that will be added to php include path variable.
- */
-function addPhpIncludePaths($include_paths) {
-  set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
-}
-
-function getCurrentRouteId() {
-  $routes = getConfig('routes');
-  $path = getCurrentPath();
-  foreach ($routes as $id => $route) {
-    if (isset($route['path']) && $route['path'] == $path) {
-      return $id;
-    }
-  }
-}
-
-function isCurrentRoute($routeId) {
-  return $routeId == getCurrentRouteId();
-}
-
-function getRouteIdFromPath($path) {
-  $routes = getConfig('routes');
-  foreach ($routes as $id => $route) {
-    if (isset($route['path']) && $route['path'] == $path) {
-      return $id;
-    }
-  }
-}
-
-/**
- * Return a routes by its key
- * @see config/_routes.php file.
- * @param string $routeId
- * @return array : the page definition as an array
- */
-function getRouteById($routeId) {
-  $routes = getConfig('routes');
-  if (isset($routes[$routeId])) {
-    $route = $routes[$routeId];
-    $route['id'] = $routeId;
-    return $route;
-  }
-}
-
-/**
- * Render a page using its path.
- * @see $config['routes']
- * @param string $path
- * @param string $method : http request method (GET, POST, PUT etc ...)
- * @return string (html, json, xml or whatever the controller return to us.)
- */
-function renderRouteByPath($path, $method = 'GET') {
-  $routes = getConfig('routes');
-  $route = getRouteByPath($path, $routes, $method);
-  // route not found, render a 404
-  if (!$route) {
-    $route = getRouteById('__HTTP_404__', $routes);
-  }
-  if ($method != $route['http method']) {
-     setHttpResponseCode(401);
-     return 'This http method is not supported';
-  }
-  $output = renderRoute($route);
-  return $output;
-}
-
-/**
- * If there is several routes declared with the same path,
- * last found route will be used.
- * @see config/_routes.php
- * @param $path
- * @param $routes
- * @param string $method : http request method (GET, PUT, POST)
- * @return array : page declaration
- */
-function getRouteByPath($path, $routes, $method) {
-  $route = [];
-
-  foreach ($routes as $id => $datas) {
-    if (isset($routes[$id]['path']) && $routes[$id]['path'] == $path && $routes[$id]['method'] = $method) {
-      $route = $routes[$id];
-      $route['id'] = $id;
-    }
-  }
-
-  return $route;
-}
-
-
-/**
- * Execute Template formatter
- * @param int $formatterId
- * @return string
- */
-function formatAs($formatterId) {
-  $args = func_get_args();
-  if ($args) unset($args[0]);
-  $templateFormatters = getConfig('templateFormatters');
-  return call_user_func_array($templateFormatters[$formatterId], $args);
-}
-
-function vd($value) {
-  echo '<pre>';
-  var_dump($value);
-  echo '</pre>';
-}
-
-function vde($value) {
-  var_dump($value);exit;
-}
-
-function pr($array) {
-  echo '<pre>';
-  print_r($array);
-  echo '</pre>';
-}
-
-function pre($array) {
-  echo '<pre>';
-  print_r($array);
-  echo '</pre>';
-  exit;
 }

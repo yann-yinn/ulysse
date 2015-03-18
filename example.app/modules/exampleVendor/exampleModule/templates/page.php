@@ -15,10 +15,10 @@
   <nav>
     <ul>
       <li>
-        <a class="<?php if (routeIsActive('homepage')) e('active') ?>" href="<?php e(buildUrl('homepage')) ?>">Homepage </a>
+        <a class="<?php if (pathIsActive('')) e('active') ?>" href="<?php e(getRouteUrl('')) ?>">Homepage </a>
       </li>
       <li>
-        <a class="<?php if (routeIsActive('helloWorld')) e('active') ?>" href="<?php e(buildUrl('helloWorld')) ?>"> Hello </a>
+        <a class="<?php if (pathIsActive('hello')) e('active') ?>" href="<?php e(getRouteUrl('hello')) ?>"> Hello </a>
       </li>
     </ul>
   </nav>

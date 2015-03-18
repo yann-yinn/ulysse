@@ -5,7 +5,7 @@
  */
 
 $config['templateFormatters']['link'] = function($text, $path, $queryString = '') {
-  $href = buildUrlFromPath($path, $queryString);
+  $href = getRouteUrl($path, $queryString);
   $classes = pathIsActive($path) ? 'active' : '';
   return sprintf('<a class="%s" href="%s">%s</a>', sanitizeValue($classes), sanitizeValue($href), sanitizeValue($text));
 };
