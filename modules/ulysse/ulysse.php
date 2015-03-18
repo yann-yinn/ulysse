@@ -31,9 +31,7 @@ function startFramework() {
   // php include paths and PSR0 autoloading :
   addPhpIncludePaths([
       ULYSSE_ROOT . '/modules',
-      ULYSSE_ROOT . '/vendors',
       APPLICATION_ROOT . '/modules',
-      APPLICATION_ROOT . '/vendors',
     ]);
   registerPsr0ClassAutoloader();
 

@@ -14,7 +14,7 @@ $config['routes']['']['GET'] = [
 
 // default html 404 page
 $config['routes']['__HTTP_404__']['GET'] = [
-  'template'   => 'ulysse/framework/templates/page.php',
+  'template'   => 'ulysse/templates/page.php',
   'format'     => 'html',
   'controller' => function() {
       setHttpResponseCode(404);
@@ -24,7 +24,7 @@ $config['routes']['__HTTP_404__']['GET'] = [
 
 // default html 403 page.
 $config['routes']['__HTTP_403__']['GET'] = [
-  'template'   => 'ulysse/framework/templates/page.php',
+  'template'   => 'ulysse/templates/page.php',
   'format'     => 'html',
   'controller' => function() {
       setHttpResponseCode(403);

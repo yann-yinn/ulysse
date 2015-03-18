@@ -7,7 +7,7 @@
  * Override default homepage
  */
 $config['routes']['']['GET'] = [
-  'template'    => 'exampleVendor/exampleModule/templates/page.php',
+  'template'    => 'exampleModule/templates/page.php',
   'format'      => 'html',
   'controller'  =>  function() {
       return ['content' => "Ulysse works."];
@@ -20,7 +20,7 @@ $config['routes']['']['GET'] = [
  * visit localhost/{yoursite}/www/index.php/hello to view it.
  */
 $config['routes']['hello']['GET'] = [
-  'template'   => 'exampleVendor/exampleModule/templates/page.php',
+  'template'   => 'exampleModule/templates/page.php',
   'format'     => 'html',
   'controller' => function() {
       return ['content' => "Hello world"];

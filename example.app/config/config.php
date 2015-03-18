@@ -13,7 +13,7 @@
  */
 
 // enable framework module.
-include 'ulysse/framework/config/config.php';
+include 'ulysse/config/config.php';
 
 // include global config files for the app.
 include '_settings.php';
@@ -22,7 +22,7 @@ include '_listeners.php';
 include '_routes.php';
 
 // import your custom module configuration here :
-include 'exampleVendor/exampleModule/config/config.php';
+include 'exampleModule/config/config.php';
 
 
 

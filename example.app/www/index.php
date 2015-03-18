@@ -1,6 +1,6 @@
 <?php
 
-require_once "../../modules/ulysse/framework/ulysse.php";
+require_once "../../modules/ulysse/ulysse.php";
 startFramework();
 
 
