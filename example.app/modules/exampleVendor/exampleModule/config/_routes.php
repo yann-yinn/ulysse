@@ -32,24 +32,13 @@ $config['routes']['hello']['GET'] = [
  *
  * visit localhost/{yoursite}/www/index.php/hello to view it.
  */
-$config['routes']['users']['GET'] = [
+$config['routes']['hello/:name']['GET'] = [
+  'arguments' => [':name'],
   'format'     => 'json',
-  'controller' => function() {
-      return ['content' => "Hello world"];
+  'controller' => function($name) {
+      return ['message' => "Hello $name ! "];
     },
 ];
 
-/**
- * Example route.
- *
- * visit localhost/{yoursite}/www/index.php/hello to view it.
- */
-$config['routes']['users/id']['GET'] = [
-  'arguments' => ['id'],
-  'format'     => 'json',
-  'controller' => function($id) {
-      return ['content' => "users $id route ! "];
-    },
-];
 
 

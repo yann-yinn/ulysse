@@ -64,18 +64,19 @@ function startFramework() {
  * @return bool
  */
 function renderRoute(array $route) {
+
   $routeFormatters = getConfig('routesFormatters');
 
   if (empty($route['format'])) {
-    return $route['id'] . " route has no defined output format";
+    return $route['path'] . " route has no defined output format";
   }
 
   if ($route['format'] == 'html' && empty($route['template'])) {
-    return $route['id'] . " route has not defined a template";
+    return '"' . $route['path'] . '" route has not defined a template';
   }
 
   if (empty($routeFormatters[$route['format']])) {
-    return $route['id'] . " has not defined a known route formatter.";
+    return $route['path'] . " has not defined a known route formatter.";
   }
 
   // call route formatter for this route, which will execute
@@ -409,22 +410,24 @@ function renderRouteByPath($path, $httpMethod = 'GET') {
  * If there is several routes declared with the same path,
  * last found route will be used.
  * @see config/_routes.php
- * @param $path
+ * @param $pathFromUrl
  * @param $routes
  * @param string $httpMethod : http request method (GET, PUT, POST)
  * @return array : page declaration, null if no route is found.
  */
-function getRouteByPath($path, $routes, $httpMethod = 'GET') {
+function getRouteByPath($pathFromUrl, $routes, $httpMethod = 'GET') {
 
   $matchingRoute = null;
 
   // try to find a matching static route.
-  if (!empty($routes[$path][$httpMethod])) {
-    $matchingRoute = $routes[$path][$httpMethod];
+  if (!empty($routes[$pathFromUrl][$httpMethod])) {
+    $matchingRoute = $routes[$pathFromUrl][$httpMethod];
+    $matchingRoute['path'] = $pathFromUrl;
+    $matchingRoute['controller arguments'] = [];
   }
 
   // no luck with static routes, try to find a corresponding dynamic route.
-  $pathParts = array_filter(explode('/', $path));
+  $pathFromUrlParts = array_filter(explode('/', $pathFromUrl));
   foreach ($routes as $routePath => $routeDatas) {
 
     // do not treat static routes. Dynamics routes contain a "arguments" key.
@@ -432,30 +435,32 @@ function getRouteByPath($path, $routes, $httpMethod = 'GET') {
       continue;
     }
 
-    // first part of the path is not matching, skip this iteration
-    if (strpos($routePath, $pathParts[0]) === FALSE) {
-      continue;
-    }
-
     // if url parts count does not match this route, skip this iteration.
     $routePathParts = array_filter(explode('/', $routePath));
-    if ((count($pathParts) != count($routePathParts))) {
-      continue;
-    }
 
-    // from an url like "user/3", try to compose a path like "user/:id"
-    // and see if we can get a route from that.
-    $searchedRoutePath = implode('/', array_replace($pathParts, $routePathParts));
-    if (!empty($routes[$searchedRoutePath][$httpMethod])) {
-      $controllerArgs = array_diff($pathParts, $routePathParts);
-      $matchingRoute = $routes[$searchedRoutePath][$httpMethod] + array('controller arguments' => $controllerArgs);
+    $searchedRoutePathParts = [];
+    foreach ($routePathParts as $index => $value) {
+      if(in_array($value, $routeDatas[$httpMethod]['arguments'])) {
+        if (isset($pathFromUrlParts[$index])) {
+          $searchedRoutePathParts[] = $pathFromUrlParts[$index];
+        }
+      }
+      else {
+        $searchedRoutePathParts[] = $value;
+      }
+    }
+    $searchedRoutePath = implode('/', $searchedRoutePathParts);
+
+    if ($searchedRoutePath == $pathFromUrl) {
+      $controllerArgs = array_diff($pathFromUrlParts, $routePathParts);
+      $matchingRoute = $routeDatas[$httpMethod] + array(
+          'controller arguments' => $controllerArgs,
+          'path' => $searchedRoutePath
+        );
       break;
     }
 
   }
-
-  // set some default
-  $matchingRoute['controller arguments'] = empty($matchingRoute['controller arguments']) ? array() :   $matchingRoute['controller arguments'];
 
   return $matchingRoute;
 
