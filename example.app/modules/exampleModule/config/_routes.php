@@ -40,25 +40,6 @@ $config['routes']['hello/name']['GET'] = [
     },
 ];
 
-/**
- * Example route.
- *
- * visit localhost/{yoursite}/www/index.php/hello/{name}/{surname} to view it.
- */
-$config['routes']['hello/name/surname']['GET'] = [
-  'arguments' => ['name', 'surname'],
-  'format'     => 'json',
-  'controller' =>  'controllers::hello'
-];
-
-class controllers {
-
-  static function hello($name, $surname) {
-    return ['name' => escape($name), 'surname' => escape($surname)];
-  }
-
-}
-
 
 
 

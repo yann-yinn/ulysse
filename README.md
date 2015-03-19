@@ -1,25 +1,22 @@
 ULYSSE
 ------------
 
-PHP View / Controller light micro-framework.
-This is dedicated to small projects who needs a few routes to
-respond very fast.
+PHP procedural micro-framework.
 
 CREATE ROUTES
 --------------
 
-"config/_routes.php" files maps an url to a controller.
-In Ulysse, a controller always return an *array* .
-This array will be used to replace variables in a html template
-or to be converted to a json.
-In application/config/_routes.php :
+"app/config/_routes.php" files map an url to a controller.
+In Ulysse, a controller always returns an *array* .
+This array will then be used to replace variables in a html template
+or converted to json etc ...
 
 ```php
-Example routes, where GET is the http request method.
-Any http method may be used instead.
+Example routes, where GET is the http request method. Replace GET
+by any other http method if you need.
 
 /**
- * Override default homepage
+ * Create a homepage with an html template containing a $content variable.
  */
 $config['routes']['']['GET'] = [
   'template'    => 'exampleModule/templates/page.php',
@@ -30,8 +27,6 @@ $config['routes']['']['GET'] = [
 ];
 
 /**
- * Example route.
- *
  * visit localhost/{yoursite}/www/index.php/hello to view it.
  */
 $config['routes']['hello']['GET'] = [
@@ -43,8 +38,7 @@ $config['routes']['hello']['GET'] = [
 ];
 
 /**
- * Example route.
- *
+ * Returning Json on a GET request
  * visit localhost/{yoursite}/www/index.php/hello/{yourname} to view it.
  */
 $config['routes']['hello/name']['GET'] = [
@@ -56,8 +50,8 @@ $config['routes']['hello/name']['GET'] = [
 ];
 
 /**
- * Example route.
- *
+ * Retuning Json on a GET request with arguments in url that will
+ * be sent to the controller callbale.
  * visit localhost/{yoursite}/www/index.php/hello/{name}/{surname} to view it.
  */
 $config['routes']['hello/name/surname']['GET'] = [
