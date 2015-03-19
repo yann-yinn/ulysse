@@ -41,7 +41,7 @@ function startFramework() {
 
   // executing our controller and return output to the browser
   // for the currentl path
-  echo renderRouteByPath(getCurrentPath(), getServerHttpRequestMethod());
+  echo renderRouteByPath(getCurrentPath(), $_SERVER['REQUEST_METHOD']);
 
   fireEvent('ulysse.end');
 
@@ -50,6 +50,66 @@ function startFramework() {
     //require_once "ulysse/framework/developperToolbar.php";
   }
   exit;
+}
+
+/**
+ * Extract a path usable by the framework from an incoming http request.
+ *
+ * @return string
+ * examples :
+ *   For "http://localhost/ulysse/www/public/index.php/hello/world" it returns "hello/world"
+ *   For "http://ulysse.local/index.php/hello/world" it returns "hello/world"
+ *   For "http://ulysse.local/hello/world?test=value" it returns "hello/world".
+ *
+ * This path is then fetched in $config['routes'] array. If a matching route is found,
+ * corresponding route controller will be executed.
+ */
+function getCurrentPath() {
+
+  // static cache
+  static $path = null;
+  if ($path) return $path;
+
+  // There are 4 different scenarios for incoming http requests
+  // we try to handle correctly all of them :
+  //
+  // 1 - No virtual host and htaccess disabled :
+  // "http://localhost/ulysse/app/www/index.php/hello/world
+  //
+  // 2 - No virutal host and htaccess enabled :
+  // "http://localhost/ulysse/app/www/hello/world
+  //
+  // 3 - A virtual host and htaccess disabled :
+  // "http://ulysse.local/index.php/hello/world"
+  //
+  // 4 - A virtual host and htacess enabled
+  // "http://ulysse.local/hello/world"
+
+  // 1 - "http://localhost/ulysse/app/www/index.php/hello/world" -> "/ulysse/example.app/www/index.php/hello/world"
+  // 2 - "http://localhost/ulysse/example.app/www/hello/world"   -> "/ulysse/example.app/www/hello/world"
+  // 3 - "http://ulysse.local/index.php/hello/world"             -> "/index.php/hello/world"
+  // 4 - "http://ulysse.local/hello/world"                       -> "/hello/world"
+  $path = $_SERVER['REQUEST_URI'];
+
+  // 1 - "/ulysse/example.app/www/index.php/hello/world" -> "index.php/hello/world"
+  // 2 - "/ulysse/example.app/www/hello/world"           -> "hello/world"
+  // 3 - "/index.php/hello/world"                        -> "index.php/hello/world"
+  // 4 - "/hello/world"                                  -> "hello/world"
+  $path = substr_replace($_SERVER['REQUEST_URI'], '', 0, strlen(getBasePath()));
+
+  // remove "index.php" from $path, if present.
+  // with now have "hello/world" in all cases.
+  if (strpos($path, getServerScriptName()) === 0) {
+    $path = str_replace(getServerScriptName(), '', $path);
+  }
+
+  // remove query arguments if any (hello/world?foo=bar -> hello/world)
+  $path = parse_url($path, PHP_URL_PATH);
+
+  // remove trailing slashes. For this reason, homepage will be an empty string in Ulysse.
+  $path = trim($path, '/');
+
+  return $path;
 }
 
 /**
@@ -82,327 +142,6 @@ function renderRoute(array $route) {
   $output = $routeFormatters[$route['format']]($route);
 
   // we should have a string at this point.
-  return $output;
-}
-
-
-
-/**
- * Extract a path usable by the framework from an incoming http request,
- * and from apache server informations about this http request.
- * Heart of the framework routing system.
- *
- * @return string :
- * For "http://localhost/ulysse/www/public/index.php/hello/world" returns "hello/world"
- * For "http://ulysse.local/index.php/hello/world" returns "hello/world"
- * For "http://ulysse.local/index.php/hello/world?test=value" returns "hello/world".
- *
- * This path is then fetched in $config['routes'] array. If a matching route is found,
- * route controller will be executed.
- */
-function getCurrentPath() {
-
-  static $path = null;
-
-  if ($path) {
-    return $path;
-  }
-
-  // "http://localhost/ulysse/www/index.php/admin/content/form" > "/ulysse/www/index.php"
-  $scriptNamePath = getServerScriptNamePath();
-
-  // "/ulysse/www/index.php" >  "index.php"
-  $scriptName = getServerScriptName($scriptNamePath);
-
-  // "/ulysse/www/index.php" > "/ulysse/www/"
-  $basePath = _getBasePath($scriptName, $scriptNamePath);
-
-  //  "http://localhost/ulysse/www/index.php/admin/content/form" > "/ulysse/www/index.php/admin/content/form"
-  $serverRequestUri = getServerRequestUri();
-
-  // "/ulysse/www/index.php/admin/content/form" > "index.php/admin/content/form"
-  $serverRequestUriWihoutBasePath = removeSubFoldersFromServerRequestUri($serverRequestUri, $basePath);
-
-  // "index.php/admin/content/form" >  "/admin/content/form"
-  $path = removeScriptNameFromPath($serverRequestUriWihoutBasePath, $scriptName);
-
-  // "/admin/content/form" > "admin/content/form"
-  $path = removeTrailingSlashFromPath($path);
-
-  return $path;
-}
-
-/**
- * Get framework script entry point, usually "index.php"
- * @return string
- */
-function getServerEntryPoint() {
-  return getServerScriptName(getServerScriptNamePath());
-}
-
-/**
- * Get all site Logs
- * @return array : all site logs
- */
-function getAllLogs() {
-  return getContextVariable('logs');
-}
-
-/**
- * Get current language used on the site by the visitor
- * @return string : langcode (fr, en etc...)
- */
-function getCurrentLanguage() {
-  $currentLanguage = getSetting('language_default');
-  if (isset($_REQUEST['language'])) {
-    $requestedLanguage = (string)escape($_REQUEST['language']);
-    $definedLanguages = getSetting('languages');
-    foreach ($definedLanguages as $id => $datas) {
-      if ($definedLanguages[$id]['query'] == $requestedLanguage) {
-        $currentLanguage = $requestedLanguage;
-      }
-    }
-  }
-  return $currentLanguage;
-}
-
-/**
- * Return value of a site setting
- * @see config/_settings.php file.
- * @param string $key = settings identifier
- * @return mixed
- */
-function getSetting($key) {
-  $settings = getConfig('settings');
-  if (isset($settings[$key])) {
-    return $settings[$key];
-  }
-}
-
-/**
- * @param string $event_id : event id
- * @return array all returns by all executed listeners
- */
-function fireEvent($event_id) {
-  $listeners = getConfig('listeners');
-  $returns = [];
-  if (isset($listeners[$event_id])) {
-    foreach($listeners[$event_id] as $listener_id => $listener) {
-      $return = executeListener($listener);
-      $returns[] = $return;
-      writeLog(['detail' => "Executing '$listener_id' listener for event '$event_id' : listener returned : " . var_export($return, TRUE)]);
-    }
-    return $returns;
-  }
-  else {
-    writeLog(['detail' => 'No listeners found for ' . $event_id . ' event']);
-    return FALSE;
-  }
-}
-
-/**
- * @param array $listener with a "callable" key which is a closure.
- * @return mixed
- */
-function executeListener($listener) {
-  return $listener['callable']();
-}
-
-/**
- * Return full context for the current framework response to the http request.
- * @return array
- */
-function getContext() {
-  if (isset($GLOBALS['ULYSSE'])) {
-    return $GLOBALS['ULYSSE'];
-  }
-}
-
-/**
- * Get a context Variable by its key
- * @param string $key
- * @return mixed
- */
-function getContextVariable($key) {
-  if (isset($GLOBALS['ULYSSE'][$key])) {
-    return $GLOBALS['ULYSSE'][$key];
-  }
-}
-
-/**
- * @param string $type : 'routes', 'listeners' etc ...
- * @return mixed
- */
-function getConfig($type = null) {
-  static $config = [];
-  if (!$config) {
-    include APPLICATION_CONFIG_DIRECTORY_PATH . '/config.php';
-    // special local config file.
-    if (is_readable(APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php')) {
-      include APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php';
-    }
-  }
-  if ($type && isset($config[$type])) {
-    return $config[$type];
-  }
-  return $config;
-}
-
-/**
- * Get a translation for a specific string_id
- * @param $string_id
- * @param string $language
- * @return string : localized string
- */
-function getTranslation($string_id, $language = NULL) {
-  $translations = getConfig('translations');
-  if (!$language) $language = getCurrentLanguage();
-  return $translations[$string_id][$language];
-}
-
-/**
- * Build a full url from an ulysse path.
- * @param string $path : e.g "hello/world"
- * @param string $queryString : e.g "value=4&test=true&redirection=contact"
- * @return string : full relative url suitable to build an href html attribute.
- * e.g : "/ulysse/example.app/www/default/index.php/hello-world"
- */
-function getRouteUrl($path, $queryString = '') {
-  $queryArray = [];
-  if ($queryString) parse_str($queryString, $queryArray);
-  $queryString = http_build_query($queryArray);
-  if (getSetting('cleanUrls') == FALSE) {
-    $url = escape(getInstallationPath() . getServerEntryPoint() . '/' . $path);
-  }
-  else {
-    $url = escape(getInstallationPath() . $path);
-  }
-  if ($queryString) $url .= '?' . escape($queryString);
-  return $url;
-}
-
-/**
- * Return TRUE if $path is the current http requested path, FALSE otherwise.
- * Usefull to set "active" classes in html, for example for menus.
- * @param string $path
- * @return bool
- */
-function pathIsActive($path) {
-  return $path ==  getCurrentPath() ? TRUE : FALSE;
-}
-
-/**
- * Write a log
- *
- * @param array $log
- * associative array containing the following keys
- * - level : notice, warning, error
- * - detail : detail of the log
- */
-function writeLog($log) {
-  $logs = getContextVariable('logs');
-  $logs[] = $log;
-  setContextVariable('logs', $logs);
-}
-
-/**
- * Add an http response code header, using http or https for the sheme
- * @param int $code : http response code 200, 400 etc...
- * @param $message : message associated to the http response code
- * @param $protocol (
- */
-function setHttpResponseCode($code, $message = null, $protocol = null) {
-  // most common response code and their associated messages.
-  $codesMessages =
-    [
-      200 => 'OK',
-      201 => 'Created',
-      301 => 'Moved Permanently',
-      302 => 'Moved Temporarily',
-      304 => 'Not modified',
-      401 => 'Not authorized',
-      403 => 'Forbidden',
-      404 => 'Not Found',
-      405 => 'Method Not Allowed',
-      418 => 'I’m a teapot',
-      500 => 'Internal Server Error',
-      503 => 'Service Unavailable',
-    ];
-  $protocol = $protocol ? $protocol : getServerProtocol();
-  $message  = $message ? $message : $codesMessages[$code];
-  header(sprintf("%s %s %s", $protocol, escape($code), escape($message)));
-}
-
-/**
- * Set or add a value to the context.
- * That's in fact just a wrapper around globals.
- * @param string $key
- * @param mixed $value
- */
-function setContextVariable($key, $value) {
-  $GLOBALS['ULYSSE'][$key] = $value;
-}
-
-/**
- * Register a basic psr0 class autoloader.
- */
-function registerPsr0ClassAutoloader() {
-  spl_autoload_register(function($class){require_once str_replace('\\','/', $class).'.php';});
-}
-
-/**
- * @param string $path : path to the template file
- * @param array $variables
- * @return string : template parsed with variables, ready to be printed
- */
-function template($path, $variables = []) {
-  if ($variables) extract($variables);
-  ob_start();
-  include $path;
-  return ob_get_clean();
-}
-
-/**
- * echo with xss protection.
- * @param $value
- */
-function e($value) {
-  echo escape($value);
-}
-
-/**
- * @param string $fullUrl
- */
-function setHttpRedirection($fullUrl) {
-  header("Location: $fullUrl");
-}
-
-/**
- * @param array $include_paths
- *   a list of php paths that will be added to php include path variable.
- */
-function addPhpIncludePaths($include_paths) {
-  set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
-}
-
-/**
- * Render a page using its path.
- * @see $config['routes']
- * @param string $path
- * @param string $httpMethod : http request method (GET, POST, PUT etc ...)
- * @return string (html, json, xml or whatever the controller return to us.)
- */
-function renderRouteByPath($path, $httpMethod = 'GET') {
-
-  $routes = getConfig('routes');
-  $route = getRouteByPath($path, $httpMethod);
-
-  // route not found, render a 404
-  if (!$route) {
-    $route = getRouteByPath('__HTTP_404__');
-  }
-
-  $output = renderRoute($route);
   return $output;
 }
 
@@ -468,6 +207,193 @@ function getRouteByPath($path, $httpMethod = 'GET') {
 }
 
 /**
+ * Render a page using its path.
+ * @see $config['routes']
+ * @param string $path
+ * @param string $httpMethod : http request method (GET, POST, PUT etc ...)
+ * @return string (html, json, xml or whatever the controller return to us.)
+ */
+function renderRouteByPath($path, $httpMethod = 'GET') {
+  $route = getRouteByPath($path, $httpMethod);
+  // route not found, render a 404
+  if (!$route) {
+    $route = getRouteByPath('__HTTP_404__');
+  }
+  $output = renderRoute($route);
+  return $output;
+}
+
+/**
+ * Build a full url from an internal ulysse path.
+ * @param string $path : e.g "hello/world"
+ * @param string $queryString : e.g "value=4&test=true&redirection=contact"
+ * @return string : full relative url suitable to build an href html attribute.
+ * e.g : "/ulysse/example.app/www/index.php/hello-world"
+ */
+function getRouteUrl($path, $queryString = '') {
+  $queryArray = [];
+  if ($queryString) parse_str($queryString, $queryArray);
+  $queryString = http_build_query($queryArray);
+  if (getSetting('cleanUrls') == FALSE) {
+    $url = escape(getBasePath() . getServerEntryPoint() . '/' . $path);
+  }
+  else {
+    $url = escape(getBasePath() . $path);
+  }
+  if ($queryString) $url .= '?' . escape($queryString);
+  return $url;
+}
+
+/**
+ * @param string $type : 'routes', 'listeners' etc ...
+ * @return mixed
+ */
+function getConfig($type = null) {
+  static $config = [];
+  if (!$config) {
+    include APPLICATION_CONFIG_DIRECTORY_PATH . '/config.php';
+    // load special local / not versionned config file.
+    if (is_readable(APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php')) {
+      include APPLICATION_CONFIG_DIRECTORY_PATH  . '/config.local.php';
+    }
+  }
+  if ($type && isset($config[$type])) {
+    return $config[$type];
+  }
+  return $config;
+}
+
+/**
+ * Shortcut method to return value of a site setting
+ * @see config/_settings.php file.
+ * @param string $key = settings identifier
+ * @return mixed
+ */
+function getSetting($key) {
+  $settings = getConfig('settings');
+  if (isset($settings[$key])) {
+    return $settings[$key];
+  }
+}
+
+/**
+ * @param string $path : path to the template file
+ * @param array $variables
+ * @return string : template parsed with variables, ready to be printed
+ */
+function template($path, $variables = []) {
+  if ($variables) extract($variables);
+  ob_start();
+  include $path;
+  return ob_get_clean();
+}
+
+/**
+ * echo with xss protection.
+ * @param $value
+ */
+function e($value) {
+  echo escape($value);
+}
+
+/**
+ * @param string $event_id : event id
+ * @return array all returns by all executed listeners
+ */
+function fireEvent($event_id) {
+  $listeners = getConfig('listeners');
+  $returns = [];
+  if (isset($listeners[$event_id])) {
+    foreach($listeners[$event_id] as $listener_id => $listener) {
+      $return = executeEventListener($listener);
+      $returns[] = $return;
+      writeLog(['detail' => "Executing '$listener_id' listener for event '$event_id' : listener returned : " . var_export($return, TRUE)]);
+    }
+    return $returns;
+  }
+}
+
+/**
+ * @param array $listener with a "callable" key which is a closure.
+ * @return mixed
+ */
+function executeEventListener($listener) {
+  return $listener['callable']();
+}
+
+/**
+ * Get a translation for a specific string_id
+ * @param $string_id
+ * @param string $language
+ * @return string : localized string
+ */
+function getTranslation($string_id, $language = NULL) {
+  $translations = getConfig('translations');
+  if (!$language) $language = getCurrentLanguage();
+  return $translations[$string_id][$language];
+}
+
+/**
+ * Return TRUE if $path is the current http requested path, FALSE otherwise.
+ * Usefull to set "active" classes in html, for example for menus.
+ * @param string $path
+ * @return bool
+ */
+function pathIsActive($path) {
+  return $path ==  getCurrentPath() ? TRUE : FALSE;
+}
+
+/**
+ * Add an http response code header, using http or https for the sheme
+ * @param int $code : http response code 200, 400 etc...
+ * @param $message : message associated to the http response code
+ * @param $protocol (
+ */
+function setHttpResponseCode($code, $message = null, $protocol = null) {
+  // most common response code and their associated messages.
+  $codesMessages =
+    [
+      200 => 'OK',
+      201 => 'Created',
+      301 => 'Moved Permanently',
+      302 => 'Moved Temporarily',
+      304 => 'Not modified',
+      401 => 'Not authorized',
+      403 => 'Forbidden',
+      404 => 'Not Found',
+      405 => 'Method Not Allowed',
+      418 => 'I’m a teapot',
+      500 => 'Internal Server Error',
+      503 => 'Service Unavailable',
+    ];
+  $protocol = $protocol ? $protocol : $_SERVER["SERVER_PROTOCOL"];
+  $message  = $message ? $message : $codesMessages[$code];
+  header(sprintf("%s %s %s", $protocol, escape($code), escape($message)));
+}
+
+/**
+ * Register a basic psr0 class autoloader.
+ */
+function registerPsr0ClassAutoloader() {
+  spl_autoload_register(function($class){require_once str_replace('\\','/', $class).'.php';});
+}
+
+/**
+ * @param string $fullUrl
+ */
+function setHttpRedirection($fullUrl) {
+  header("Location: $fullUrl");
+}
+
+/**
+ * @param array $include_paths
+ *   a list of php paths that will be added to php include path variable.
+ */
+function addPhpIncludePaths($include_paths) {
+  set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $include_paths));
+}
+
+/**
  * Execute Template formatter
  * @param int $formatterId
  * @return string
@@ -480,25 +406,20 @@ function formatAs($formatterId) {
 }
 
 function vd($value) {
-  echo '<pre>';
-  var_dump($value);
-  echo '</pre>';
+  echo '<pre>' . var_dump($value) . '</pre>';
 }
 
 function vde($value) {
-  var_dump($value);exit;
+  echo '<pre>' . var_dump($value) . '</pre>';
+  exit;
 }
 
 function pr($array) {
-  echo '<pre>';
-  print_r($array);
-  echo '</pre>';
+  echo '<pre>'. print_r($array) . '</pre>';
 }
 
 function pre($array) {
-  echo '<pre>';
-  print_r($array);
-  echo '</pre>';
+  echo '<pre>' . print_r($array) . '</pre>';
   exit;
 }
 
@@ -511,48 +432,12 @@ function escape($value) {
   return htmlspecialchars($value, ENT_QUOTES, 'utf-8');
 }
 
-/* ==========================================
-   Helpers to extract path from http request
-   ========================================= */
-
 /**
  * Return base path, if framework is installed in a subfolder of the host
- *
  * @return string
  */
-function getInstallationPath() {
-  $scriptNamePath = getServerScriptNamePath();
-  $scriptName = getServerScriptName($scriptNamePath);
-  $test =  _getBasePath($scriptName, $scriptNamePath);
-  return $test;
-}
-
-/**
- * FIXME : https & http detection here
- * @return string
- */
-function getServerProtocol() {
-  return $_SERVER["SERVER_PROTOCOL"];
-}
-
-/**
- * Return requested uri.
- * @return string
- * For "http://ulysse.local/index.php/azertyuiop789456123"
- *   it will return "/index.php/azertyuiop789456123".
- * For "http://eurl.local/ulysse/www/index.php/azertyuiop789456123"
- *   it will return "/ulysse/www/index.php/azertyuiop789456123".
- */
-function getServerRequestUri() {
-  return $_SERVER['REQUEST_URI'];
-}
-
-function getServerName() {
-  return $_SERVER['SERVER_NAME'];
-}
-
-function getServerHttpRequestMethod() {
-  return $_SERVER['REQUEST_METHOD'];
+function getBasePath() {
+  return str_replace(getServerScriptName(), '', $_SERVER['SCRIPT_NAME']);
 }
 
 /**
@@ -569,80 +454,93 @@ function getUrlScheme() {
  * @return string
  */
 function getFullDomainName() {
-  return getUrlScheme() . '://' . getServerName();
+  return getUrlScheme() . '://' . $_SERVER['SERVER_NAME'];
 }
 
 /**
- * get base path to build relative links.
- * @param string $serverScriptName
- * @param string $serverScriptNamePath
- * @return string
- *   If entry point is an "index.php" file :
- *   For "localhost/ulysse/www/index.php" it will returns "/ulysse/www/"
- *   For "mysite.local" it will returns "/"
- */
-function _getBasePath($serverScriptName, $serverScriptNamePath) {
-  return str_replace($serverScriptName, '', $serverScriptNamePath);
-}
-
-/**
- * Return server script name path.
- * @return string
- *   If entry point is an "index.php" file :
- *   For "localhost/ulysse/www/index.php" it will returns "/ulysse/www/index.php"
- *   For "mysite.local" it will returns "/index.php"
- */
-function getServerScriptNamePath() {
-  return $_SERVER['SCRIPT_NAME'];
-}
-
-/**
- * @param string $serverScriptName
- *   server script name as return by $_SERVER['script_name'] or _getServerScriptNamePath().
  * @return string
  *   For "/ulysse/www/index.php" it will returns "index.php"
  *   For "mysite.local/index.php" it will returns "index.php"
  */
-function getServerScriptName($serverScriptName) {
-  return basename($serverScriptName);
+function getServerScriptName() {
+  return basename($_SERVER['SCRIPT_NAME']);
 }
 
 /**
- * @param string $serverRequestUriWithoutBasePath
- *   @see _getServerRequestUriWithoutBasePath()
- * @param string $scriptName
- *   @see getServerScriptName()
- * @return string :
- *   For "http://localhost/ulysse/www/index.php/azertyuiop789456123"
- *   it will return "/index.php/azertyuiop789456123"
- *   Idem for "http://ulysse.local/index.php/azertyuiop789456123"
+ * Write a log
+ *
+ * @param array $log
+ * associative array containing the following keys
+ * - level : notice, warning, error
+ * - detail : detail of the log
  */
-function removeScriptNameFromPath($serverRequestUriWithoutBasePath, $scriptName) {
-  if (strpos($serverRequestUriWithoutBasePath, $scriptName) === 0) {
-    return str_replace($scriptName, '', $serverRequestUriWithoutBasePath);
-  }
-  return $serverRequestUriWithoutBasePath;
+function writeLog($log) {
+  $logs = getContextVariable('logs');
+  $logs[] = $log;
+  setContextVariable('logs', $logs);
 }
 
 /**
- * @param string $serverRequestUri
- * @param string $basePath
+ * Set or add a value to the context.
+ * That's in fact just a wrapper around globals.
+ * @param string $key
+ * @param mixed $value
+ */
+function setContextVariable($key, $value) {
+  $GLOBALS['ULYSSE'][$key] = $value;
+}
+
+/**
+ * Get framework script name / entry point, usually "index.php"
  * @return string
- * For "http://ulysse.local/index.php/azertyuiop789456123"
- *   it returns "index.php/azertyuiop789456123".
- * For "localhost/ulysse/www/index.php/azertyuiop789456123"
- *   it return also "index.php/azertyuiop789456123".
  */
-function removeSubFoldersFromServerRequestUri($serverRequestUri, $basePath) {
-  return substr_replace($serverRequestUri, '', 0, strlen($basePath));
+function getServerEntryPoint() {
+  return getServerScriptName($_SERVER['SCRIPT_NAME']);
 }
 
 /**
- * @param string $path : @see _removeScriptNameFromPath()
- * @return string :
- * for "/hello", returns "hello".
- * for "/hello/", returns "hello".
+ * Get all site Logs
+ * @return array : all site logs
  */
-function removeTrailingSlashFromPath($path) {
-  return trim(parse_url($path, PHP_URL_PATH), '/');
+function getAllLogs() {
+  return getContextVariable('logs');
+}
+
+/**
+ * Get current language used on the site by the visitor
+ * @return string : langcode (fr, en etc...)
+ */
+function getCurrentLanguage() {
+  $currentLanguage = getSetting('language_default');
+  if (isset($_REQUEST['language'])) {
+    $requestedLanguage = (string)escape($_REQUEST['language']);
+    $definedLanguages = getSetting('languages');
+    foreach ($definedLanguages as $id => $datas) {
+      if ($definedLanguages[$id]['query'] == $requestedLanguage) {
+        $currentLanguage = $requestedLanguage;
+      }
+    }
+  }
+  return $currentLanguage;
+}
+
+/**
+ * Get a context Variable by its key
+ * @param string $key
+ * @return mixed
+ */
+function getContextVariable($key) {
+  if (isset($GLOBALS['ULYSSE'][$key])) {
+    return $GLOBALS['ULYSSE'][$key];
+  }
+}
+
+/**
+ * Return full context for the current framework response to the http request.
+ * @return array
+ */
+function getContext() {
+  if (isset($GLOBALS['ULYSSE'])) {
+    return $GLOBALS['ULYSSE'];
+  }
 }
